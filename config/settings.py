@@ -15,23 +15,11 @@ env = environ.Env(
 SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
 DEBUG = env.bool("DEBUG", default=False)
 
-# --- ИСПРАВЛЕНИЕ ALLOWED_HOSTS ---
-# Приоритет 1: Берем домен, который Render автоматически выдает сервису (RENDER_EXTERNAL_HOSTNAME)
-# Приоритет 2: Если переменной нет (локальная разработка), берем из ALLOWED_HOSTS или ставим localhost
-render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-
-if render_host:
-    ALLOWED_HOSTS = [render_host, "localhost", "127.0.0.1"]
-else:
-    # Фоллбэк для локальной разработки, если RENDER_EXTERNAL_HOSTNAME не задан
-    ALLOWED_HOSTS = [
-        host.strip()
-        for host in os.environ.get(
-            "ALLOWED_HOSTS",
-            "localhost,127.0.0.1",
-        ).split(",")
-        if host.strip()
-    ]
+ALLOWED_HOSTS = [
+    "chatwell-9we6.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 # ---------------------------------
 
 INSTALLED_APPS = [
