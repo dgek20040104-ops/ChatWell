@@ -151,7 +151,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-# ИСПРАВЛЕНО: Используем env() для Redis
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -163,9 +162,9 @@ CHANNEL_LAYERS = {
     },
 }
 
-# ИСПРАВЛЕНО: Используем env() для CSRF
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in env("CSRF_TRUSTED_ORIGINS", default="").split(",")
     if origin.strip()
 ]
+
