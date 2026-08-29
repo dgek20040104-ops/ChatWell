@@ -24,10 +24,11 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in env(
         "ALLOWED_HOSTS",
-        default="127.0.0.1,localhost",
+        default="127.0.0.1,localhost,.onrender.com",
     ).split(",")
     if host.strip()
 ]
+
 
 INSTALLED_APPS = [
     "daphne",
