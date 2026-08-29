@@ -14,7 +14,14 @@ env = environ.Env(
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
 DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=['localhost', '127.0.0.1'])
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1",
+    ).split(",")
+    if host.strip()
+]
 
 
 
@@ -166,7 +173,10 @@ CHANNEL_LAYERS = {
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in env("CSRF_TRUSTED_ORIGINS", default="").split(",")
+    for origin in os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "",
+    ).split(",")
     if origin.strip()
 ]
 
