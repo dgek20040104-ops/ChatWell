@@ -7,7 +7,6 @@ django-filter==25.1
 Pillow==11.3.0
 argon2-cffi==25.1.0
 phonenumbers==9.0.10
-channels==4.2.2python manage.py startapp chats apps\chats
 channels==4.2.2
 channels-redis==4.2.1
 import dj_database_url
