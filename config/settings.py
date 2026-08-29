@@ -20,14 +20,7 @@ DEBUG = os.environ.get(
     "False",
 ).lower() == "true"
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in env(
-        "ALLOWED_HOSTS",
-        default="127.0.0.1,localhost,.onrender.com",
-    ).split(",")
-    if host.strip()
-]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 
 INSTALLED_APPS = [
