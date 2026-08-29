@@ -2,42 +2,32 @@ import os
 from pathlib import Path
 import environ
 import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
 )
 
-environ.Env.read_env(BASE_DIR / ".env")
+# ВАЖНО: Строки environ.Env.read_env(...) ЗДЕСЬ НЕТ.
+# Мы НЕ читаем локальный файл .env. Все настройки берутся из переменных окружения Render.
 
-SECRET_KEY = env(
-    "SECRET_KEY",
-    default="unsafe-development-secret-key",
-)
-
-DEBUG = os.environ.get(
-    "DEBUG",
-    "False",
-).lower() == "true"
-
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
-
+SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
+DEBUG = env.bool("DEBUG", default=False)
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=['localhost', '127.0.0.1'])
 
 INSTALLED_APPS = [
     "daphne",
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "channels",
-
     "apps.accounts.apps.AccountsConfig",
     "apps.core.apps.CoreConfig",
     "apps.posts.apps.PostsConfig",
@@ -78,11 +68,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+# ИСПРАВЛЕНО: Используем env() вместо os.environ.get()
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ.get(
-            "DATABASE_URL"
-        ),
+        default=env("DATABASE_URL"),
         conn_max_age=600,
         ssl_require=True,
     )
@@ -92,16 +81,10 @@ AUTH_USER_MODEL = "accounts.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "UserAttributeSimilarityValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "MinimumLengthValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
 ]
 
@@ -125,10 +108,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in env(
-        "CORS_ALLOWED_ORIGINS",
-        default="http://localhost:3000",
-    ).split(",")
+    for origin in env("CORS_ALLOWED_ORIGINS", default="http://localhost:3000").split(",")
     if origin.strip()
 ]
 
@@ -171,27 +151,21 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# ИСПРАВЛЕНО: Используем env() для Redis
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": (
-            "channels_redis.core.RedisChannelLayer"
-        ),
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                os.environ.get(
-                    "REDIS_URL",
-                    "redis://127.0.0.1:6379",
-                )
+                env("REDIS_URL", default="redis://127.0.0.1:6379"),
             ],
         },
     },
 }
 
+# ИСПРАВЛЕНО: Используем env() для CSRF
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get(
-        "CSRF_TRUSTED_ORIGINS",
-        "",
-    ).split(",")
+    for origin in env("CSRF_TRUSTED_ORIGINS", default="").split(",")
     if origin.strip()
 ]
