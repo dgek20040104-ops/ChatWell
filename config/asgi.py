@@ -2,7 +2,7 @@ import os
 
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
-    "chatwell.settings",
+    "config.settings",
 )
 
 from channels.auth import AuthMiddlewareStack
