@@ -1,0 +1,1868 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+    Reels — ChatWell
+{% endblock %}
+
+{% block body %}
+
+<div class="reels-app">
+    <header class="reels-header">
+        <a
+            href="/feed/"
+            class="reels-logo"
+        >
+            ChatWell
+        </a>
+
+        <nav class="reels-nav">
+            <a href="/feed/">Лента</a>
+            <a href="/chat/">Чаты</a>
+            <a
+                href="/reels/"
+                class="active"
+            >
+                Reels
+            </a>
+            <a href="/profile/">Профиль</a>
+        </nav>
+    </header>
+
+    <main
+        id="reels-feed"
+        class="reels-feed"
+    >
+        <div class="reels-loading">
+            Загружаем рекомендации...
+        </div>
+    </main>
+</div>
+
+<div
+    id="comments-modal"
+    class="comments-modal"
+    hidden
+>
+    <div class="comments-card">
+        <div class="comments-header">
+            <h2>
+                Комментарии
+            </h2>
+
+            <button
+                id="close-comments"
+                class="close-comments"
+                type="button"
+            >
+                ×
+            </button>
+        </div>
+
+        <div
+            id="comments-list"
+            class="comments-list"
+        ></div>
+
+        <form
+            id="comment-form"
+            class="comment-form"
+        >
+            <input
+                id="comment-input"
+                type="text"
+                maxlength="1000"
+                placeholder="Написать комментарий..."
+                required
+            >
+
+            <button
+                type="submit"
+            >
+                Отправить
+            </button>
+        </form>
+
+        <div
+            id="comment-error"
+            class="comment-error"
+        ></div>
+    </div>
+</div>
+
+<style>
+    [hidden] {
+        display: none !important;
+    }
+
+    :root {
+        --reels-bg: #08080f;
+        --reels-card: #11111b;
+        --reels-text: #ffffff;
+        --reels-muted: #b4b4c4;
+        --reels-primary: #6857ed;
+        --reels-danger: #ff4261;
+    }
+
+    body {
+        overflow: hidden;
+        background: var(--reels-bg);
+    }
+
+    .reels-app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        min-height: 560px;
+        background:
+            radial-gradient(
+                circle at 50% 20%,
+                rgba(102, 85, 237, .12),
+                transparent 35%
+            ),
+            var(--reels-bg);
+    }
+
+    .reels-header {
+        position: relative;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex: 0 0 70px;
+        gap: 20px;
+        padding: 10px 34px;
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
+        background: rgba(15, 15, 28, .96);
+    }
+
+    .reels-logo {
+        color: var(--reels-text);
+        font-size: 23px;
+        font-weight: 850;
+        text-decoration: none;
+    }
+
+    .reels-nav {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .reels-nav a {
+        padding: 10px 14px;
+        border-radius: 11px;
+        color: var(--reels-muted);
+        font-size: 14px;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .reels-nav a:hover,
+    .reels-nav a.active {
+        background: var(--reels-primary);
+        color: #ffffff;
+    }
+
+    .reels-feed {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        min-height: 0;
+        padding: 0;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        scroll-snap-type: y mandatory;
+        scrollbar-width: thin;
+        scrollbar-color: #4d4d67 transparent;
+    }
+
+    .reel-card {
+        position: relative;
+        display: flex;
+        flex: 0 0 100%;
+        width: min(100%, 620px);
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        background: var(--reels-card);
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+    }
+
+    .reel-video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        object-fit: contain;
+        background: #050509;
+    }
+
+    .reel-top-gradient {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 2;
+        height: 170px;
+        pointer-events: none;
+        background: linear-gradient(
+            rgba(0, 0, 0, .62),
+            transparent
+        );
+    }
+
+    .reel-bottom-gradient {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 2;
+        height: 330px;
+        pointer-events: none;
+        background: linear-gradient(
+            transparent,
+            rgba(0, 0, 0, .88)
+        );
+    }
+
+    .reel-header-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        left: 20px;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .recommendation-label {
+        padding: 7px 11px;
+        border: 1px solid rgba(255, 255, 255, .18);
+        border-radius: 9px;
+        background: rgba(0, 0, 0, .34);
+        color: #ffffff;
+        font-size: 12px;
+        backdrop-filter: blur(8px);
+    }
+
+    .video-sound-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 39px;
+        height: 39px;
+        border: 1px solid rgba(255, 255, 255, .24);
+        border-radius: 50%;
+        background: rgba(0, 0, 0, .42);
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 18px;
+        backdrop-filter: blur(8px);
+    }
+
+    .video-sound-button:hover {
+        background: var(--reels-primary);
+    }
+
+    .pause-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, .55);
+        color: #ffffff;
+        font-size: 31px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(.8);
+        transition: .2s ease;
+    }
+
+    .pause-indicator.visible {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .reel-content {
+        position: absolute;
+        right: 92px;
+        bottom: 30px;
+        left: 22px;
+        z-index: 5;
+        color: #ffffff;
+    }
+
+    .reel-author {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .reel-author:hover {
+        color: #c5beff;
+    }
+
+    .reel-author-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 43px;
+        height: 43px;
+        overflow: hidden;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            #7666f2,
+            #aa76dd
+        );
+        color: #ffffff;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .reel-author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .reel-author-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .reel-author-username {
+        color: #d0ccff;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .reel-description {
+        max-width: 410px;
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .reel-actions {
+        position: absolute;
+        right: 17px;
+        bottom: 76px;
+        z-index: 7;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .reel-action-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .reel-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 49px;
+        height: 49px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, .48);
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 24px;
+        backdrop-filter: blur(7px);
+        transition: .18s ease;
+    }
+
+    .reel-action:hover {
+        background: rgba(104, 87, 237, .9);
+        transform: scale(1.08);
+    }
+
+    .reel-action.liked {
+        background: var(--reels-danger);
+    }
+
+    .reel-action-text {
+        max-width: 62px;
+        overflow: hidden;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .reel-progress {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+        height: 4px;
+        background: rgba(255, 255, 255, .25);
+    }
+
+    .reel-progress-value {
+        width: 0;
+        height: 100%;
+        background: #ffffff;
+        transition: width .08s linear;
+    }
+
+    .reels-loading,
+    .reels-empty,
+    .reels-error {
+        align-self: center;
+        padding: 60px 20px;
+        color: var(--reels-muted);
+        font-size: 15px;
+        text-align: center;
+    }
+
+    .reels-error {
+        color: #ff7180;
+    }
+
+    .comments-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, .72);
+        backdrop-filter: blur(5px);
+    }
+
+    .comments-card {
+        display: flex;
+        flex-direction: column;
+        width: min(100%, 480px);
+        max-height: min(650px, 90vh);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 18px;
+        background: #191927;
+        box-shadow: 0 20px 80px rgba(0, 0, 0, .5);
+    }
+
+    .comments-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 17px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .comments-header h2 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 18px;
+    }
+
+    .close-comments {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 9px;
+        background: rgba(255, 255, 255, .1);
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 24px;
+    }
+
+    .comments-list {
+        flex: 1;
+        min-height: 120px;
+        padding: 13px 18px;
+        overflow-y: auto;
+    }
+
+    .comment-item {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
+        color: #ffffff;
+        line-height: 1.4;
+    }
+
+    .comment-author {
+        display: block;
+        margin-bottom: 3px;
+        color: #c4bcff;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .comment-text {
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .comments-empty,
+    .comments-loading {
+        padding: 30px 0;
+        color: var(--reels-muted);
+        text-align: center;
+    }
+
+    .comment-form {
+        display: flex;
+        gap: 8px;
+        padding: 14px 18px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .comment-form input {
+        min-width: 0;
+        flex: 1;
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid rgba(255, 255, 255, .15);
+        border-radius: 10px;
+        outline: none;
+        background: #252538;
+        color: #ffffff;
+        font: inherit;
+    }
+
+    .comment-form button {
+        padding: 0 13px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--reels-primary);
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .comment-error {
+        min-height: 18px;
+        padding: 0 18px 10px;
+        color: #ff7180;
+        font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+        .reels-header {
+            flex-basis: 58px;
+            padding: 8px 13px;
+        }
+
+        .reels-logo {
+            font-size: 18px;
+        }
+
+        .reels-nav {
+            gap: 1px;
+        }
+
+        .reels-nav a {
+            padding: 7px 6px;
+            font-size: 11px;
+        }
+
+        .reel-card {
+            width: 100%;
+        }
+
+        .reel-header-overlay {
+            top: 13px;
+            right: 13px;
+            left: 13px;
+        }
+
+        .reel-content {
+            right: 82px;
+            bottom: 25px;
+            left: 14px;
+        }
+
+        .reel-actions {
+            right: 10px;
+            bottom: 67px;
+            gap: 13px;
+        }
+
+        .reel-action {
+            width: 43px;
+            height: 43px;
+            font-size: 21px;
+        }
+
+        .reel-description {
+            font-size: 13px;
+        }
+    }
+
+    .video-sound-button.sound-required {
+    background: var(--reels-primary);
+    box-shadow:
+        0 0 0 4px rgba(104, 87, 237, .25),
+        0 0 20px rgba(104, 87, 237, .8);
+    animation: sound-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes sound-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+</style>
+
+<script>
+(function () {
+    "use strict";
+
+    const token = localStorage.getItem(
+        "chatwell_access_token"
+    );
+
+    if (!token) {
+        window.location.href = "/register/";
+        return;
+    }
+
+    const feed = document.getElementById(
+        "reels-feed"
+    );
+
+    const commentsModal = document.getElementById(
+        "comments-modal"
+    );
+
+    const closeCommentsButton =
+        document.getElementById(
+            "close-comments"
+        );
+
+    const commentsList = document.getElementById(
+        "comments-list"
+    );
+
+    const commentForm = document.getElementById(
+        "comment-form"
+    );
+
+    const commentInput = document.getElementById(
+        "comment-input"
+    );
+
+    const commentError = document.getElementById(
+        "comment-error"
+    );
+
+    let observer = null;
+    let activePost = null;
+    let activeVideo = null;
+
+const SOUND_PREFERENCE_KEY =
+    "chatwell_reels_sound_enabled";
+
+/*
+ * По умолчанию звук включён.
+ * Если пользователь его выключил,
+ * сохраняем это решение в localStorage.
+ */
+let soundEnabled =
+    localStorage.getItem(SOUND_PREFERENCE_KEY)
+    !== "false";
+
+    function authHeaders(json) {
+        const result = {
+            "Authorization":
+                "Bearer " + token
+        };
+
+        if (json) {
+            result["Content-Type"] =
+                "application/json";
+        }
+
+        return result;
+    }
+
+    async function readJson(response) {
+        const text = await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return {
+                detail:
+                    "Сервер вернул некорректный ответ."
+            };
+        }
+    }
+
+    function errorText(data, fallback) {
+        if (
+            data
+            && typeof data.detail === "string"
+        ) {
+            return data.detail;
+        }
+
+        if (
+            data
+            && typeof data === "object"
+        ) {
+            return Object.entries(data)
+                .map(function (entry) {
+                    const value =
+                        Array.isArray(entry[1])
+                            ? entry[1].join(", ")
+                            : String(entry[1]);
+
+                    return entry[0]
+                        + ": "
+                        + value;
+                })
+                .join(" ");
+        }
+
+        return fallback;
+    }
+
+    function authorName(author) {
+        if (!author) {
+            return "Пользователь";
+        }
+
+        return (
+            author.display_name
+            || author.username
+            || "Пользователь"
+        );
+    }
+
+    function authorInitial(author) {
+        return authorName(author)
+            .charAt(0)
+            .toUpperCase();
+    }
+
+    function mediaUrl(media) {
+        if (!media) {
+            return "";
+        }
+
+        return (
+            media.url
+            || media.file
+            || media.media_url
+            || ""
+        );
+    }
+
+    function getVideoMedia(post) {
+        if (
+            !post
+            || !Array.isArray(post.media)
+        ) {
+            return null;
+        }
+
+        return post.media.find(
+            function (media) {
+                const type =
+                    media.media_type
+                    || media.type
+                    || "";
+
+                return (
+                    type === "video"
+                    || /\.(mp4|webm|mov)(\?|$)/i
+                        .test(mediaUrl(media))
+                );
+            }
+        );
+    }
+
+    function formatCount(value) {
+        const count = Number(value) || 0;
+
+        if (count >= 1000000) {
+            return (
+                (count / 1000000)
+                    .toFixed(1)
+                    .replace(".", ",")
+                + "M"
+            );
+        }
+
+        if (count >= 1000) {
+            return (
+                (count / 1000)
+                    .toFixed(1)
+                    .replace(".", ",")
+                + "K"
+            );
+        }
+
+        return String(count);
+    }
+
+    function createAvatar(author) {
+        const avatar =
+            document.createElement("span");
+
+        avatar.className =
+            "reel-author-avatar";
+
+        if (author && author.avatar) {
+            const image =
+                document.createElement("img");
+
+            image.src = author.avatar;
+            image.alt = "Аватар";
+
+            image.onerror = function () {
+                image.remove();
+
+                if (!avatar.textContent) {
+                    avatar.textContent =
+                        authorInitial(author);
+                }
+            };
+
+            avatar.appendChild(image);
+        } else {
+            avatar.textContent =
+                authorInitial(author);
+        }
+
+        return avatar;
+    }
+
+    function togglePause(video, pauseIndicator) {
+        if (video.paused) {
+            video.play().catch(
+                function () {}
+            );
+
+            pauseIndicator.classList.remove(
+                "visible"
+            );
+
+            return;
+        }
+
+        video.pause();
+
+        pauseIndicator.textContent =
+            "▶";
+
+        pauseIndicator.classList.add(
+            "visible"
+        );
+    }
+
+    function updateSoundButton(
+        button,
+        video
+    ) {
+        button.textContent =
+            video.muted ? "🔇" : "🔊";
+
+        button.title =
+            video.muted
+                ? "Включить звук"
+                : "Выключить звук";
+    }
+
+    function createReelCard(post) {
+        const media =
+            getVideoMedia(post);
+
+        if (!media) {
+            return null;
+        }
+
+        const card =
+            document.createElement("article");
+
+        card.className =
+            "reel-card";
+
+        const video =
+            document.createElement("video");
+
+        video.className =
+            "reel-video";
+
+        video.src =
+            mediaUrl(media);
+
+        video.muted = !soundEnabled;
+
+        video.loop =
+            true;
+
+        video.playsInline =
+            true;
+
+        video.preload =
+            "metadata";
+
+        const topGradient =
+            document.createElement("div");
+
+        topGradient.className =
+            "reel-top-gradient";
+
+        const bottomGradient =
+            document.createElement("div");
+
+        bottomGradient.className =
+            "reel-bottom-gradient";
+
+        const overlayHeader =
+            document.createElement("div");
+
+        overlayHeader.className =
+            "reel-header-overlay";
+
+        const recommendation =
+            document.createElement("span");
+
+        recommendation.className =
+            "recommendation-label";
+
+        recommendation.textContent =
+            "Рекомендации";
+
+        const soundButton =
+            document.createElement("button");
+
+        soundButton.type =
+            "button";
+
+        soundButton.className =
+            "video-sound-button";
+
+        updateSoundButton(
+            soundButton,
+            video
+        );
+
+        soundButton.addEventListener(
+    "click",
+    function (event) {
+        event.stopPropagation();
+
+        soundEnabled = !soundEnabled;
+
+        localStorage.setItem(
+            SOUND_PREFERENCE_KEY,
+            String(soundEnabled)
+        );
+
+        /*
+         * Применяем настройку ко всем видео,
+         * чтобы при переходе между Reels звук
+         * не включался снова самопроизвольно.
+         */
+        feed.querySelectorAll(
+            ".reel-video"
+        ).forEach(function (currentVideo) {
+            currentVideo.muted = !soundEnabled;
+        });
+
+        feed.querySelectorAll(
+            ".video-sound-button"
+        ).forEach(function (currentButton) {
+            const currentCard =
+                currentButton.closest(".reel-card");
+
+            const currentVideo =
+                currentCard
+                    ? currentCard.querySelector(
+                        ".reel-video"
+                    )
+                    : null;
+
+            if (currentVideo) {
+                updateSoundButton(
+                    currentButton,
+                    currentVideo
+                );
+            }
+        });
+
+        /*
+         * После пользовательского клика браузер
+         * обычно разрешает запуск видео со звуком.
+         */
+        if (soundEnabled) {
+            video.play().catch(function () {
+                /*
+                 * Браузер всё ещё может запретить
+                 * autoplay. В таком случае пользователь
+                 * сможет запустить видео повторным кликом.
+                 */
+            });
+        }
+    }
+);;
+
+        overlayHeader.appendChild(
+            recommendation
+        );
+
+        overlayHeader.appendChild(
+            soundButton
+        );
+
+        const pauseIndicator =
+            document.createElement("div");
+
+        pauseIndicator.className =
+            "pause-indicator";
+
+        pauseIndicator.textContent =
+            "Ⅱ";
+
+        video.addEventListener(
+            "click",
+            function () {
+                togglePause(
+                    video,
+                    pauseIndicator
+                );
+            }
+        );
+
+        const content =
+            document.createElement("div");
+
+        content.className =
+            "reel-content";
+
+        const authorLink =
+            document.createElement("a");
+
+        authorLink.className =
+            "reel-author";
+
+        authorLink.href =
+            post.author && post.author.id
+                ? "/users/"
+                    + post.author.id
+                    + "/"
+                : "#";
+
+        authorLink.appendChild(
+            createAvatar(post.author)
+        );
+
+        const authorInfo =
+            document.createElement("span");
+
+        authorInfo.className =
+            "reel-author-info";
+
+        const authorNameElement =
+            document.createElement("span");
+
+        authorNameElement.textContent =
+            authorName(post.author);
+
+        authorInfo.appendChild(
+            authorNameElement
+        );
+
+        if (
+            post.author
+            && post.author.username
+        ) {
+            const username =
+                document.createElement("span");
+
+            username.className =
+                "reel-author-username";
+
+            username.textContent =
+                "@"
+                + post.author.username;
+
+            authorInfo.appendChild(
+                username
+            );
+        }
+
+        authorLink.appendChild(
+            authorInfo
+        );
+
+        content.appendChild(
+            authorLink
+        );
+
+        if (post.text) {
+            const description =
+                document.createElement("p");
+
+            description.className =
+                "reel-description";
+
+            description.textContent =
+                post.text;
+
+            content.appendChild(
+                description
+            );
+        }
+
+        const actions =
+            document.createElement("div");
+
+        actions.className =
+            "reel-actions";
+
+        const likeWrapper =
+            document.createElement("div");
+
+        likeWrapper.className =
+            "reel-action-wrapper";
+
+        const likeButton =
+            document.createElement("button");
+
+        likeButton.type =
+            "button";
+
+        likeButton.className =
+            "reel-action";
+
+        let liked =
+            Boolean(post.liked_by_me);
+
+        let likesCount =
+            Number(post.likes_count) || 0;
+
+        function updateLike() {
+            likeButton.textContent =
+                liked ? "♥" : "♡";
+
+            likeButton.classList.toggle(
+                "liked",
+                liked
+            );
+
+            likeButton.title =
+                liked
+                    ? "Убрать лайк"
+                    : "Поставить лайк";
+
+            likeCount.textContent =
+                formatCount(likesCount);
+        }
+
+        const likeCount =
+            document.createElement("span");
+
+        likeCount.className =
+            "reel-action-text";
+
+        likeButton.addEventListener(
+            "click",
+            async function (event) {
+                event.stopPropagation();
+
+                likeButton.disabled =
+                    true;
+
+                const endpoint =
+                    "/api/posts/"
+                    + post.id
+                    + (
+                        liked
+                            ? "/unlike/"
+                            : "/like/"
+                    );
+
+                try {
+                    const response =
+                        await fetch(
+                            endpoint,
+                            {
+                                method: liked
+                                    ? "DELETE"
+                                    : "POST",
+                                headers:
+                                    authHeaders(false)
+                            }
+                        );
+
+                    const data =
+                        await readJson(response);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            errorText(
+                                data,
+                                "Не удалось изменить лайк."
+                            )
+                        );
+                    }
+
+                    liked =
+                        !liked;
+
+                    likesCount =
+                        data.likes_count
+                        !== undefined
+                            ? Number(
+                                data.likes_count
+                            )
+                            : likesCount
+                                + (liked ? 1 : -1);
+
+                    updateLike();
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    likeButton.disabled =
+                        false;
+                }
+            }
+        );
+
+        updateLike();
+
+        likeWrapper.appendChild(
+            likeButton
+        );
+
+        likeWrapper.appendChild(
+            likeCount
+        );
+
+        const commentWrapper =
+            document.createElement("div");
+
+        commentWrapper.className =
+            "reel-action-wrapper";
+
+        const commentButton =
+            document.createElement("button");
+
+        commentButton.type =
+            "button";
+
+        commentButton.className =
+            "reel-action";
+
+        commentButton.textContent =
+            "💬";
+
+        commentButton.title =
+            "Комментарии";
+
+        const commentCount =
+            document.createElement("span");
+
+        commentCount.className =
+            "reel-action-text";
+
+        commentCount.textContent =
+            formatCount(
+                post.comments_count
+            );
+
+        commentButton.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+
+                activePost =
+                    post;
+
+                openComments(post);
+            }
+        );
+
+        commentWrapper.appendChild(
+            commentButton
+        );
+
+        commentWrapper.appendChild(
+            commentCount
+        );
+
+        const profileWrapper =
+            document.createElement("div");
+
+        profileWrapper.className =
+            "reel-action-wrapper";
+
+        const profileButton =
+            document.createElement("button");
+
+        profileButton.type =
+            "button";
+
+        profileButton.className =
+            "reel-action";
+
+        profileButton.textContent =
+            "👤";
+
+        profileButton.title =
+            "Открыть профиль автора";
+
+        profileButton.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+
+                if (
+                    post.author
+                    && post.author.id
+                ) {
+                    window.location.href =
+                        "/users/"
+                        + post.author.id
+                        + "/";
+                }
+            }
+        );
+
+        profileWrapper.appendChild(
+            profileButton
+        );
+
+        actions.appendChild(
+            likeWrapper
+        );
+
+        actions.appendChild(
+            commentWrapper
+        );
+
+        actions.appendChild(
+            profileWrapper
+        );
+
+        const progress =
+            document.createElement("div");
+
+        progress.className =
+            "reel-progress";
+
+        const progressValue =
+            document.createElement("div");
+
+        progressValue.className =
+            "reel-progress-value";
+
+        progress.appendChild(
+            progressValue
+        );
+
+        video.addEventListener(
+            "timeupdate",
+            function () {
+                if (
+                    video.duration
+                    && Number.isFinite(
+                        video.duration
+                    )
+                ) {
+                    const percent =
+                        (
+                            video.currentTime
+                            / video.duration
+                        ) * 100;
+
+                    progressValue.style.width =
+                        percent + "%";
+                }
+            }
+        );
+
+        video.addEventListener(
+            "ended",
+            function () {
+                progressValue.style.width =
+                    "100%";
+            }
+        );
+
+        card.appendChild(video);
+        card.appendChild(topGradient);
+        card.appendChild(bottomGradient);
+        card.appendChild(overlayHeader);
+        card.appendChild(pauseIndicator);
+        card.appendChild(content);
+        card.appendChild(actions);
+        card.appendChild(progress);
+
+        return {
+            card: card,
+            video: video
+        };
+    }
+
+    function playActiveVideo(video) {
+    if (activeVideo && activeVideo !== video) {
+        activeVideo.pause();
+    }
+
+    activeVideo = video;
+
+    /*
+     * Звук включён по умолчанию.
+     * Если пользователь ранее его выключил,
+     * видео запускается без звука.
+     */
+    video.muted = !soundEnabled;
+
+    const playPromise = video.play();
+
+    if (playPromise) {
+        playPromise.catch(function (error) {
+            /*
+             * Это стандартное ограничение браузера:
+             * autoplay со звуком запрещён без действия
+             * пользователя.
+             */
+            if (
+                soundEnabled &&
+                error.name === "NotAllowedError"
+            ) {
+                const card =
+                    video.closest(".reel-card");
+
+                const soundButton =
+                    card
+                        ? card.querySelector(
+                            ".video-sound-button"
+                        )
+                        : null;
+
+                if (soundButton) {
+                    soundButton.textContent = "🔊";
+                    soundButton.title =
+                        "Нажмите, чтобы включить видео со звуком";
+                    soundButton.classList.add(
+                        "sound-required"
+                    );
+                }
+            }
+        });
+    }
+
+    const card = video.closest(".reel-card");
+
+    if (card) {
+        card.scrollIntoView({
+            block: "nearest"
+        });
+    }
+}
+
+    function createObserver() {
+        if (observer) {
+            observer.disconnect();
+        }
+
+        observer =
+            new IntersectionObserver(
+                function (entries) {
+                    entries.forEach(
+                        function (entry) {
+                            const video =
+                                entry.target;
+
+                            if (
+                                entry.isIntersecting
+                                && entry.intersectionRatio
+                                    >= .75
+                            ) {
+                                playActiveVideo(
+                                    video
+                                );
+                            } else {
+                                video.pause();
+                            }
+                        }
+                    );
+                },
+                {
+                    threshold: [.75]
+                }
+            );
+
+        feed.querySelectorAll(
+            ".reel-video"
+        ).forEach(
+            function (video) {
+                observer.observe(video);
+            }
+        );
+    }
+
+    async function loadReels() {
+        try {
+            const response =
+                await fetch(
+                    "/api/reels/",
+                    {
+                        method: "GET",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось загрузить Reels."
+                    )
+                );
+            }
+
+            const reels =
+                Array.isArray(data)
+                    ? data
+                    : data.results || [];
+
+            feed.innerHTML =
+                "";
+
+            let renderedCount =
+                0;
+
+            reels.forEach(
+                function (post) {
+                    const result =
+                        createReelCard(post);
+
+                    if (!result) {
+                        return;
+                    }
+
+                    renderedCount += 1;
+
+                    feed.appendChild(
+                        result.card
+                    );
+                }
+            );
+
+            if (!renderedCount) {
+                const empty =
+                    document.createElement("div");
+
+                empty.className =
+                    "reels-empty";
+
+                empty.textContent =
+                    "Рекомендаций пока нет.";
+
+                feed.appendChild(empty);
+
+                return;
+            }
+
+            createObserver();
+
+            const firstVideo =
+                feed.querySelector(
+                    ".reel-video"
+                );
+
+            if (firstVideo) {
+                playActiveVideo(
+                    firstVideo
+                );
+            }
+        } catch (error) {
+            feed.innerHTML =
+                "";
+
+            const errorElement =
+                document.createElement("div");
+
+            errorElement.className =
+                "reels-error";
+
+            errorElement.textContent =
+                error.message;
+
+            feed.appendChild(
+                errorElement
+            );
+        }
+    }
+
+    function openComments(post) {
+        commentsModal.hidden =
+            false;
+
+        commentError.textContent =
+            "";
+
+        commentInput.value =
+            "";
+
+        loadComments(post);
+
+        setTimeout(
+            function () {
+                commentInput.focus();
+            },
+            50
+        );
+    }
+
+    function closeComments() {
+        commentsModal.hidden =
+            true;
+
+        activePost =
+            null;
+    }
+
+    async function loadComments(post) {
+        commentsList.innerHTML =
+            '<div class="comments-loading">'
+            + "Загружаем комментарии..."
+            + "</div>";
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/"
+                    + post.id
+                    + "/comments/",
+                    {
+                        method: "GET",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось загрузить комментарии."
+                    )
+                );
+            }
+
+            const comments =
+                Array.isArray(data)
+                    ? data
+                    : data.results || [];
+
+            commentsList.innerHTML =
+                "";
+
+            if (!comments.length) {
+                commentsList.innerHTML =
+                    '<div class="comments-empty">'
+                    + "Комментариев пока нет."
+                    + "</div>";
+
+                return;
+            }
+
+            comments.forEach(
+                function (comment) {
+                    const item =
+                        document.createElement("div");
+
+                    item.className =
+                        "comment-item";
+
+                    const author =
+                        document.createElement("span");
+
+                    author.className =
+                        "comment-author";
+
+                    author.textContent =
+                        authorName(
+                            comment.author
+                        );
+
+                    const text =
+                        document.createElement("div");
+
+                    text.className =
+                        "comment-text";
+
+                    text.textContent =
+                        comment.text || "";
+
+                    item.appendChild(
+                        author
+                    );
+
+                    item.appendChild(
+                        text
+                    );
+
+                    commentsList.appendChild(
+                        item
+                    );
+                }
+            );
+        } catch (error) {
+            commentsList.innerHTML =
+                "";
+
+            commentError.textContent =
+                error.message;
+        }
+    }
+
+    commentForm.addEventListener(
+        "submit",
+        async function (event) {
+            event.preventDefault();
+
+            if (!activePost) {
+                return;
+            }
+
+            const text =
+                commentInput.value.trim();
+
+            if (!text) {
+                return;
+            }
+
+            const submitButton =
+                commentForm.querySelector(
+                    "button"
+                );
+
+            submitButton.disabled =
+                true;
+
+            commentError.textContent =
+                "";
+
+            try {
+                const response =
+                    await fetch(
+                        "/api/posts/"
+                        + activePost.id
+                        + "/comments/",
+                        {
+                            method: "POST",
+                            headers: authHeaders(true),
+                            body: JSON.stringify({
+                                text: text
+                            })
+                        }
+                    );
+
+                const data =
+                    await readJson(response);
+
+                if (!response.ok) {
+                    throw new Error(
+                        errorText(
+                            data,
+                            "Не удалось добавить комментарий."
+                        )
+                    );
+                }
+
+                commentInput.value =
+                    "";
+
+                await loadComments(
+                    activePost
+                );
+            } catch (error) {
+                commentError.textContent =
+                    error.message;
+            } finally {
+                submitButton.disabled =
+                    false;
+            }
+        }
+    );
+
+    closeCommentsButton.addEventListener(
+        "click",
+        closeComments
+    );
+
+    commentsModal.addEventListener(
+        "click",
+        function (event) {
+            if (
+                event.target === commentsModal
+            ) {
+                closeComments();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key === "Escape"
+            ) {
+                closeComments();
+            }
+        }
+    );
+
+    loadReels();
+})();
+</script>
+
+{% endblock %}

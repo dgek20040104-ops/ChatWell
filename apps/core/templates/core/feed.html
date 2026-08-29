@@ -1,0 +1,4910 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+    Лента — ChatWell
+{% endblock %}
+
+{% block body %}
+
+<header class="cw-header">
+    <div class="cw-header-inner">
+        <a
+            href="/feed/"
+            class="cw-logo"
+        >
+            ChatWell
+        </a>
+
+        <div class="cw-header-actions">
+            <a
+                href="/notifications/"
+                class="cw-notification-link"
+                title="Уведомления"
+            >
+                ♡
+
+                <span
+                    id="notification-count"
+                    class="cw-notification-count"
+                    hidden
+                >
+                    0
+                </span>
+            </a>
+
+            <div class="cw-profile-wrapper">
+                <button
+                    id="profile-menu-button"
+                    class="cw-header-avatar-button"
+                    type="button"
+                    aria-expanded="false"
+                >
+                    <span
+                        id="header-avatar"
+                        class="cw-header-avatar"
+                    >
+                        ?
+                    </span>
+                </button>
+
+                <div
+                    id="profile-menu"
+                    class="cw-profile-menu"
+                    hidden
+                >
+                    <div class="cw-profile-user">
+                        <strong id="header-user-name">
+                            Пользователь
+                        </strong>
+
+                        <span id="header-user-username">
+                            @username
+                        </span>
+                    </div>
+
+                    <a
+                        href="/profile/"
+                        class="cw-profile-link"
+                    >
+                        ◉ Профиль
+                    </a>
+
+                    <a
+                        href="/settings/"
+                        class="cw-profile-link"
+                    >
+                        ⚙ Настройки
+                    </a>
+
+                    <button
+                        id="logout-button"
+                        class="cw-profile-link cw-logout-button"
+                        type="button"
+                    >
+                        ↪ Выйти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="cw-main">
+    <div class="cw-layout">
+        <aside class="cw-sidebar">
+            <nav class="cw-menu">
+                <a
+                    href="/feed/"
+                    class="cw-menu-link active"
+                >
+                    <span class="cw-menu-icon">⌂</span>
+                    Лента
+                </a>
+
+                <a
+                    href="/people/"
+                    class="cw-menu-link"
+                >
+                    <span class="cw-menu-icon">⌕</span>
+                    Люди
+                </a>
+
+                <a
+                    href="/chat/"
+                    class="cw-menu-link"
+                >
+                    <span class="cw-menu-icon">✉</span>
+                    Сообщения
+                </a>
+
+                 <a
+    href="/reels/"
+    class="cw-menu-link"
+>
+    <span class="cw-menu-icon">▶</span>
+    Reels
+</a>
+
+                <a
+                    href="/notifications/"
+                    class="cw-menu-link"
+                >
+                    <span class="cw-menu-icon">♡</span>
+                    Уведомления
+                </a>
+
+                <a
+                    href="/profile/"
+                    class="cw-menu-link"
+                >
+                    <span class="cw-menu-icon">◉</span>
+                    Профиль
+                </a>
+
+                <a
+                    href="/settings/"
+                    class="cw-menu-link"
+                >
+                    <span class="cw-menu-icon">⚙</span>
+                    Настройки
+                </a>
+            </nav>
+        </aside>
+
+        <section class="cw-content">
+            <h1 class="cw-page-title">
+                Лента
+            </h1>
+
+            <!-- ИСТОРИИ -->
+            <section class="cw-card cw-stories-card">
+                <div class="cw-section-header">
+                    <h2 class="cw-section-title">
+                        Истории
+                    </h2>
+
+                    <button
+                        id="add-story-button"
+                        class="cw-text-button"
+                        type="button"
+                    >
+                        Добавить
+                    </button>
+                </div>
+
+                <div
+                    id="stories-list"
+                    class="cw-stories-list"
+                >
+                    <button
+                        id="my-story-button"
+                        class="cw-story-item"
+                        type="button"
+                    >
+                        <span
+                            id="my-story-avatar"
+                            class="cw-story-avatar cw-story-add-avatar"
+                        >
+                            +
+                        </span>
+
+                        <span class="cw-story-name">
+                            Ваша история
+                        </span>
+                    </button>
+
+                    <span
+                        id="stories-loading"
+                        class="cw-stories-loading"
+                    >
+                        Загружаем...
+                    </span>
+                </div>
+            </section>
+
+            <!-- СОЗДАНИЕ ПУБЛИКАЦИИ -->
+            <section class="cw-card cw-create-post">
+                <form id="create-post-form">
+                    <div class="cw-composer">
+                        <textarea
+                            id="post-text"
+                            class="cw-textarea"
+                            maxlength="5000"
+                            placeholder="Что у вас нового?"
+                        ></textarea>
+
+                        <div
+                            id="emoji-picker"
+                            class="cw-emoji-picker"
+                            hidden
+                        >
+                            <button type="button">😀</button>
+                            <button type="button">😂</button>
+                            <button type="button">😍</button>
+                            <button type="button">🔥</button>
+                            <button type="button">❤️</button>
+                            <button type="button">👍</button>
+                            <button type="button">🎉</button>
+                            <button type="button">😮</button>
+                            <button type="button">😢</button>
+                            <button type="button">🤔</button>
+                            <button type="button">🥳</button>
+                            <button type="button">✨</button>
+                        </div>
+                    </div>
+
+                    <div class="cw-create-footer">
+                        <div class="cw-create-tools">
+                            <button
+                                id="emoji-button"
+                                class="cw-tool-button"
+                                type="button"
+                            >
+                                😊
+                            </button>
+
+                            <label class="cw-file-input">
+                                Фото или видео
+
+                                <input
+    id="post-media"
+    type="file"
+    multiple
+    accept="
+        image/jpeg,
+        image/png,
+        image/webp,
+        video/mp4,
+        video/webm,
+        video/quicktime
+    "
+>
+                            </label>
+
+                            <label class="cw-reel-checkbox">
+                                <input
+                                    id="reel-input"
+                                    type="checkbox"
+                                >
+
+                                <span>
+                                    Reel
+                                </span>
+                            </label>
+                        </div>
+
+                        <span id="counter">
+                            0 / 5000
+                        </span>
+
+                        <button
+                            id="create-button"
+                            class="cw-button"
+                            type="submit"
+                        >
+                            Опубликовать
+                        </button>
+                    </div>
+                </form>
+
+                <div
+                    id="create-message"
+                    class="cw-message"
+                ></div>
+            </section>
+
+            <!-- ЛЕНТА -->
+            <section
+                id="posts-container"
+                class="cw-feed"
+            >
+                <div class="cw-empty">
+                    Загружаем публикации...
+                </div>
+            </section>
+        </section>
+
+        <aside class="cw-right-sidebar">
+            <div class="cw-card cw-card-padding">
+                <h2 class="cw-section-title">
+                    Добро пожаловать
+                </h2>
+
+                <p class="cw-muted-text">
+                    Публикуйте записи, добавляйте
+                    истории и общайтесь с друзьями.
+                </p>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<!-- МОБИЛЬНАЯ НАВИГАЦИЯ -->
+<nav class="cw-mobile-nav">
+    <a
+        href="/feed/"
+        class="active"
+    >
+        <span>⌂</span>
+        Лента
+    </a>
+
+    <a href="/people/">
+        <span>⌕</span>
+        Люди
+    </a>
+
+    <a href="/chat/">
+        <span>✉</span>
+        Чаты
+    </a>
+
+    <a href="/notifications/">
+        <span>♡</span>
+        Уведомления
+    </a>
+
+    <a href="/profile/">
+        <span>◉</span>
+        Профиль
+    </a>
+</nav>
+
+<!-- РЕДАКТОР ИСТОРИИ -->
+<div
+    id="story-editor-modal"
+    class="cw-modal"
+    hidden
+>
+    <div class="cw-story-editor">
+        <button
+            id="close-story-editor"
+            class="cw-close-button"
+            type="button"
+        >
+            ×
+        </button>
+
+        <h2>
+            Новая история
+        </h2>
+
+        <label class="cw-story-file-label">
+            Выберите фото или видео
+
+            <input
+                id="story-media"
+                type="file"
+                accept="
+                    image/jpeg,
+                    image/png,
+                    image/webp,
+                    video/mp4,
+                    video/webm,
+                    video/quicktime
+                "
+            >
+        </label>
+
+        <p class="cw-video-hint">
+            Видео для истории — максимум 60 секунд.
+        </p>
+
+        <div
+            id="story-editor-stage"
+            class="cw-story-editor-stage"
+        >
+            <div class="cw-editor-placeholder">
+                Выберите фото или видео
+            </div>
+        </div>
+
+        <div class="cw-story-tools">
+            <button
+                id="add-story-text"
+                type="button"
+                class="cw-editor-tool"
+            >
+                T Текст
+            </button>
+
+            <button
+                id="add-story-emoji"
+                type="button"
+                class="cw-editor-tool"
+            >
+                😊 Эмодзи
+            </button>
+
+            <button
+                id="change-story-color"
+                type="button"
+                class="cw-editor-tool"
+            >
+                🎨 Цвет
+            </button>
+        </div>
+
+        <div
+            id="story-emoji-panel"
+            class="cw-story-emoji-panel"
+            hidden
+        >
+            <button type="button">😀</button>
+            <button type="button">😂</button>
+            <button type="button">😍</button>
+            <button type="button">🔥</button>
+            <button type="button">❤️</button>
+            <button type="button">🎉</button>
+            <button type="button">✨</button>
+            <button type="button">🥳</button>
+            <button type="button">😎</button>
+        </div>
+
+        <input
+            id="story-text-input"
+            class="cw-input"
+            type="text"
+            maxlength="150"
+            placeholder="Введите текст декорации"
+            hidden
+        >
+
+        <div
+            id="story-editor-message"
+            class="cw-message"
+        ></div>
+
+        <button
+            id="publish-story-button"
+            class="cw-button cw-full-button"
+            type="button"
+        >
+            Опубликовать историю
+        </button>
+    </div>
+</div>
+
+<!-- ПРОСМОТР ИСТОРИИ -->
+<div
+    id="story-viewer"
+    class="cw-story-viewer"
+    hidden
+>
+    <button
+        id="close-story-viewer"
+        class="cw-viewer-close"
+        type="button"
+    >
+        ×
+    </button>
+
+    <button
+        id="previous-story"
+        class="cw-story-arrow cw-story-arrow-left"
+        type="button"
+    >
+        ‹
+    </button>
+
+    <div
+    id="story-viewer-card"
+    class="cw-story-viewer-card"
+>
+    <div
+        id="story-progress-list"
+        class="cw-story-progress-list"
+    ></div>
+
+    <div
+        id="story-viewer-content"
+        class="cw-story-viewer-content"
+    ></div>
+
+    <div
+        id="story-viewer-author"
+        class="cw-story-viewer-author"
+    ></div>
+
+    <button
+        id="delete-story-button"
+        class="cw-delete-story-button"
+        type="button"
+        hidden
+    >
+        Удалить историю
+    </button>
+
+    <div
+        id="story-reactions"
+        class="cw-story-reactions"
+    >
+        <button
+            type="button"
+            data-reaction="heart"
+        >
+            ❤️
+        </button>
+
+        <button
+            type="button"
+            data-reaction="laugh"
+        >
+            😂
+        </button>
+
+        <button
+            type="button"
+            data-reaction="love"
+        >
+            😍
+        </button>
+
+        <button
+            type="button"
+            data-reaction="wow"
+        >
+            😮
+        </button>
+
+        <button
+            type="button"
+            data-reaction="sad"
+        >
+            😢
+        </button>
+
+        <button
+            type="button"
+            data-reaction="fire"
+        >
+            🔥
+        </button>
+    </div>
+</div>
+
+    <button
+        id="next-story"
+        class="cw-story-arrow cw-story-arrow-right"
+        type="button"
+    >
+        ›
+    </button>
+</div>
+
+<style>
+    [hidden] {
+        display: none !important;
+    }
+
+    .cw-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cw-notification-link {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--cw-border);
+        border-radius: 50%;
+        color: var(--cw-text);
+        font-size: 25px;
+        text-decoration: none;
+        transition:
+            color .2s ease,
+            background .2s ease,
+            transform .2s ease;
+    }
+
+    .cw-notification-link:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+        transform: translateY(-2px);
+    }
+
+    .cw-notification-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        min-width: 18px;
+        height: 18px;
+        padding: 2px 5px;
+        border: 2px solid var(--cw-bg);
+        border-radius: 20px;
+        background: #e53935;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .cw-header-avatar-button {
+        padding: 2px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .cw-header-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        overflow: hidden;
+        border: 2px solid var(--cw-primary);
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            var(--cw-primary),
+            #a78bfa
+        );
+        color: white;
+        font-weight: 800;
+    }
+
+    .cw-header-avatar img,
+    .cw-story-avatar img,
+    .cw-avatar-sm img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .cw-profile-wrapper {
+        position: relative;
+    }
+
+    .cw-profile-menu {
+        position: absolute;
+        top: 52px;
+        right: 0;
+        z-index: 100;
+        width: 230px;
+        padding: 8px;
+        border: 1px solid var(--cw-border);
+        border-radius: 16px;
+        background: var(--cw-surface);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
+    }
+
+    .cw-profile-user {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 12px;
+        border-bottom: 1px solid var(--cw-border);
+    }
+
+    .cw-profile-user span {
+        color: var(--cw-muted);
+        font-size: 12px;
+    }
+
+    .cw-profile-link {
+        display: block;
+        width: 100%;
+        padding: 11px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--cw-text);
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+        text-decoration: none;
+    }
+
+    .cw-profile-link:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+    }
+
+    .cw-logout-button {
+        color: #dc3545;
+    }
+
+    .cw-stories-card {
+        margin-bottom: 18px;
+        padding: 16px;
+    }
+
+    .cw-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .cw-section-header .cw-section-title {
+        margin: 0;
+    }
+
+    .cw-text-button {
+        border: 0;
+        background: transparent;
+        color: var(--cw-primary);
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    .cw-stories-list {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        padding-bottom: 3px;
+    }
+
+    .cw-story-item {
+        display: flex;
+        flex: 0 0 75px;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        border: 0;
+        background: transparent;
+        color: var(--cw-text);
+        cursor: pointer;
+    }
+
+    .cw-story-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        padding: 3px;
+        overflow: hidden;
+        border: 3px solid var(--cw-primary);
+        border-radius: 50%;
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+        font-size: 25px;
+        font-weight: 700;
+    }
+
+    .cw-story-add-avatar {
+        border-style: dashed;
+    }
+
+    .cw-story-name {
+        max-width: 75px;
+        overflow: hidden;
+        color: var(--cw-muted);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cw-stories-loading {
+        align-self: center;
+        color: var(--cw-muted);
+        font-size: 12px;
+    }
+
+    .cw-create-tools {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .cw-tool-button,
+    .cw-editor-tool {
+        padding: 8px 11px;
+        border: 1px solid var(--cw-border);
+        border-radius: 10px;
+        background: var(--cw-surface);
+        color: var(--cw-text);
+        cursor: pointer;
+    }
+
+    .cw-tool-button:hover,
+    .cw-editor-tool:hover {
+        border-color: var(--cw-primary);
+        color: var(--cw-primary);
+    }
+
+    .cw-file-input {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 11px;
+        border: 1px solid var(--cw-border);
+        border-radius: 10px;
+        color: var(--cw-text);
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .cw-file-input:hover {
+        border-color: var(--cw-primary);
+        color: var(--cw-primary);
+    }
+
+    .cw-file-input input {
+        display: none;
+    }
+
+    .cw-reel-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--cw-text);
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .cw-reel-checkbox input {
+        accent-color: var(--cw-primary);
+    }
+
+    .cw-emoji-picker,
+    .cw-story-emoji-panel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 8px;
+        border: 1px solid var(--cw-border);
+        border-radius: 12px;
+        background: var(--cw-surface);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, .12);
+    }
+
+    .cw-emoji-picker {
+        position: absolute;
+        bottom: -50px;
+        left: 0;
+        z-index: 20;
+        width: 230px;
+    }
+
+    .cw-emoji-picker button,
+    .cw-story-emoji-panel button {
+        padding: 6px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    .cw-emoji-picker button:hover,
+    .cw-story-emoji-panel button:hover {
+        background: var(--cw-primary-soft);
+    }
+
+    .cw-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .cw-post {
+        padding: 18px;
+        border: 1px solid var(--cw-border);
+        border-radius: 18px;
+        background: var(--cw-surface);
+        animation: post-appear .35s ease both;
+    }
+
+    @keyframes post-appear {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .cw-post-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .cw-post-author {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-width: 0;
+        color: var(--cw-text);
+        text-decoration: none;
+    }
+
+    .cw-post-author:hover {
+        color: var(--cw-primary);
+    }
+
+    .cw-avatar-sm {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        overflow: hidden;
+        flex: 0 0 38px;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            var(--cw-primary),
+            #a78bfa
+        );
+        color: white;
+        font-weight: 700;
+    }
+
+    .cw-post-date {
+        color: var(--cw-muted);
+        font-size: 12px;
+    }
+
+    .cw-post-text {
+        margin: 0 0 13px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .cw-post-media-carousel {
+        position: relative;
+        min-height: 280px;
+        overflow: hidden;
+        border-radius: 14px;
+        background: #11111b;
+    }
+
+    .cw-post-media {
+        display: block;
+        width: 100%;
+        height: 520px;
+        object-fit: contain;
+        background: #11111b;
+    }
+
+    .cw-media-counter {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 5;
+        padding: 5px 9px;
+        border-radius: 9px;
+        background: rgba(0, 0, 0, .58);
+        color: white;
+        font-size: 12px;
+    }
+
+    .cw-media-arrow {
+        position: absolute;
+        top: 50%;
+        z-index: 5;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, .55);
+        color: white;
+        cursor: pointer;
+        font-size: 28px;
+        line-height: 1;
+        transform: translateY(-50%);
+    }
+
+    .cw-media-arrow:hover {
+        background: var(--cw-primary);
+    }
+
+    .cw-media-arrow-left {
+        left: 10px;
+    }
+
+    .cw-media-arrow-right {
+        right: 10px;
+    }
+
+    .cw-post-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 12px;
+    }
+
+    .cw-action-button {
+        padding: 5px 0;
+        border: 0;
+        background: transparent;
+        color: var(--cw-muted);
+        cursor: pointer;
+        font: inherit;
+    }
+
+    .cw-action-button:hover,
+    .cw-action-button.liked {
+        color: #e53935;
+    }
+
+    .cw-comment-list {
+        margin-top: 12px;
+    }
+
+    .cw-comment {
+        padding: 9px 0;
+        border-bottom: 1px solid var(--cw-border);
+    }
+
+    .cw-comment small {
+        color: var(--cw-muted);
+    }
+
+    .cw-delete-post-button {
+        margin-top: 13px;
+        padding: 8px 11px;
+        border: 0;
+        border-radius: 9px;
+        background: #fff0f1;
+        color: #dc3545;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+    }
+
+    .cw-delete-post-button:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .cw-modal,
+    .cw-story-viewer {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(12, 12, 25, .78);
+        opacity: 0;
+        transition: opacity .28s ease;
+    }
+
+    .cw-modal:not([hidden]),
+    .cw-story-viewer:not([hidden]) {
+        opacity: 1;
+    }
+
+    .cw-story-editor {
+        position: relative;
+        width: min(100%, 480px);
+        max-height: 95vh;
+        overflow-y: auto;
+        padding: 24px;
+        border-radius: 22px;
+        background: var(--cw-surface);
+        transform: scale(.94);
+        transition: transform .28s ease;
+    }
+
+    .cw-modal:not([hidden]) .cw-story-editor {
+        transform: scale(1);
+    }
+
+    .cw-close-button,
+    .cw-viewer-close {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .2);
+        color: white;
+        cursor: pointer;
+        font-size: 30px;
+    }
+
+    .cw-close-button {
+        color: var(--cw-muted);
+    }
+
+    .cw-story-file-label {
+        display: block;
+        margin: 14px 0 5px;
+        padding: 12px;
+        border: 1px dashed var(--cw-primary);
+        border-radius: 12px;
+        color: var(--cw-primary);
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .cw-story-file-label input {
+        display: none;
+    }
+
+    .cw-video-hint {
+        margin: 0 0 12px;
+        color: var(--cw-muted);
+        font-size: 12px;
+    }
+
+    .cw-story-editor-stage {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 390px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: #151522;
+    }
+
+    .cw-story-editor-stage img,
+    .cw-story-editor-stage video {
+        display: block;
+        width: 100%;
+        max-height: 520px;
+        object-fit: contain;
+    }
+
+    .cw-editor-placeholder {
+        padding: 30px;
+        color: #aaa;
+        text-align: center;
+    }
+
+    .cw-story-decoration {
+        position: absolute;
+        z-index: 10;
+        padding: 4px 8px;
+        color: white;
+        cursor: move;
+        font-size: 28px;
+        font-weight: 700;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, .75);
+        user-select: none;
+        touch-action: none;
+    }
+
+    .cw-story-decoration.selected {
+        outline: 2px dashed white;
+        outline-offset: 4px;
+    }
+
+    .cw-story-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .cw-full-button {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .cw-story-viewer-card {
+        position: relative;
+        width: min(92vw, 520px);
+        height: min(86vh, 760px);
+        overflow: hidden;
+        border-radius: 20px;
+        background: #11111b;
+        transform: scale(.94);
+        transition: transform .28s ease;
+    }
+
+    .cw-story-viewer:not([hidden])
+    .cw-story-viewer-card {
+        transform: scale(1);
+    }
+
+    .cw-story-viewer-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .cw-story-viewer-content > img,
+    .cw-story-viewer-content > video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .cw-viewer-decoration {
+        position: absolute;
+        z-index: 10;
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        pointer-events: none;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, .8);
+        transform: translate(-50%, -50%);
+    }
+
+    .cw-story-viewer-author {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 20;
+        padding: 7px 10px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, .52);
+        color: white;
+        font-size: 13px;
+    }
+
+    .cw-delete-story-button {
+        position: absolute;
+        top: 55px;
+        left: 16px;
+        z-index: 30;
+        padding: 9px 12px;
+        border: 0;
+        border-radius: 10px;
+        background: rgba(220, 53, 69, .9);
+        color: white;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+    }
+
+    .cw-delete-story-button:hover {
+        background: #b02a37;
+    }
+
+    .cw-story-reactions {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        left: 15px;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .cw-story-reactions button {
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .22);
+        cursor: pointer;
+        font-size: 20px;
+        transition: transform .15s ease;
+    }
+
+    .cw-story-reactions button:hover {
+        background: rgba(255, 255, 255, .4);
+        transform: scale(1.18);
+    }
+
+    .cw-story-arrow {
+        position: absolute;
+        top: 50%;
+        z-index: 220;
+        width: 45px;
+        height: 45px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .25);
+        color: white;
+        cursor: pointer;
+        font-size: 35px;
+        line-height: 1;
+        transform: translateY(-50%);
+    }
+
+    .cw-story-arrow-left {
+        left: 25px;
+    }
+
+    .cw-story-arrow-right {
+        right: 25px;
+    }
+
+    @media (max-width: 800px) {
+        .cw-sidebar,
+        .cw-right-sidebar {
+            display: none;
+        }
+
+        .cw-post-media {
+            height: 390px;
+        }
+
+        .cw-story-arrow-left {
+            left: 8px;
+        }
+
+        .cw-story-arrow-right {
+            right: 8px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .cw-header-actions .cw-notification-link {
+            display: none;
+        }
+
+        .cw-post {
+            padding: 14px;
+        }
+
+        .cw-post-media {
+            height: 330px;
+        }
+
+        .cw-story-editor-stage {
+            min-height: 330px;
+        }
+
+        .cw-create-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .cw-create-footer #create-button {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    const accessToken = localStorage.getItem(
+        "chatwell_access_token"
+    );
+
+    if (!accessToken) {
+        window.location.href = "/register/";
+    }
+
+    const $ = function (selector) {
+        return document.querySelector(selector);
+    };
+
+    const postsContainer = $(
+        "#posts-container"
+    );
+
+    const postText = $(
+        "#post-text"
+    );
+
+    const postMedia = $(
+        "#post-media"
+    );
+
+    const reelInput = $(
+        "#reel-input"
+    );
+
+    const createPostForm = $(
+        "#create-post-form"
+    );
+
+    const createMessage = $(
+        "#create-message"
+    );
+
+    const counter = $(
+        "#counter"
+    );
+
+    const profileMenuButton = $(
+        "#profile-menu-button"
+    );
+
+    const profileMenu = $(
+        "#profile-menu"
+    );
+
+    const storyEditorModal = $(
+        "#story-editor-modal"
+    );
+
+    const storyViewer = $(
+        "#story-viewer"
+    );
+
+    const storyEditorStage = $(
+        "#story-editor-stage"
+    );
+
+    const storyMedia = $(
+        "#story-media"
+    );
+
+    const storyEditorMessage = $(
+        "#story-editor-message"
+    );
+
+    const storyEmojiPanel = $(
+        "#story-emoji-panel"
+    );
+
+    const deleteStoryButton = $(
+        "#delete-story-button"
+    );
+
+    const storyViewerAuthor = $(
+        "#story-viewer-author"
+    );
+
+    /*
+     * Эти элементы могут уже существовать в HTML.
+     * Если их нет, скрипт создаст их автоматически.
+     */
+    const storyViewerCard = $(
+        "#story-viewer-card"
+    );
+
+    let storyProgressList = $(
+        "#story-progress-list"
+    );
+
+    if (!storyProgressList && storyViewerCard) {
+        storyProgressList =
+            document.createElement("div");
+
+        storyProgressList.id =
+            "story-progress-list";
+
+        storyProgressList.className =
+            "cw-story-progress-list";
+
+        storyViewerCard.appendChild(
+            storyProgressList
+        );
+    }
+
+    let storySeek = $(
+        "#story-seek"
+    );
+
+    if (!storySeek && storyViewerCard) {
+        storySeek =
+            document.createElement("input");
+
+        storySeek.id =
+            "story-seek";
+
+        storySeek.type = "range";
+        storySeek.min = "0";
+        storySeek.max = "100";
+        storySeek.step = "0.01";
+        storySeek.value = "0";
+        storySeek.className =
+            "cw-story-seek";
+
+        storyViewerCard.appendChild(
+            storySeek
+        );
+    }
+
+    let storyTime = $(
+        "#story-time"
+    );
+
+    if (!storyTime && storyViewerCard) {
+        storyTime =
+            document.createElement("span");
+
+        storyTime.id =
+            "story-time";
+
+        storyTime.className =
+            "cw-story-time";
+
+        storyViewerCard.appendChild(
+            storyTime
+        );
+    }
+
+    const storyViewerContent = $(
+        "#story-viewer-content"
+    );
+
+    let currentUser = null;
+    let currentUserId = null;
+
+    let stories = [];
+    let storyGroups = [];
+
+    let currentStoryGroupIndex = 0;
+    let currentStoryMediaIndex = 0;
+
+    let decorations = [];
+    let selectedDecoration = null;
+
+    let storyEditorObjectUrl = null;
+    let activeStoryMedia = null;
+
+    let storyTimer = null;
+    let storyStartedAt = 0;
+    let storyDuration = 0;
+    let isStorySeeking = false;
+
+    const PHOTO_STORY_DURATION = 5;
+    const MAX_STORY_VIDEO_SECONDS = 60;
+    const MAX_REEL_VIDEO_SECONDS = 90;
+
+    function authHeaders(json = false) {
+        const result = {
+            Authorization:
+                "Bearer " + accessToken
+        };
+
+        if (json) {
+            result["Content-Type"] =
+                "application/json";
+        }
+
+        return result;
+    }
+
+    async function readJson(response) {
+        const text =
+            await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return {
+                detail:
+                    "Сервер вернул некорректный ответ."
+            };
+        }
+    }
+
+    function getError(data, fallback) {
+        if (data && data.detail) {
+            return String(data.detail);
+        }
+
+        if (
+            data
+            && typeof data === "object"
+        ) {
+            return Object.entries(data)
+                .map(function (entry) {
+                    const value =
+                        Array.isArray(entry[1])
+                            ? entry[1].join(", ")
+                            : String(entry[1]);
+
+                    return entry[0]
+                        + ": "
+                        + value;
+                })
+                .join(" ");
+        }
+
+        return fallback;
+    }
+
+    function setMessage(
+        element,
+        text,
+        success = false
+    ) {
+        if (!element) {
+            return;
+        }
+
+        element.textContent =
+            text || "";
+
+        element.style.color =
+            success
+                ? "#198754"
+                : "#dc3545";
+    }
+
+    function displayName(user) {
+        if (!user) {
+            return "Пользователь";
+        }
+
+        return user.display_name
+            || user.username
+            || "Пользователь";
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return "";
+        }
+
+        const date =
+            new Date(value);
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return "";
+        }
+
+        return date.toLocaleString(
+            "ru-RU",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+    }
+
+    function openModal(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.hidden = false;
+
+        requestAnimationFrame(
+            function () {
+                modal.style.opacity = "1";
+            }
+        );
+    }
+
+    function closeModal(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.style.opacity = "0";
+
+        setTimeout(
+            function () {
+                modal.hidden = true;
+                modal.style.opacity = "";
+            },
+            280
+        );
+    }
+
+    function setCurrentUser(user) {
+        currentUser = user;
+
+        currentUserId =
+            String(user.id);
+
+        const name =
+            $("#header-user-name");
+
+        const username =
+            $("#header-user-username");
+
+        if (name) {
+            name.textContent =
+                displayName(user);
+        }
+
+        if (username) {
+            username.textContent =
+                user.username
+                    ? "@" + user.username
+                    : "";
+        }
+
+        const headerAvatar =
+            $("#header-avatar");
+
+        const myStoryAvatar =
+            $("#my-story-avatar");
+
+        if (headerAvatar) {
+            headerAvatar.innerHTML = "";
+
+            if (user.avatar) {
+                const image =
+                    document.createElement("img");
+
+                image.src =
+                    user.avatar;
+
+                image.alt =
+                    "Аватар пользователя";
+
+                headerAvatar.appendChild(
+                    image
+                );
+            } else {
+                headerAvatar.textContent =
+                    displayName(user)
+                        .charAt(0)
+                        .toUpperCase();
+            }
+        }
+
+        if (myStoryAvatar) {
+            myStoryAvatar.innerHTML = "";
+
+            if (user.avatar) {
+                const image =
+                    document.createElement("img");
+
+                image.src =
+                    user.avatar;
+
+                image.alt =
+                    "Ваша история";
+
+                myStoryAvatar.appendChild(
+                    image
+                );
+            } else {
+                myStoryAvatar.textContent =
+                    "+";
+            }
+        }
+    }
+
+    function avatarElement(user) {
+        const element =
+            document.createElement("span");
+
+        element.className =
+            "cw-avatar-sm";
+
+        if (
+            user
+            && user.avatar
+        ) {
+            const image =
+                document.createElement("img");
+
+            image.src =
+                user.avatar;
+
+            image.alt =
+                "Аватар";
+
+            element.appendChild(
+                image
+            );
+        } else {
+            element.textContent =
+                displayName(user)
+                    .charAt(0)
+                    .toUpperCase();
+        }
+
+        return element;
+    }
+
+    function mediaUrl(media) {
+        if (!media) {
+            return "";
+        }
+
+        return (
+            media.url
+            || media.file
+            || media.media_url
+            || ""
+        );
+    }
+
+    function isVideoMedia(media) {
+        if (!media) {
+            return false;
+        }
+
+        const type =
+            media.media_type
+            || media.type
+            || "";
+
+        return (
+            type.includes("video")
+            || /\.(mp4|webm|mov)(\?.*)?$/i.test(
+                mediaUrl(media)
+            )
+        );
+    }
+
+    function mediaElement(
+        media,
+        controls = true
+    ) {
+        const url =
+            mediaUrl(media);
+
+        if (!url) {
+            return null;
+        }
+
+        if (isVideoMedia(media)) {
+            const video =
+                document.createElement("video");
+
+            video.className =
+                "cw-post-media";
+
+            video.src = url;
+            video.controls = controls;
+            video.playsInline = true;
+            video.preload = "metadata";
+
+            return video;
+        }
+
+        const image =
+            document.createElement("img");
+
+        image.className =
+            "cw-post-media";
+
+        image.src = url;
+        image.alt =
+            "Медиафайл";
+
+        image.loading =
+            "lazy";
+
+        return image;
+    }
+
+    function postMediaList(post) {
+        if (!post) {
+            return [];
+        }
+
+        if (
+            Array.isArray(post.media)
+        ) {
+            return post.media;
+        }
+
+        if (
+            Array.isArray(
+                post.media_files
+            )
+        ) {
+            return post.media_files;
+        }
+
+        if (
+            Array.isArray(
+                post.media_items
+            )
+        ) {
+            return post.media_items;
+        }
+
+        return [];
+    }
+
+    function createMediaCarousel(
+        mediaItems
+    ) {
+        const wrapper =
+            document.createElement("div");
+
+        wrapper.className =
+            "cw-post-media-carousel";
+
+        let currentIndex = 0;
+
+        function renderMedia() {
+            wrapper.innerHTML = "";
+
+            const media =
+                mediaItems[currentIndex];
+
+            const element =
+                mediaElement(
+                    media,
+                    true
+                );
+
+            if (element) {
+                wrapper.appendChild(
+                    element
+                );
+            }
+
+            if (
+                mediaItems.length <= 1
+            ) {
+                return;
+            }
+
+            const counter =
+                document.createElement("span");
+
+            counter.className =
+                "cw-media-counter";
+
+            counter.textContent =
+                (currentIndex + 1)
+                + " / "
+                + mediaItems.length;
+
+            const previous =
+                document.createElement("button");
+
+            previous.type =
+                "button";
+
+            previous.className =
+                "cw-media-arrow "
+                + "cw-media-arrow-left";
+
+            previous.textContent =
+                "‹";
+
+            previous.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+
+                    currentIndex =
+                        currentIndex === 0
+                            ? mediaItems.length - 1
+                            : currentIndex - 1;
+
+                    renderMedia();
+                }
+            );
+
+            const next =
+                document.createElement("button");
+
+            next.type =
+                "button";
+
+            next.className =
+                "cw-media-arrow "
+                + "cw-media-arrow-right";
+
+            next.textContent =
+                "›";
+
+            next.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+
+                    currentIndex =
+                        currentIndex
+                        === mediaItems.length - 1
+                            ? 0
+                            : currentIndex + 1;
+
+                    renderMedia();
+                }
+            );
+
+            wrapper.appendChild(
+                counter
+            );
+
+            wrapper.appendChild(
+                previous
+            );
+
+            wrapper.appendChild(
+                next
+            );
+        }
+
+        renderMedia();
+
+        return wrapper;
+    }
+
+    async function loadCurrentUser() {
+        const response =
+            await fetch(
+                "/api/auth/me/",
+                {
+                    headers: authHeaders()
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(
+                getError(
+                    data,
+                    "Сессия истекла."
+                )
+            );
+        }
+
+        setCurrentUser(data);
+    }
+
+    async function loadNotifications() {
+        try {
+            const response =
+                await fetch(
+                    "/api/notifications/",
+                    {
+                        headers: authHeaders()
+                    }
+                );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data =
+                await readJson(response);
+
+            const count =
+                Number(
+                    data.unread_count
+                ) || 0;
+
+            const element =
+                $("#notification-count");
+
+            if (!element) {
+                return;
+            }
+
+            element.hidden =
+                count <= 0;
+
+            element.textContent =
+                count > 99
+                    ? "99+"
+                    : String(count);
+        } catch (error) {
+            console.warn(
+                "Уведомления недоступны:",
+                error
+            );
+        }
+    }
+
+    async function loadFeed() {
+        postsContainer.innerHTML =
+            '<div class="cw-empty">'
+            + "Загружаем публикации..."
+            + "</div>";
+
+        const response =
+            await fetch(
+                "/api/posts/feed/",
+                {
+                    headers: authHeaders()
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(
+                getError(
+                    data,
+                    "Не удалось загрузить ленту."
+                )
+            );
+        }
+
+        const posts =
+            Array.isArray(data)
+                ? data
+                : data.results
+                    || data.posts
+                    || [];
+
+        postsContainer.innerHTML =
+            "";
+
+        if (!posts.length) {
+            postsContainer.innerHTML =
+                '<div class="cw-empty">'
+                + "Лента пока пустая."
+                + "</div>";
+
+            return;
+        }
+
+        posts.forEach(
+            function (post, index) {
+                postsContainer.appendChild(
+                    createPostCard(
+                        post,
+                        index
+                    )
+                );
+            }
+        );
+    }
+
+    function createPostCard(
+        post,
+        index
+    ) {
+        const card =
+            document.createElement("article");
+
+        card.className =
+            "cw-post";
+
+        card.style.animationDelay =
+            Math.min(
+                index * 45,
+                350
+            ) + "ms";
+
+        const header =
+            document.createElement("div");
+
+        header.className =
+            "cw-post-header";
+
+        const author =
+            document.createElement("a");
+
+        author.className =
+            "cw-post-author";
+
+        if (
+            post.author
+            && post.author.id
+        ) {
+            author.href =
+                "/users/"
+                + post.author.id
+                + "/";
+        } else {
+            author.href = "#";
+        }
+
+        author.appendChild(
+            avatarElement(
+                post.author
+            )
+        );
+
+        const authorName =
+            document.createElement("strong");
+
+        authorName.textContent =
+            displayName(
+                post.author
+            );
+
+        author.appendChild(
+            authorName
+        );
+
+        const date =
+            document.createElement("time");
+
+        date.className =
+            "cw-post-date";
+
+        date.textContent =
+            formatDate(
+                post.created_at
+            );
+
+        header.appendChild(
+            author
+        );
+
+        header.appendChild(
+            date
+        );
+
+        card.appendChild(
+            header
+        );
+
+        if (post.text) {
+            const text =
+                document.createElement("p");
+
+            text.className =
+                "cw-post-text";
+
+            text.textContent =
+                post.text;
+
+            card.appendChild(
+                text
+            );
+        }
+
+        const mediaItems =
+            postMediaList(post);
+
+        if (mediaItems.length) {
+            card.appendChild(
+                createMediaCarousel(
+                    mediaItems
+                )
+            );
+        }
+
+        const actions =
+            document.createElement("div");
+
+        actions.className =
+            "cw-post-actions";
+
+        const likeButton =
+            document.createElement("button");
+
+        likeButton.type =
+            "button";
+
+        likeButton.className =
+            "cw-action-button";
+
+        const commentsButton =
+            document.createElement("button");
+
+        commentsButton.type =
+            "button";
+
+        commentsButton.className =
+            "cw-action-button";
+
+        let liked =
+            Boolean(
+                post.liked_by_me
+                || post.is_liked
+            );
+
+        let likesCount =
+            Number(
+                post.likes_count
+                || post.likes
+                || 0
+            );
+
+        let commentsCount =
+            Number(
+                post.comments_count
+                || 0
+            );
+
+        function updateActions() {
+            likeButton.textContent =
+                (liked ? "♥ " : "♡ ")
+                + likesCount;
+
+            likeButton.classList.toggle(
+                "liked",
+                liked
+            );
+
+            commentsButton.textContent =
+                "Комментарии "
+                + commentsCount;
+        }
+
+        updateActions();
+
+        likeButton.addEventListener(
+            "click",
+            async function () {
+                likeButton.disabled =
+                    true;
+
+                const endpoint =
+                    "/api/posts/"
+                    + post.id
+                    + (
+                        liked
+                            ? "/unlike/"
+                            : "/like/"
+                    );
+
+                try {
+                    const response =
+                        await fetch(
+                            endpoint,
+                            {
+                                method: liked
+                                    ? "DELETE"
+                                    : "POST",
+                                headers:
+                                    authHeaders()
+                            }
+                        );
+
+                    const data =
+                        await readJson(response);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            getError(
+                                data,
+                                "Не удалось изменить лайк."
+                            )
+                        );
+                    }
+
+                    liked =
+                        !liked;
+
+                    if (
+                        data.likes_count
+                        !== undefined
+                    ) {
+                        likesCount =
+                            Number(
+                                data.likes_count
+                            );
+                    } else {
+                        likesCount +=
+                            liked ? 1 : -1;
+                    }
+
+                    updateActions();
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    likeButton.disabled =
+                        false;
+                }
+            }
+        );
+
+        const commentsBox =
+            document.createElement("div");
+
+        commentsBox.className =
+            "cw-comment-list";
+
+        commentsBox.hidden =
+            true;
+
+        commentsButton.addEventListener(
+            "click",
+            async function () {
+                commentsBox.hidden =
+                    !commentsBox.hidden;
+
+                if (!commentsBox.hidden) {
+                    await loadComments(
+                        post,
+                        commentsBox
+                    );
+                }
+            }
+        );
+
+        const commentForm =
+            document.createElement("form");
+
+        commentForm.style.display =
+            "flex";
+
+        commentForm.style.gap =
+            "8px";
+
+        commentForm.style.marginTop =
+            "10px";
+
+        const commentInput =
+            document.createElement("input");
+
+        commentInput.className =
+            "cw-input";
+
+        commentInput.type =
+            "text";
+
+        commentInput.maxLength =
+            1000;
+
+        commentInput.required =
+            true;
+
+        commentInput.placeholder =
+            "Ваш комментарий...";
+
+        const commentButton =
+            document.createElement("button");
+
+        commentButton.type =
+            "submit";
+
+        commentButton.className =
+            "cw-button";
+
+        commentButton.textContent =
+            "Отправить";
+
+        commentForm.appendChild(
+            commentInput
+        );
+
+        commentForm.appendChild(
+            commentButton
+        );
+
+        commentForm.addEventListener(
+            "submit",
+            async function (event) {
+                event.preventDefault();
+
+                const text =
+                    commentInput.value.trim();
+
+                if (!text) {
+                    return;
+                }
+
+                commentButton.disabled =
+                    true;
+
+                try {
+                    const response =
+                        await fetch(
+                            "/api/posts/"
+                            + post.id
+                            + "/comments/",
+                            {
+                                method: "POST",
+                                headers:
+                                    authHeaders(true),
+                                body: JSON.stringify({
+                                    text: text
+                                })
+                            }
+                        );
+
+                    const data =
+                        await readJson(response);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            getError(
+                                data,
+                                "Не удалось добавить комментарий."
+                            )
+                        );
+                    }
+
+                    commentInput.value =
+                        "";
+
+                    commentsCount +=
+                        1;
+
+                    updateActions();
+
+                    await loadComments(
+                        post,
+                        commentsBox
+                    );
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    commentButton.disabled =
+                        false;
+                }
+            }
+        );
+
+        actions.appendChild(
+            likeButton
+        );
+
+        actions.appendChild(
+            commentsButton
+        );
+
+        card.appendChild(
+            actions
+        );
+
+        card.appendChild(
+            commentsBox
+        );
+
+        card.appendChild(
+            commentForm
+        );
+
+        const authorId =
+            post.author
+            && post.author.id;
+
+        if (
+            String(authorId)
+            === String(currentUserId)
+        ) {
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.type =
+                "button";
+
+            deleteButton.className =
+                "cw-delete-post-button";
+
+            deleteButton.textContent =
+                "Удалить публикацию";
+
+            deleteButton.addEventListener(
+                "click",
+                async function () {
+                    if (
+                        !window.confirm(
+                            "Удалить публикацию?"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    deleteButton.disabled =
+                        true;
+
+                    try {
+                        const response =
+                            await fetch(
+                                "/api/posts/"
+                                + post.id
+                                + "/delete/",
+                                {
+                                    method: "DELETE",
+                                    headers:
+                                        authHeaders()
+                                }
+                            );
+
+                        const data =
+                            await readJson(response);
+
+                        if (
+                            !response.ok
+                            && response.status !== 204
+                        ) {
+                            throw new Error(
+                                getError(
+                                    data,
+                                    "Не удалось удалить публикацию."
+                                )
+                            );
+                        }
+
+                        card.remove();
+                    } catch (error) {
+                        alert(error.message);
+
+                        deleteButton.disabled =
+                            false;
+                    }
+                }
+            );
+
+            card.appendChild(
+                deleteButton
+            );
+        }
+
+        return card;
+    }
+
+    async function loadComments(
+        post,
+        container
+    ) {
+        container.innerHTML =
+            "<span>Загружаем комментарии...</span>";
+
+        const response =
+            await fetch(
+                "/api/posts/"
+                + post.id
+                + "/comments/",
+                {
+                    headers: authHeaders()
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            container.textContent =
+                getError(
+                    data,
+                    "Не удалось загрузить комментарии."
+                );
+
+            return;
+        }
+
+        const comments =
+            Array.isArray(data)
+                ? data
+                : data.results || [];
+
+        container.innerHTML =
+            "";
+
+        if (!comments.length) {
+            container.textContent =
+                "Комментариев пока нет.";
+
+            return;
+        }
+
+        comments.forEach(
+            function (comment) {
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "cw-comment";
+
+                const author =
+                    document.createElement("strong");
+
+                author.textContent =
+                    displayName(
+                        comment.author
+                    );
+
+                const text =
+                    document.createElement("div");
+
+                text.textContent =
+                    comment.text || "";
+
+                item.appendChild(
+                    author
+                );
+
+                item.appendChild(
+                    text
+                );
+
+                container.appendChild(
+                    item
+                );
+            }
+        );
+    }
+
+    function getStoryAuthorId(story) {
+        if (!story) {
+            return "";
+        }
+
+        return String(
+            story.author_id
+            || (
+                story.author
+                && story.author.id
+            )
+            || ""
+        );
+    }
+
+    function isMyStory(story) {
+        return (
+            getStoryAuthorId(story)
+            === String(currentUserId)
+        );
+    }
+
+    function groupStoriesByAuthor(
+        storyList
+    ) {
+        const groups =
+            new Map();
+
+        storyList.forEach(
+            function (story) {
+                const authorId =
+                    getStoryAuthorId(
+                        story
+                    );
+
+                if (!authorId) {
+                    return;
+                }
+
+                if (!groups.has(authorId)) {
+                    groups.set(
+                        authorId,
+                        {
+                            author:
+                                story.author,
+                            stories: []
+                        }
+                    );
+                }
+
+                groups.get(
+                    authorId
+                ).stories.push(
+                    story
+                );
+            }
+        );
+
+        return Array.from(
+            groups.values()
+        );
+    }
+
+    function removeStoryCircles() {
+        document.querySelectorAll(
+            "#stories-list "
+            + ".cw-story-item[data-story-group]"
+        ).forEach(
+            function (element) {
+                element.remove();
+            }
+        );
+    }
+
+    function createStoryCircle(
+        group,
+        groupIndex
+    ) {
+        const button =
+            document.createElement("button");
+
+        button.type =
+            "button";
+
+        button.className =
+            "cw-story-item";
+
+        button.dataset.storyGroup =
+            String(groupIndex);
+
+        const avatar =
+            document.createElement("span");
+
+        avatar.className =
+            "cw-story-avatar";
+
+        const author =
+            group.author;
+
+        if (
+            author
+            && author.avatar
+        ) {
+            const image =
+                document.createElement("img");
+
+            image.src =
+                author.avatar;
+
+            image.alt =
+                "История пользователя";
+
+            avatar.appendChild(
+                image
+            );
+        } else {
+            avatar.textContent =
+                displayName(author)
+                    .charAt(0)
+                    .toUpperCase();
+        }
+
+        const name =
+            document.createElement("span");
+
+        name.className =
+            "cw-story-name";
+
+        name.textContent =
+            getStoryAuthorId(
+                group.stories[0]
+            )
+            === String(currentUserId)
+                ? "Ваша история"
+                : displayName(author);
+
+        button.appendChild(
+            avatar
+        );
+
+        button.appendChild(
+            name
+        );
+
+        button.addEventListener(
+            "click",
+            function () {
+                currentStoryGroupIndex =
+                    groupIndex;
+
+                currentStoryMediaIndex =
+                    0;
+
+                openStoryViewer();
+            }
+        );
+
+        return button;
+    }
+
+    async function loadStories() {
+        const response =
+            await fetch(
+                "/api/stories/",
+                {
+                    headers: authHeaders()
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(
+                getError(
+                    data,
+                    "Истории временно недоступны."
+                )
+            );
+        }
+
+        stories =
+            Array.isArray(data)
+                ? data
+                : data.results || [];
+
+        /*
+         * Здесь все истории одного автора
+         * объединяются в одну группу.
+         */
+        storyGroups =
+            groupStoriesByAuthor(
+                stories
+            );
+
+        removeStoryCircles();
+
+        const loading =
+            $("#stories-loading");
+
+        if (loading) {
+            loading.remove();
+        }
+
+        const list =
+            $("#stories-list");
+
+        if (!list) {
+            return;
+        }
+
+        storyGroups.forEach(
+            function (group, index) {
+                list.appendChild(
+                    createStoryCircle(
+                        group,
+                        index
+                    )
+                );
+            }
+        );
+    }
+
+    function clearStoryTimer() {
+        if (storyTimer) {
+            clearInterval(
+                storyTimer
+            );
+
+            storyTimer =
+                null;
+        }
+
+        activeStoryMedia =
+            null;
+
+        if (storySeek) {
+            storySeek.value =
+                "0";
+        }
+
+        if (storyTime) {
+            storyTime.textContent =
+                "";
+        }
+    }
+
+    function formatSeconds(value) {
+        const total =
+            Math.max(
+                0,
+                Math.floor(
+                    Number(value) || 0
+                )
+            );
+
+        const minutes =
+            Math.floor(
+                total / 60
+            );
+
+        const seconds =
+            total % 60;
+
+        return (
+            String(minutes)
+                .padStart(2, "0")
+            + ":"
+            + String(seconds)
+                .padStart(2, "0")
+        );
+    }
+
+    function renderStoryProgress() {
+        if (!storyProgressList) {
+            return;
+        }
+
+        storyProgressList.innerHTML =
+            "";
+
+        const group =
+            storyGroups[
+                currentStoryGroupIndex
+            ];
+
+        if (!group) {
+            return;
+        }
+
+        group.stories.forEach(
+            function (story, index) {
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "cw-story-progress-item";
+
+                const fill =
+                    document.createElement("span");
+
+                fill.className =
+                    "cw-story-progress-fill";
+
+                if (
+                    index
+                    < currentStoryMediaIndex
+                ) {
+                    fill.style.width =
+                        "100%";
+                }
+
+                item.appendChild(
+                    fill
+                );
+
+                storyProgressList.appendChild(
+                    item
+                );
+            }
+        );
+    }
+
+    function setStoryProgress(percent) {
+        if (!storyProgressList) {
+            return;
+        }
+
+        const item =
+            storyProgressList.children[
+                currentStoryMediaIndex
+            ];
+
+        if (!item) {
+            return;
+        }
+
+        const fill =
+            item.querySelector(
+                ".cw-story-progress-fill"
+            );
+
+        if (fill) {
+            fill.style.width =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        percent
+                    )
+                ) + "%";
+        }
+    }
+
+    function finishCurrentStory() {
+        clearStoryTimer();
+
+        const group =
+            storyGroups[
+                currentStoryGroupIndex
+            ];
+
+        if (!group) {
+            closeStoryViewerWindow();
+            return;
+        }
+
+        if (
+            currentStoryMediaIndex
+            < group.stories.length - 1
+        ) {
+            currentStoryMediaIndex +=
+                1;
+
+            renderStoryViewer();
+            return;
+        }
+
+        if (
+            currentStoryGroupIndex
+            < storyGroups.length - 1
+        ) {
+            currentStoryGroupIndex +=
+                1;
+
+            currentStoryMediaIndex =
+                0;
+
+            renderStoryViewer();
+            return;
+        }
+
+        closeStoryViewerWindow();
+    }
+
+    function updateStoryTimer() {
+        if (
+            !activeStoryMedia
+            || isStorySeeking
+        ) {
+            return;
+        }
+
+        let currentTime = 0;
+
+        if (
+            activeStoryMedia.tagName
+            === "VIDEO"
+        ) {
+            currentTime =
+                activeStoryMedia.currentTime;
+
+            storyDuration =
+                activeStoryMedia.duration
+                || storyDuration;
+        } else {
+            currentTime =
+                (
+                    Date.now()
+                    - storyStartedAt
+                ) / 1000;
+        }
+
+        if (!storyDuration) {
+            return;
+        }
+
+        const percent =
+            (
+                currentTime
+                / storyDuration
+            ) * 100;
+
+        if (storySeek) {
+            storySeek.value =
+                String(
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            percent
+                        )
+                    )
+                );
+        }
+
+        setStoryProgress(
+            percent
+        );
+
+        if (storyTime) {
+            storyTime.textContent =
+                formatSeconds(currentTime)
+                + " / "
+                + formatSeconds(storyDuration);
+        }
+
+        if (
+            currentTime >= storyDuration
+        ) {
+            finishCurrentStory();
+        }
+    }
+
+    function renderStoryViewer() {
+        clearStoryTimer();
+
+        const group =
+            storyGroups[
+                currentStoryGroupIndex
+            ];
+
+        if (!group) {
+            return;
+        }
+
+        const story =
+            group.stories[
+                currentStoryMediaIndex
+            ];
+
+        if (!story) {
+            return;
+        }
+
+        renderStoryProgress();
+
+        if (storyViewerContent) {
+            storyViewerContent.innerHTML =
+                "";
+        }
+
+        if (storyViewerAuthor) {
+            storyViewerAuthor.textContent =
+                displayName(
+                    story.author
+                );
+        }
+
+        if (deleteStoryButton) {
+            deleteStoryButton.hidden =
+                !isMyStory(story);
+        }
+
+        const media = {
+            url: story.media_url,
+            media_type: story.media_type
+        };
+
+        const element =
+            mediaElement(
+                media,
+                true
+            );
+
+        if (!element) {
+            return;
+        }
+
+        element.className = "";
+
+        element.style.width =
+            "100%";
+
+        element.style.height =
+            "100%";
+
+        element.style.objectFit =
+            "contain";
+
+        if (
+            element.tagName
+            === "VIDEO"
+        ) {
+            /*
+             * muted нужен для автоматического
+             * запуска видео в браузере.
+             */
+            element.autoplay =
+                true;
+
+            element.muted =
+                true;
+
+            element.controls =
+                true;
+
+            element.playsInline =
+                true;
+        }
+
+        storyViewerContent.appendChild(
+            element
+        );
+
+        activeStoryMedia =
+            element;
+
+        if (storySeek) {
+            storySeek.hidden =
+                false;
+
+            storySeek.value =
+                "0";
+        }
+
+        if (storyTime) {
+            storyTime.hidden =
+                false;
+        }
+
+        const storyDecorations =
+            Array.isArray(
+                story.decorations
+            )
+                ? story.decorations
+                : [];
+
+        storyDecorations.forEach(
+            function (decoration) {
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "cw-viewer-decoration";
+
+                item.textContent =
+                    decoration.value || "";
+
+                item.style.left =
+                    Number(
+                        decoration.x || .5
+                    ) * 100 + "%";
+
+                item.style.top =
+                    Number(
+                        decoration.y || .5
+                    ) * 100 + "%";
+
+                item.style.color =
+                    decoration.color
+                    || "#ffffff";
+
+                item.style.fontSize =
+                    Number(
+                        decoration.font_size
+                        || 28
+                    ) + "px";
+
+                item.style.transform =
+                    "translate(-50%, -50%) "
+                    + "rotate("
+                    + Number(
+                        decoration.rotation
+                        || 0
+                    )
+                    + "deg) scale("
+                    + Number(
+                        decoration.scale
+                        || 1
+                    )
+                    + ")";
+
+                storyViewerContent.appendChild(
+                    item
+                );
+            }
+        );
+
+        if (
+            element.tagName
+            === "VIDEO"
+        ) {
+            element.addEventListener(
+                "loadedmetadata",
+                function () {
+                    storyDuration =
+                        element.duration;
+
+                    if (
+                        !Number.isFinite(
+                            storyDuration
+                        )
+                        || storyDuration <= 0
+                    ) {
+                        storyDuration =
+                            PHOTO_STORY_DURATION;
+                    }
+
+                    storyStartedAt =
+                        Date.now();
+
+                    element.play().catch(
+                        function () {}
+                    );
+
+                    storyTimer =
+                        setInterval(
+                            updateStoryTimer,
+                            80
+                        );
+                },
+                {
+                    once: true
+                }
+            );
+
+            /*
+             * На случай, если metadata уже загрузились.
+             */
+            if (
+                element.readyState >= 1
+            ) {
+                setTimeout(
+                    function () {
+                        if (!storyTimer) {
+                            storyDuration =
+                                element.duration
+                                || PHOTO_STORY_DURATION;
+
+                            storyStartedAt =
+                                Date.now();
+
+                            element.play().catch(
+                                function () {}
+                            );
+
+                            storyTimer =
+                                setInterval(
+                                    updateStoryTimer,
+                                    80
+                                );
+                        }
+                    },
+                    100
+                );
+            }
+        } else {
+            storyDuration =
+                PHOTO_STORY_DURATION;
+
+            storyStartedAt =
+                Date.now();
+
+            storyTimer =
+                setInterval(
+                    updateStoryTimer,
+                    80
+                );
+        }
+
+        fetch(
+            "/api/stories/"
+            + story.id
+            + "/view/",
+            {
+                method: "POST",
+                headers: authHeaders()
+            }
+        ).catch(
+            function () {}
+        );
+    }
+
+    function openStoryViewer() {
+        if (
+            !storyGroups.length
+        ) {
+            return;
+        }
+
+        openModal(
+            storyViewer
+        );
+
+        requestAnimationFrame(
+            function () {
+                renderStoryViewer();
+            }
+        );
+    }
+
+    function closeStoryViewerWindow() {
+        clearStoryTimer();
+
+        closeModal(
+            storyViewer
+        );
+
+        if (storySeek) {
+            storySeek.hidden =
+                true;
+        }
+
+        if (storyTime) {
+            storyTime.hidden =
+                true;
+        }
+
+        setTimeout(
+            function () {
+                if (storyViewerContent) {
+                    storyViewerContent.innerHTML =
+                        "";
+                }
+
+                if (storyProgressList) {
+                    storyProgressList.innerHTML =
+                        "";
+                }
+
+                if (storyViewerAuthor) {
+                    storyViewerAuthor.textContent =
+                        "";
+                }
+            },
+            300
+        );
+    }
+
+    function moveStory(direction) {
+        if (
+            !storyGroups.length
+        ) {
+            return;
+        }
+
+        const group =
+            storyGroups[
+                currentStoryGroupIndex
+            ];
+
+        if (!group) {
+            return;
+        }
+
+        if (
+            direction > 0
+        ) {
+            if (
+                currentStoryMediaIndex
+                < group.stories.length - 1
+            ) {
+                currentStoryMediaIndex +=
+                    1;
+            } else if (
+                currentStoryGroupIndex
+                < storyGroups.length - 1
+            ) {
+                currentStoryGroupIndex +=
+                    1;
+
+                currentStoryMediaIndex =
+                    0;
+            } else {
+                closeStoryViewerWindow();
+                return;
+            }
+        } else {
+            if (
+                currentStoryMediaIndex > 0
+            ) {
+                currentStoryMediaIndex -=
+                    1;
+            } else if (
+                currentStoryGroupIndex > 0
+            ) {
+                currentStoryGroupIndex -=
+                    1;
+
+                currentStoryMediaIndex =
+                    storyGroups[
+                        currentStoryGroupIndex
+                    ].stories.length - 1;
+            } else {
+                currentStoryMediaIndex =
+                    0;
+            }
+        }
+
+        renderStoryViewer();
+    }
+
+    function openStoryEditor() {
+        decorations = [];
+        selectedDecoration = null;
+
+        if (storyMedia) {
+            storyMedia.value =
+                "";
+        }
+
+        if (storyEditorMessage) {
+            storyEditorMessage.textContent =
+                "";
+        }
+
+        if (storyEditorStage) {
+            storyEditorStage.innerHTML =
+                '<div class="cw-editor-placeholder">'
+                + "Выберите фото или видео"
+                + "</div>";
+        }
+
+        const storyTextInput =
+            $("#story-text-input");
+
+        if (storyTextInput) {
+            storyTextInput.hidden =
+                true;
+        }
+
+        if (storyEmojiPanel) {
+            storyEmojiPanel.hidden =
+                true;
+        }
+
+        openModal(
+            storyEditorModal
+        );
+    }
+
+    function closeStoryEditorWindow() {
+        closeModal(
+            storyEditorModal
+        );
+
+        if (storyEditorObjectUrl) {
+            URL.revokeObjectURL(
+                storyEditorObjectUrl
+            );
+
+            storyEditorObjectUrl =
+                null;
+        }
+    }
+
+    function addDecoration(
+        type,
+        value
+    ) {
+        const decoration = {
+            type: type,
+            value: value,
+            x: .5,
+            y: .5,
+            scale: 1,
+            rotation: 0,
+            color: "#ffffff",
+            font_size:
+                type === "emoji"
+                    ? 42
+                    : 28
+        };
+
+        decorations.push(
+            decoration
+        );
+
+        renderEditorDecoration(
+            decoration
+        );
+    }
+
+    function renderEditorDecoration(
+        decoration
+    ) {
+        const element =
+            document.createElement("div");
+
+        element.className =
+            "cw-story-decoration";
+
+        element.textContent =
+            decoration.value;
+
+        element.dataset.index =
+            String(
+                decorations.indexOf(
+                    decoration
+                )
+            );
+
+        element.style.left =
+            decoration.x * 100
+            + "%";
+
+        element.style.top =
+            decoration.y * 100
+            + "%";
+
+        element.style.color =
+            decoration.color;
+
+        element.style.fontSize =
+            decoration.font_size
+            + "px";
+
+        let dragging = false;
+
+        element.addEventListener(
+            "pointerdown",
+            function (event) {
+                event.preventDefault();
+
+                dragging = true;
+
+                selectedDecoration =
+                    decoration;
+
+                element.classList.add(
+                    "selected"
+                );
+
+                element.setPointerCapture(
+                    event.pointerId
+                );
+            }
+        );
+
+        element.addEventListener(
+            "pointermove",
+            function (event) {
+                if (
+                    !dragging
+                    || selectedDecoration
+                        !== decoration
+                ) {
+                    return;
+                }
+
+                const rect =
+                    storyEditorStage
+                        .getBoundingClientRect();
+
+                decoration.x =
+                    Math.max(
+                        0,
+                        Math.min(
+                            1,
+                            (
+                                event.clientX
+                                - rect.left
+                            )
+                            / rect.width
+                        )
+                    );
+
+                decoration.y =
+                    Math.max(
+                        0,
+                        Math.min(
+                            1,
+                            (
+                                event.clientY
+                                - rect.top
+                            )
+                            / rect.height
+                        )
+                    );
+
+                element.style.left =
+                    decoration.x * 100
+                    + "%";
+
+                element.style.top =
+                    decoration.y * 100
+                    + "%";
+            }
+        );
+
+        element.addEventListener(
+            "pointerup",
+            function () {
+                dragging = false;
+                selectedDecoration =
+                    null;
+
+                element.classList.remove(
+                    "selected"
+                );
+            }
+        );
+
+        storyEditorStage.appendChild(
+            element
+        );
+    }
+
+    function createStoryEditorPreview(
+        file
+    ) {
+        if (storyEditorObjectUrl) {
+            URL.revokeObjectURL(
+                storyEditorObjectUrl
+            );
+        }
+
+        storyEditorObjectUrl =
+            URL.createObjectURL(
+                file
+            );
+
+        storyEditorStage.innerHTML =
+            "";
+
+        const element =
+            document.createElement(
+                file.type.startsWith(
+                    "video/"
+                )
+                    ? "video"
+                    : "img"
+            );
+
+        element.src =
+            storyEditorObjectUrl;
+
+        if (
+            element.tagName
+            === "VIDEO"
+        ) {
+            element.controls =
+                true;
+
+            element.muted =
+                true;
+
+            element.playsInline =
+                true;
+        } else {
+            element.alt =
+                "Предпросмотр истории";
+        }
+
+        storyEditorStage.appendChild(
+            element
+        );
+
+        decorations.forEach(
+            function (item) {
+                renderEditorDecoration(
+                    item
+                );
+            }
+        );
+    }
+
+    function validateVideoDuration(
+        file,
+        maxSeconds
+    ) {
+        return new Promise(
+            function (resolve) {
+                if (
+                    !file.type.startsWith(
+                        "video/"
+                    )
+                ) {
+                    resolve(true);
+                    return;
+                }
+
+                const url =
+                    URL.createObjectURL(
+                        file
+                    );
+
+                const video =
+                    document.createElement(
+                        "video"
+                    );
+
+                video.preload =
+                    "metadata";
+
+                video.onloadedmetadata =
+                    function () {
+                        const duration =
+                            video.duration;
+
+                        URL.revokeObjectURL(
+                            url
+                        );
+
+                        resolve(
+                            Number.isFinite(
+                                duration
+                            )
+                            && duration
+                                <= maxSeconds
+                        );
+                    };
+
+                video.onerror =
+                    function () {
+                        URL.revokeObjectURL(
+                            url
+                        );
+
+                        resolve(false);
+                    };
+
+                video.src =
+                    url;
+            }
+        );
+    }
+
+    async function publishStory() {
+        const files =
+            Array.from(
+                storyMedia.files
+            );
+
+        if (!files.length) {
+            setMessage(
+                storyEditorMessage,
+                "Выберите хотя бы один файл."
+            );
+
+            return;
+        }
+
+        if (files.length > 10) {
+            setMessage(
+                storyEditorMessage,
+                "Можно выбрать максимум 10 файлов."
+            );
+
+            return;
+        }
+
+        for (
+            const file of files
+        ) {
+            const validType =
+                file.type.startsWith(
+                    "image/"
+                )
+                || file.type.startsWith(
+                    "video/"
+                );
+
+            if (!validType) {
+                setMessage(
+                    storyEditorMessage,
+                    "Разрешены только фото и видео."
+                );
+
+                return;
+            }
+
+            if (
+                file.type.startsWith(
+                    "video/"
+                )
+            ) {
+                const valid =
+                    await validateVideoDuration(
+                        file,
+                        MAX_STORY_VIDEO_SECONDS
+                    );
+
+                if (!valid) {
+                    setMessage(
+                        storyEditorMessage,
+                        "Видео истории не может "
+                        + "быть длиннее 60 секунд."
+                    );
+
+                    return;
+                }
+            }
+        }
+
+        const button =
+            $("#publish-story-button");
+
+        button.disabled =
+            true;
+
+        setMessage(
+            storyEditorMessage,
+            "Публикуем истории...",
+            true
+        );
+
+        try {
+            /*
+             * Backend принимает один media за запрос.
+             * Все выбранные файлы отправляются подряд,
+             * а на frontend объединяются в один кружок.
+             */
+            for (
+                const file of files
+            ) {
+                const formData =
+                    new FormData();
+
+                formData.append(
+                    "media",
+                    file
+                );
+
+                formData.append(
+                    "text",
+                    ""
+                );
+
+                formData.append(
+                    "decorations",
+                    JSON.stringify(
+                        decorations
+                    )
+                );
+
+                const response =
+                    await fetch(
+                        "/api/stories/create/",
+                        {
+                            method: "POST",
+                            headers: authHeaders(),
+                            body: formData
+                        }
+                    );
+
+                const data =
+                    await readJson(
+                        response
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        getError(
+                            data,
+                            "Не удалось создать историю."
+                        )
+                    );
+                }
+            }
+
+            closeStoryEditorWindow();
+
+            await loadStories();
+        } catch (error) {
+            setMessage(
+                storyEditorMessage,
+                error.message
+            );
+        } finally {
+            button.disabled =
+                false;
+        }
+    }
+
+    async function deleteCurrentStory() {
+        const group =
+            storyGroups[
+                currentStoryGroupIndex
+            ];
+
+        if (!group) {
+            return;
+        }
+
+        const story =
+            group.stories[
+                currentStoryMediaIndex
+            ];
+
+        if (
+            !story
+            || !isMyStory(story)
+        ) {
+            return;
+        }
+
+        if (
+            !window.confirm(
+                "Удалить эту историю?"
+            )
+        ) {
+            return;
+        }
+
+        deleteStoryButton.disabled =
+            true;
+
+        deleteStoryButton.textContent =
+            "Удаляем...";
+
+        try {
+            const response =
+                await fetch(
+                    "/api/stories/"
+                    + story.id
+                    + "/delete/",
+                    {
+                        method: "DELETE",
+                        headers: authHeaders()
+                    }
+                );
+
+            const data =
+                await readJson(
+                    response
+                );
+
+            if (
+                !response.ok
+                && response.status !== 204
+            ) {
+                throw new Error(
+                    getError(
+                        data,
+                        "Не удалось удалить историю."
+                    )
+                );
+            }
+
+            stories =
+                stories.filter(
+                    function (item) {
+                        return String(item.id)
+                            !== String(story.id);
+                    }
+                );
+
+            storyGroups =
+                groupStoriesByAuthor(
+                    stories
+                );
+
+            if (!storyGroups.length) {
+                closeStoryViewerWindow();
+                await loadStories();
+                return;
+            }
+
+            const groupStillExists =
+                storyGroups[
+                    currentStoryGroupIndex
+                ];
+
+            if (
+                !groupStillExists
+            ) {
+                currentStoryGroupIndex =
+                    Math.max(
+                        0,
+                        storyGroups.length - 1
+                    );
+            }
+
+            const newGroup =
+                storyGroups[
+                    currentStoryGroupIndex
+                ];
+
+            currentStoryMediaIndex =
+                Math.min(
+                    currentStoryMediaIndex,
+                    newGroup.stories.length - 1
+                );
+
+            await loadStories();
+
+            renderStoryViewer();
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            deleteStoryButton.disabled =
+                false;
+
+            deleteStoryButton.textContent =
+                "Удалить историю";
+        }
+    }
+
+    async function reactToStory(
+        reaction
+    ) {
+        const group =
+            storyGroups[
+                currentStoryGroupIndex
+            ];
+
+        if (!group) {
+            return;
+        }
+
+        const story =
+            group.stories[
+                currentStoryMediaIndex
+            ];
+
+        if (!story) {
+            return;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/stories/"
+                    + story.id
+                    + "/react/",
+                    {
+                        method: "POST",
+                        headers: authHeaders(true),
+                        body: JSON.stringify({
+                            reaction:
+                                reaction
+                        })
+                    }
+                );
+
+            const data =
+                await readJson(
+                    response
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    getError(
+                        data,
+                        "Не удалось отправить реакцию."
+                    )
+                );
+            }
+
+            const button =
+                document.querySelector(
+                    '[data-reaction="'
+                    + reaction
+                    + '"]'
+                );
+
+            if (button) {
+                button.style.transform =
+                    "scale(1.3)";
+
+                setTimeout(
+                    function () {
+                        button.style.transform =
+                            "";
+                    },
+                    250
+                );
+            }
+        } catch (error) {
+            console.warn(
+                "Ошибка реакции:",
+                error
+            );
+        }
+    }
+
+    if (storySeek) {
+        storySeek.addEventListener(
+            "input",
+            function () {
+                if (
+                    !activeStoryMedia
+                    || !storyDuration
+                ) {
+                    return;
+                }
+
+                isStorySeeking =
+                    true;
+
+                const percent =
+                    Number(
+                        storySeek.value
+                    ) / 100;
+
+                const time =
+                    storyDuration
+                    * percent;
+
+                if (
+                    activeStoryMedia.tagName
+                    === "VIDEO"
+                ) {
+                    activeStoryMedia.currentTime =
+                        time;
+                } else {
+                    storyStartedAt =
+                        Date.now()
+                        - time * 1000;
+                }
+
+                setStoryProgress(
+                    percent * 100
+                );
+
+                if (storyTime) {
+                    storyTime.textContent =
+                        formatSeconds(time)
+                        + " / "
+                        + formatSeconds(
+                            storyDuration
+                        );
+                }
+
+                requestAnimationFrame(
+                    function () {
+                        isStorySeeking =
+                            false;
+                    }
+                );
+            }
+        );
+    }
+
+    postText.addEventListener(
+        "input",
+        function () {
+            counter.textContent =
+                postText.value.length
+                + " / 5000";
+        }
+    );
+
+    $("#emoji-button").addEventListener(
+        "click",
+        function () {
+            const picker =
+                $("#emoji-picker");
+
+            picker.hidden =
+                !picker.hidden;
+        }
+    );
+
+    $("#emoji-picker")
+        .querySelectorAll("button")
+        .forEach(
+            function (button) {
+                button.addEventListener(
+                    "click",
+                    function () {
+                        const emoji =
+                            button.textContent;
+
+                        const start =
+                            postText.selectionStart;
+
+                        const end =
+                            postText.selectionEnd;
+
+                        postText.value =
+                            postText.value.slice(
+                                0,
+                                start
+                            )
+                            + emoji
+                            + postText.value.slice(
+                                end
+                            );
+
+                        postText.focus();
+
+                        const position =
+                            start + emoji.length;
+
+                        postText.selectionStart =
+                            position;
+
+                        postText.selectionEnd =
+                            position;
+
+                        counter.textContent =
+                            postText.value.length
+                            + " / 5000";
+
+                        $("#emoji-picker").hidden =
+                            true;
+                    }
+                );
+            }
+        );
+
+    createPostForm.addEventListener(
+        "submit",
+        async function (event) {
+            event.preventDefault();
+
+            const text =
+                postText.value.trim();
+
+            const files =
+                Array.from(
+                    postMedia.files
+                );
+
+            const isReel =
+                reelInput
+                && reelInput.checked;
+
+            if (
+                !text
+                && !files.length
+            ) {
+                setMessage(
+                    createMessage,
+                    "Добавьте текст или медиафайл."
+                );
+
+                return;
+            }
+
+            if (files.length > 10) {
+                setMessage(
+                    createMessage,
+                    "Можно выбрать максимум 10 файлов."
+                );
+
+                return;
+            }
+
+            if (isReel) {
+                if (
+                    files.length !== 1
+                ) {
+                    setMessage(
+                        createMessage,
+                        "Reel должен содержать одно видео."
+                    );
+
+                    return;
+                }
+
+                if (
+                    !files[0].type.startsWith(
+                        "video/"
+                    )
+                ) {
+                    setMessage(
+                        createMessage,
+                        "Reel должен быть видеофайлом."
+                    );
+
+                    return;
+                }
+
+                const valid =
+                    await validateVideoDuration(
+                        files[0],
+                        MAX_REEL_VIDEO_SECONDS
+                    );
+
+                if (!valid) {
+                    setMessage(
+                        createMessage,
+                        "Reel не может быть длиннее 90 секунд."
+                    );
+
+                    return;
+                }
+            }
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "text",
+                text
+            );
+
+            formData.append(
+                "post_type",
+                isReel
+                    ? "reel"
+                    : "post"
+            );
+
+            files.forEach(
+                function (file) {
+                    formData.append(
+                        "media",
+                        file
+                    );
+                }
+            );
+
+            const button =
+                $("#create-button");
+
+            button.disabled =
+                true;
+
+            setMessage(
+                createMessage,
+                "Публикуем...",
+                true
+            );
+
+            try {
+                const response =
+                    await fetch(
+                        "/api/posts/create/",
+                        {
+                            method: "POST",
+                            headers: authHeaders(),
+                            body: formData
+                        }
+                    );
+
+                const data =
+                    await readJson(
+                        response
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        getError(
+                            data,
+                            "Не удалось создать публикацию."
+                        )
+                    );
+                }
+
+                postText.value =
+                    "";
+
+                postMedia.value =
+                    "";
+
+                if (reelInput) {
+                    reelInput.checked =
+                        false;
+                }
+
+                counter.textContent =
+                    "0 / 5000";
+
+                setMessage(
+                    createMessage,
+                    "Публикация создана.",
+                    true
+                );
+
+                await loadFeed();
+            } catch (error) {
+                setMessage(
+                    createMessage,
+                    error.message
+                );
+            } finally {
+                button.disabled =
+                    false;
+            }
+        }
+    );
+
+    $("#my-story-button").addEventListener(
+        "click",
+        function () {
+            const myGroupIndex =
+                storyGroups.findIndex(
+                    function (group) {
+                        return isMyStory(
+                            group.stories[0]
+                        );
+                    }
+                );
+
+            if (
+                myGroupIndex < 0
+            ) {
+                openStoryEditor();
+                return;
+            }
+
+            currentStoryGroupIndex =
+                myGroupIndex;
+
+            currentStoryMediaIndex =
+                0;
+
+            openStoryViewer();
+        }
+    );
+
+    $("#add-story-button").addEventListener(
+        "click",
+        openStoryEditor
+    );
+
+    $("#close-story-editor").addEventListener(
+        "click",
+        closeStoryEditorWindow
+    );
+
+    $("#close-story-viewer").addEventListener(
+        "click",
+        closeStoryViewerWindow
+    );
+
+    $("#previous-story").addEventListener(
+        "click",
+        function () {
+            moveStory(-1);
+        }
+    );
+
+    $("#next-story").addEventListener(
+        "click",
+        function () {
+            moveStory(1);
+        }
+    );
+
+    if (deleteStoryButton) {
+        deleteStoryButton.addEventListener(
+            "click",
+            deleteCurrentStory
+        );
+    }
+
+    storyMedia.addEventListener(
+        "change",
+        function () {
+            const files =
+                Array.from(
+                    storyMedia.files
+                );
+
+            if (files.length) {
+                createStoryEditorPreview(
+                    files[0]
+                );
+            }
+        }
+    );
+
+    $("#add-story-text").addEventListener(
+        "click",
+        function () {
+            const input =
+                $("#story-text-input");
+
+            input.hidden =
+                !input.hidden;
+
+            if (!input.hidden) {
+                input.focus();
+            }
+        }
+    );
+
+    $("#story-text-input").addEventListener(
+        "change",
+        function () {
+            const value =
+                this.value.trim();
+
+            if (!value) {
+                return;
+            }
+
+            addDecoration(
+                "text",
+                value
+            );
+
+            this.value =
+                "";
+
+            this.hidden =
+                true;
+        }
+    );
+
+    $("#add-story-emoji").addEventListener(
+        "click",
+        function () {
+            storyEmojiPanel.hidden =
+                !storyEmojiPanel.hidden;
+        }
+    );
+
+    storyEmojiPanel
+        .querySelectorAll("button")
+        .forEach(
+            function (button) {
+                button.addEventListener(
+                    "click",
+                    function () {
+                        addDecoration(
+                            "emoji",
+                            button.textContent
+                        );
+
+                        storyEmojiPanel.hidden =
+                            true;
+                    }
+                );
+            }
+        );
+
+    $("#change-story-color").addEventListener(
+        "click",
+        function () {
+            if (!decorations.length) {
+                return;
+            }
+
+            const colors = [
+                "#ffffff",
+                "#ff4d6d",
+                "#ffd166",
+                "#06d6a0",
+                "#4cc9f0",
+                "#c77dff"
+            ];
+
+            const last =
+                decorations[
+                    decorations.length - 1
+                ];
+
+            const currentIndex =
+                colors.indexOf(
+                    last.color
+                );
+
+            last.color =
+                colors[
+                    (
+                        currentIndex + 1
+                    )
+                    % colors.length
+                ];
+
+            const elements =
+                storyEditorStage.querySelectorAll(
+                    ".cw-story-decoration"
+                );
+
+            elements.forEach(
+                function (element) {
+                    const index =
+                        Number(
+                            element.dataset.index
+                        );
+
+                    if (
+                        index
+                        === decorations.length - 1
+                    ) {
+                        element.style.color =
+                            last.color;
+                    }
+                }
+            );
+        }
+    );
+
+    $("#publish-story-button").addEventListener(
+        "click",
+        publishStory
+    );
+
+    document.querySelectorAll(
+        "#story-reactions button"
+    ).forEach(
+        function (button) {
+            button.addEventListener(
+                "click",
+                function () {
+                    reactToStory(
+                        button.dataset.reaction
+                    );
+                }
+            );
+        }
+    );
+
+    storyViewer.addEventListener(
+        "click",
+        function (event) {
+            if (
+                event.target
+                === storyViewer
+            ) {
+                closeStoryViewerWindow();
+            }
+        }
+    );
+
+    storyEditorModal.addEventListener(
+        "click",
+        function (event) {
+            if (
+                event.target
+                === storyEditorModal
+            ) {
+                closeStoryEditorWindow();
+            }
+        }
+    );
+
+    profileMenuButton.addEventListener(
+        "click",
+        function (event) {
+            event.stopPropagation();
+
+            profileMenu.hidden =
+                !profileMenu.hidden;
+
+            profileMenuButton.setAttribute(
+                "aria-expanded",
+                String(
+                    !profileMenu.hidden
+                )
+            );
+        }
+    );
+
+    document.addEventListener(
+        "click",
+        function (event) {
+            if (
+                !profileMenu.contains(
+                    event.target
+                )
+                && !profileMenuButton.contains(
+                    event.target
+                )
+            ) {
+                profileMenu.hidden =
+                    true;
+
+                profileMenuButton.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+            }
+        }
+    );
+
+    $("#logout-button").addEventListener(
+        "click",
+        function () {
+            localStorage.removeItem(
+                "chatwell_access_token"
+            );
+
+            localStorage.removeItem(
+                "chatwell_refresh_token"
+            );
+
+            window.location.href =
+                "/register/";
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key !== "Escape"
+            ) {
+                return;
+            }
+
+            if (
+                !storyEditorModal.hidden
+            ) {
+                closeStoryEditorWindow();
+            }
+
+            if (
+                !storyViewer.hidden
+            ) {
+                closeStoryViewerWindow();
+            }
+
+            profileMenu.hidden =
+                true;
+        }
+    );
+
+    async function initialize() {
+        try {
+            await loadCurrentUser();
+        } catch (error) {
+            console.error(
+                "Ошибка авторизации:",
+                error
+            );
+
+            localStorage.removeItem(
+                "chatwell_access_token"
+            );
+
+            localStorage.removeItem(
+                "chatwell_refresh_token"
+            );
+
+            window.location.href =
+                "/register/";
+
+            return;
+        }
+
+        await loadNotifications();
+
+        try {
+            await loadStories();
+        } catch (error) {
+            console.error(
+                "Ошибка загрузки историй:",
+                error
+            );
+
+            const loading =
+                $("#stories-loading");
+
+            if (loading) {
+                loading.textContent =
+                    "Истории пока недоступны.";
+            }
+        }
+
+        try {
+            await loadFeed();
+        } catch (error) {
+            console.error(
+                "Ошибка загрузки ленты:",
+                error
+            );
+
+            postsContainer.innerHTML =
+                '<div class="cw-empty">'
+                + error.message
+                + "</div>";
+        }
+    }
+
+    initialize();
+</script>
+
+{% endblock %}

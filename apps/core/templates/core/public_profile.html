@@ -1,0 +1,426 @@
+{% extends "core/base.html" %}
+
+{% block title %}Профиль пользователя — ChatWell{% endblock %}
+
+{% block body %}
+<header class="cw-header">
+    <div class="cw-header-inner">
+        <a class="cw-logo" href="/">
+            ChatWell
+        </a>
+
+        <div class="cw-header-actions">
+            <a
+                class="cw-button cw-button-secondary"
+                href="/feed/"
+            >
+                Лента
+            </a>
+
+            <a
+                class="cw-button"
+                href="/people/"
+            >
+                Люди
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="cw-main">
+    <div class="cw-layout">
+        <aside class="cw-sidebar">
+            <nav class="cw-menu">
+                <a
+                    class="cw-menu-link"
+                    href="/feed/"
+                >
+                    <span class="cw-menu-icon">⌂</span>
+                    Лента
+                </a>
+
+                <a
+                    class="cw-menu-link"
+                    href="/people/"
+                >
+                    <span class="cw-menu-icon">⌕</span>
+                    Люди
+                </a>
+
+                <a
+                    class="cw-menu-link"
+                    href="/profile/"
+                >
+                    <span class="cw-menu-icon">◉</span>
+                    Профиль
+                </a>
+            </nav>
+        </aside>
+
+        <section class="cw-content">
+            <div
+                id="profile-container"
+                class="cw-empty"
+            >
+                Загружаем профиль...
+            </div>
+
+            <h2 class="cw-section-title">
+                Публикации
+            </h2>
+
+            <section
+                id="posts-container"
+                class="cw-feed"
+            >
+                <div class="cw-empty">
+                    Загружаем публикации...
+                </div>
+            </section>
+        </section>
+    </div>
+</main>
+
+<nav class="cw-mobile-nav">
+    <a href="/feed/">
+        <span class="cw-mobile-nav-icon">⌂</span>
+        <span>Лента</span>
+    </a>
+
+    <a href="/people/">
+        <span class="cw-mobile-nav-icon">⌕</span>
+        <span>Люди</span>
+    </a>
+
+    <a href="/profile/">
+        <span class="cw-mobile-nav-icon">◉</span>
+        <span>Профиль</span>
+    </a>
+</nav>
+
+<script>
+    const token = localStorage.getItem(
+        "chatwell_access_token"
+    );
+
+    const userId = "{{ user_id }}";
+
+    if (!token) {
+        window.location.href = "/register/";
+    }
+
+    const profileContainer = document.getElementById(
+        "profile-container"
+    );
+
+    const postsContainer = document.getElementById(
+        "posts-container"
+    );
+
+    let profileUser = null;
+
+    function userName(user) {
+        return user.display_name
+            || user.username
+            || "Пользователь";
+    }
+
+    function avatarFor(user, large = false) {
+        const avatar = document.createElement("div");
+
+        avatar.className = large
+            ? "cw-avatar cw-avatar-lg"
+            : "cw-avatar cw-avatar-sm";
+
+        if (user.avatar) {
+            const image = document.createElement("img");
+
+            image.src = user.avatar;
+            image.alt = "Аватар";
+
+            avatar.appendChild(image);
+        } else {
+            avatar.textContent =
+                userName(user)
+                    .charAt(0)
+                    .toUpperCase();
+        }
+
+        return avatar;
+    }
+
+    function updateFollowButton(button) {
+        button.textContent = profileUser.is_following
+            ? "Отписаться"
+            : "Подписаться";
+
+        button.classList.toggle(
+            "cw-button-secondary",
+            profileUser.is_following
+        );
+    }
+
+    function renderProfile(user) {
+        profileUser = user;
+        profileContainer.innerHTML = "";
+
+        const card = document.createElement("section");
+        card.className = "cw-card cw-profile-card";
+
+        card.appendChild(avatarFor(user, true));
+
+        const info = document.createElement("div");
+        info.className = "cw-profile-info";
+
+        const name = document.createElement("h1");
+        name.className = "cw-profile-name";
+        name.textContent = userName(user);
+
+        const username = document.createElement("p");
+        username.className = "cw-profile-username";
+        username.textContent = user.username
+            ? "@" + user.username
+            : "Username не указан";
+
+        const bio = document.createElement("p");
+        bio.className = "cw-profile-bio";
+        bio.textContent = user.bio
+            || "Описание пока не добавлено.";
+
+        const stats = document.createElement("div");
+        stats.className = "cw-profile-stats";
+
+        const followers = document.createElement("span");
+        followers.id = "followers-count";
+        followers.textContent =
+            "Подписчики: " + user.followers_count;
+
+        const following = document.createElement("span");
+        following.textContent =
+            "Подписки: " + user.following_count;
+
+        stats.appendChild(followers);
+        stats.appendChild(following);
+
+        const button = document.createElement("button");
+        button.className = "cw-button";
+        updateFollowButton(button);
+
+        button.addEventListener(
+            "click",
+            async function () {
+                button.disabled = true;
+
+                const wasFollowing =
+                    profileUser.is_following;
+
+                try {
+                    const response = await fetch(
+                        wasFollowing
+                            ? "/api/posts/users/"
+                                + profileUser.id
+                                + "/unfollow/"
+                            : "/api/posts/users/"
+                                + profileUser.id
+                                + "/follow/",
+                        {
+                            method: wasFollowing
+                                ? "DELETE"
+                                : "POST",
+                            headers: {
+                                "Authorization":
+                                    "Bearer " + token
+                            }
+                        }
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data.detail
+                            || "Ошибка подписки"
+                        );
+                    }
+
+                    profileUser.is_following =
+                        !wasFollowing;
+
+                    profileUser.followers_count +=
+                        profileUser.is_following ? 1 : -1;
+
+                    updateFollowButton(button);
+
+                    followers.textContent =
+                        "Подписчики: "
+                        + profileUser.followers_count;
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    button.disabled = false;
+                }
+            }
+        );
+
+        info.appendChild(name);
+        info.appendChild(username);
+        info.appendChild(bio);
+        info.appendChild(stats);
+        info.appendChild(button);
+
+        card.appendChild(info);
+        profileContainer.appendChild(card);
+    }
+
+    function renderPost(post) {
+        const card = document.createElement("article");
+        card.className = "cw-post";
+
+        const header = document.createElement("header");
+        header.className = "cw-post-header";
+
+        const author = document.createElement("div");
+        author.className = "cw-post-author";
+
+        author.appendChild(avatarFor(profileUser));
+
+        const authorInfo = document.createElement("div");
+
+        const name = document.createElement("div");
+        name.className = "cw-post-author-name";
+        name.textContent = userName(profileUser);
+
+        const date = document.createElement("div");
+        date.className = "cw-post-date";
+        date.textContent = new Date(
+            post.created_at
+        ).toLocaleString("ru-RU");
+
+        authorInfo.appendChild(name);
+        authorInfo.appendChild(date);
+
+        author.appendChild(authorInfo);
+        header.appendChild(author);
+        card.appendChild(header);
+
+        if (post.text) {
+            const text = document.createElement("p");
+
+            text.className = "cw-post-text";
+            text.textContent = post.text;
+
+            card.appendChild(text);
+        }
+
+        if (post.media && post.media.length > 0) {
+            const grid = document.createElement("div");
+
+            grid.className = "cw-post-media-grid";
+
+            post.media.forEach(function (media) {
+                if (media.media_type === "image") {
+                    const image = document.createElement("img");
+
+                    image.className = "cw-post-media";
+                    image.src = media.url;
+                    image.alt = "Публикация";
+
+                    grid.appendChild(image);
+                }
+
+                if (media.media_type === "video") {
+                    const video = document.createElement("video");
+
+                    video.className = "cw-post-media";
+                    video.src = media.url;
+                    video.controls = true;
+
+                    grid.appendChild(video);
+                }
+            });
+
+            card.appendChild(grid);
+        }
+
+        return card;
+    }
+
+    async function loadProfile() {
+        const response = await fetch(
+            "/api/auth/users/" + userId + "/",
+            {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || "Профиль не найден"
+            );
+        }
+
+        renderProfile(data);
+    }
+
+    async function loadPosts() {
+        const response = await fetch(
+            "/api/posts/users/"
+            + userId
+            + "/posts/",
+            {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || "Ошибка публикаций"
+            );
+        }
+
+        postsContainer.innerHTML = "";
+
+        if (data.is_private && data.posts.length === 0) {
+            postsContainer.innerHTML =
+                '<div class="cw-empty">'
+                + "Профиль закрыт."
+                + "</div>";
+            return;
+        }
+
+        if (data.posts.length === 0) {
+            postsContainer.innerHTML =
+                '<div class="cw-empty">'
+                + "Публикаций пока нет."
+                + "</div>";
+            return;
+        }
+
+        data.posts.forEach(function (post) {
+            postsContainer.appendChild(
+                renderPost(post)
+            );
+        });
+    }
+
+    async function initialize() {
+        try {
+            await loadProfile();
+            await loadPosts();
+        } catch (error) {
+            profileContainer.textContent =
+                error.message;
+        }
+    }
+
+    initialize();
+</script>
+{% endblock %}

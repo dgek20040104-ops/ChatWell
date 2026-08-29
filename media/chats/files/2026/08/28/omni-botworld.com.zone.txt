@@ -1,0 +1,15 @@
+@	IN SOA ns1.spaceweb.ru.  dns1.sweb.ru.  (
+		2026021624
+
+		8H
+		2H
+		2W
+		10m
+) 
+	IN	A	216.24.57.1
+	IN	NS	ns1.spaceweb.ru.
+	IN	NS	ns2.spaceweb.ru.
+	IN	NS	ns3.spaceweb.pro.
+	IN	NS	ns4.spaceweb.pro.
+www	IN	CNAME	omnibot1.onrender.com.
+@	600	IN	TXT	"google-site-verification=DHBUCs3DIGGmHgjBI2CE8t1luvB9yCMx3KvUndWubaw"

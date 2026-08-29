@@ -1,0 +1,135 @@
+{% extends "core/base.html" %}
+
+{% block title %}ChatWell — социальная сеть{% endblock %}
+
+{% block body %}
+<header class="cw-header">
+    <div class="cw-header-inner">
+        <a class="cw-logo" href="/">
+            ChatWell
+        </a>
+
+        <div class="cw-header-actions">
+            <a
+                class="cw-button cw-button-secondary"
+                href="/register/"
+            >
+                Войти
+            </a>
+<a
+    class="cw-menu-link"
+    href="/chat/"
+>
+    <span class="cw-menu-icon">✉</span>
+    Сообщения
+</a>
+            <a
+                class="cw-button"
+                href="/register/"
+            >
+                Регистрация
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="cw-main">
+    <section
+        class="cw-card cw-card-padding"
+        style="
+            max-width: 780px;
+            margin: 55px auto;
+            text-align: center;
+        "
+    >
+        <div
+            class="cw-logo"
+            style="margin-bottom: 20px;"
+        >
+            ChatWell
+        </div>
+
+        <h1
+            style="
+                margin-bottom: 18px;
+                font-size: clamp(36px, 7vw, 68px);
+                line-height: 1.05;
+                letter-spacing: -2px;
+            "
+        >
+            Общайся.<br>
+            Публикуй.<br>
+            Находи своих.
+        </h1>
+
+        <p
+            style="
+                max-width: 560px;
+                margin: 0 auto 28px;
+                color: var(--cw-muted);
+                font-size: 18px;
+                line-height: 1.6;
+            "
+        >
+            ChatWell объединяет социальную сеть,
+            публикации, истории и удобный мессенджер
+            в одном приложении.
+        </p>
+
+        <a
+            class="cw-button"
+            href="/register/"
+        >
+            Начать пользоваться
+        </a>
+    </section>
+
+    <section
+        style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+        "
+    >
+        <article class="cw-card cw-card-padding">
+            <h2 class="cw-section-title">
+                Публикации
+            </h2>
+
+            <p style="color: var(--cw-muted); line-height: 1.5;">
+                Делись фотографиями, видео и своими мыслями.
+            </p>
+        </article>
+
+        <article class="cw-card cw-card-padding">
+            <h2 class="cw-section-title">
+                Общение
+            </h2>
+
+            <p style="color: var(--cw-muted); line-height: 1.5;">
+                Находи людей и общайся с друзьями.
+            </p>
+        </article>
+
+        <article class="cw-card cw-card-padding">
+            <h2 class="cw-section-title">
+                Безопасность
+            </h2>
+
+            <p style="color: var(--cw-muted); line-height: 1.5;">
+                Управляй приватностью и своими данными.
+            </p>
+        </article>
+    </section>
+</main>
+
+<style>
+    @media (max-width: 700px) {
+        main section:last-child {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

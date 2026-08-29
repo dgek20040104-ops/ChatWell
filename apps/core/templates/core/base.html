@@ -1,0 +1,275 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/chatwell.css' %}"
+    >
+
+    <title>
+        {% block title %}ChatWell{% endblock %}
+    </title>
+
+    {% block head %}{% endblock %}
+
+    <style>
+    :root {
+        --cw-bg: #f4f5fb;
+        --cw-surface: #ffffff;
+        --cw-surface-soft: #f8f9fd;
+        --cw-text: #20212a;
+        --cw-muted: #858b9e;
+        --cw-border: #e4e6ef;
+        --cw-primary: #6253e6;
+        --cw-primary-soft: #eeecff;
+        --cw-header: rgba(255, 255, 255, .92);
+        --cw-shadow: 0 12px 40px rgba(40, 42, 75, .08);
+    }
+
+    /*
+     * Светлая тема
+     */
+    html[data-global-theme="light"] {
+        --cw-bg: #f4f5fb;
+        --cw-surface: #ffffff;
+        --cw-surface-soft: #f8f9fd;
+        --cw-text: #20212a;
+        --cw-muted: #858b9e;
+        --cw-border: #e4e6ef;
+        --cw-primary: #6253e6;
+        --cw-primary-soft: #eeecff;
+        --cw-header: rgba(255, 255, 255, .92);
+        --cw-shadow: 0 12px 40px rgba(40, 42, 75, .08);
+    }
+
+    /*
+     * Тёмная тема
+     */
+    html[data-global-theme="dark"] {
+        --cw-bg: #151622;
+        --cw-surface: #202231;
+        --cw-surface-soft: #292b3b;
+        --cw-text: #f7f7fb;
+        --cw-muted: #a8abbd;
+        --cw-border: #393c50;
+        --cw-primary: #897dff;
+        --cw-primary-soft: #343052;
+        --cw-header: rgba(32, 34, 49, .94);
+        --cw-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+    }
+
+    /*
+     * AMOLED-тема
+     */
+    html[data-global-theme="amoled"] {
+        --cw-bg: #000000;
+        --cw-surface: #090909;
+        --cw-surface-soft: #141414;
+        --cw-text: #ffffff;
+        --cw-muted: #9b9b9b;
+        --cw-border: #292929;
+        --cw-primary: #9b8cff;
+        --cw-primary-soft: #211d3b;
+        --cw-header: rgba(9, 9, 9, .96);
+        --cw-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+    }
+
+    /*
+     * Лавандовая тема
+     */
+    html[data-global-theme="lavender"] {
+        --cw-bg: #f5efff;
+        --cw-surface: #ffffff;
+        --cw-surface-soft: #fbf8ff;
+        --cw-text: #302546;
+        --cw-muted: #887da1;
+        --cw-border: #e6daf7;
+        --cw-primary: #9a63d8;
+        --cw-primary-soft: #f0e4ff;
+        --cw-header: rgba(255, 255, 255, .93);
+        --cw-shadow: 0 12px 40px rgba(115, 75, 160, .12);
+    }
+
+    html,
+    body {
+        background: var(--cw-bg);
+        color: var(--cw-text);
+    }
+
+    body {
+        transition:
+            background .25s ease,
+            color .25s ease;
+    }
+
+    .cw-header {
+        background: var(--cw-header) !important;
+        border-color: var(--cw-border) !important;
+        box-shadow: var(--cw-shadow);
+    }
+
+    .cw-card,
+    .cw-sidebar,
+    .cw-right-sidebar,
+    .cw-menu,
+    .cw-surface,
+    .profile-card,
+    .settings-card {
+        background-color: var(--cw-surface);
+        border-color: var(--cw-border);
+        color: var(--cw-text);
+    }
+
+    .cw-main,
+    .cw-content,
+    .cw-sidebar,
+    .cw-right-sidebar {
+        color: var(--cw-text);
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+        color: var(--cw-text);
+    }
+
+    input,
+    textarea,
+    select {
+        background-color: var(--cw-surface);
+        border-color: var(--cw-border);
+    }
+
+    a {
+        color: var(--cw-primary);
+    }
+
+    .cw-menu-link:hover,
+    .cw-menu-link.active {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+    }
+</style>
+</head>
+
+<body>
+    {% block body %}{% endblock %}
+
+    <a
+        class="cw-notification-link"
+        href="/notifications/"
+        title="Уведомления"
+        aria-label="Уведомления"
+    >
+        <span
+            class="cw-notification-icon"
+            aria-hidden="true"
+        >
+            ♡
+        </span>
+
+        <span
+            id="notifications-count"
+            class="cw-notification-count"
+            hidden
+        >
+            0
+        </span>
+    </a>
+
+    <script>
+        (function () {
+            const token =
+                localStorage.getItem(
+                    "chatwell_access_token"
+                );
+
+            const counter =
+                document.getElementById(
+                    "notifications-count"
+                );
+
+            if (!token || !counter) {
+                return;
+            }
+
+            fetch(
+                "/api/notifications/",
+                {
+                    method: "GET",
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
+            )
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error(
+                        "Не удалось загрузить "
+                        + "уведомления"
+                    );
+                }
+
+                return response.json();
+            })
+            .then(function (data) {
+                const unreadCount =
+                    Number(
+                        data.unread_count
+                    ) || 0;
+
+                if (unreadCount <= 0) {
+                    counter.hidden = true;
+                    return;
+                }
+
+                counter.hidden = false;
+
+                counter.textContent =
+                    unreadCount > 99
+                        ? "99+"
+                        : String(unreadCount);
+            })
+            .catch(function (error) {
+                console.error(
+                    "Ошибка счётчика уведомлений:",
+                    error
+                );
+            });
+        })();
+
+        
+(function () {
+    "use strict";
+
+    const globalTheme =
+        localStorage.getItem(
+            "chatwell_global_theme"
+        ) || "light";
+
+    const chatTheme =
+        localStorage.getItem(
+            "chatwell_chat_theme"
+        ) || "classic";
+
+    document.documentElement.dataset.globalTheme =
+        globalTheme;
+
+    document.documentElement.dataset.chatTheme =
+        chatTheme;
+})();
+
+    </script>
+</body>
+</html>

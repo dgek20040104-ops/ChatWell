@@ -1,0 +1,4537 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+    Профиль — ChatWell
+{% endblock %}
+
+{% block body %}
+
+<header class="cw-header">
+    <div class="cw-header-inner">
+        <a
+            class="cw-logo"
+            href="/"
+        >
+            ChatWell
+        </a>
+
+        <div class="cw-header-actions">
+            <a
+                class="profile-header-icon"
+                href="/notifications/"
+                title="Уведомления"
+            >
+                ♡
+            </a>
+
+            <a
+                class="cw-button cw-button-secondary"
+                href="/people/"
+            >
+                Найти людей
+            </a>
+
+            <a
+                class="cw-button cw-button-secondary"
+                href="/chat/"
+            >
+                Сообщения
+            </a>
+
+            <a
+                class="cw-button cw-button-secondary"
+                href="/settings/"
+            >
+                Настройки
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="cw-main">
+    <div class="cw-layout">
+        <aside class="cw-sidebar">
+            <nav class="cw-menu">
+                <a
+                    class="cw-menu-link"
+                    href="/feed/"
+                >
+                    <span class="cw-menu-icon">⌂</span>
+                    Лента
+                </a>
+
+                <a
+                    class="cw-menu-link"
+                    href="/people/"
+                >
+                    <span class="cw-menu-icon">⌕</span>
+                    Люди
+                </a>
+
+                <a
+                    class="cw-menu-link"
+                    href="/chat/"
+                >
+                    <span class="cw-menu-icon">✉</span>
+                    Сообщения
+                </a>
+
+                <a
+    href="/reels/"
+    class="cw-menu-link"
+>
+    <span class="cw-menu-icon">▶</span>
+    Reels
+</a>
+
+                <a
+                    class="cw-menu-link"
+                    href="/notifications/"
+                >
+                    <span class="cw-menu-icon">♡</span>
+                    Уведомления
+                </a>
+
+                <a
+                    class="cw-menu-link active"
+                    href="/profile/"
+                >
+                    <span class="cw-menu-icon">◉</span>
+                    Профиль
+                </a>
+
+                <a
+                    class="cw-menu-link"
+                    href="/settings/"
+                >
+                    <span class="cw-menu-icon">⚙</span>
+                    Настройки
+                </a>
+            </nav>
+        </aside>
+
+        <section class="cw-content">
+            <h1 class="cw-page-title">
+                Мой профиль
+            </h1>
+
+            <section class="cw-card profile-card">
+                <div class="profile-header">
+                    <div
+                        id="profile-avatar-ring"
+                        class="profile-avatar-ring"
+                        title="Создать публикацию или историю"
+                    >
+                        <div
+                            id="profile-avatar"
+                            class="cw-avatar profile-avatar"
+                        >
+                            ?
+                        </div>
+                    </div>
+
+                    <div class="profile-main-info">
+                        <div class="profile-title-row">
+                            <div>
+                                <h2
+                                    id="profile-display-name"
+                                    class="profile-display-name"
+                                >
+                                    Пользователь
+                                </h2>
+
+                                <p
+                                    id="profile-username"
+                                    class="profile-username"
+                                >
+                                    @username
+                                </p>
+                            </div>
+
+                            <div class="profile-more-wrapper">
+                                <button
+                                    id="profile-more-button"
+                                    class="profile-more-button"
+                                    type="button"
+                                    aria-label="Дополнительные действия"
+                                >
+                                    ⋯
+                                </button>
+
+                                <div
+                                    id="profile-menu"
+                                    class="profile-menu"
+                                    hidden
+                                >
+                                    <a href="/settings/">
+                                        Настройки профиля
+                                    </a>
+
+                                    <button
+                                        id="logout-button"
+                                        type="button"
+                                    >
+                                        Выйти
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p
+                            id="profile-bio"
+                            class="profile-bio"
+                        ></p>
+
+                        <div class="profile-stats">
+    <div class="profile-stat">
+        <strong id="posts-count">
+            0
+        </strong>
+
+        <span>
+            публикаций
+        </span>
+    </div>
+
+    <button
+        id="followers-button"
+        class="profile-stat profile-stat-button"
+        type="button"
+    >
+        <strong id="followers-count">
+            0
+        </strong>
+
+        <span>
+            подписчиков
+        </span>
+    </button>
+
+    <button
+        id="follow-requests-button"
+        class="profile-stat profile-stat-button"
+        type="button"
+    >
+        <strong id="follow-requests-count">
+            0
+        </strong>
+
+        <span>
+            запросов
+        </span>
+    </button>
+
+    <button
+        id="following-button"
+        class="profile-stat profile-stat-button"
+        type="button"
+    >
+        <strong id="following-count">
+            0
+        </strong>
+
+        <span>
+            подписок
+        </span>
+    </button>
+</div>
+                    </div>
+                </div>
+
+                <div class="profile-tabs">
+                    <button
+                        class="profile-tab active"
+                        type="button"
+                        data-tab="all"
+                    >
+                        ▦ Публикации
+                    </button>
+
+                    <button
+                        class="profile-tab"
+                        type="button"
+                        data-tab="video"
+                    >
+                        ▶ Видео
+                    </button>
+
+                    <button
+                        class="profile-tab"
+                        type="button"
+                        data-tab="reel"
+                    >
+                        ▣ Reels
+                    </button>
+
+                    <button
+                        class="profile-tab"
+                        type="button"
+                        data-tab="saved"
+                    >
+                        ♧ Сохранённое
+                    </button>
+                </div>
+            </section>
+
+            <section
+                id="posts-container"
+                class="profile-posts-list"
+            >
+                <div class="cw-empty">
+                    Загружаем публикации...
+                </div>
+            </section>
+
+            <div
+                id="profile-message"
+                class="cw-message"
+            ></div>
+        </section>
+
+        <aside class="cw-right-sidebar">
+            <div class="cw-card cw-card-padding">
+                <h2 class="cw-section-title">
+                    Ваш ChatWell
+                </h2>
+
+                <p class="profile-side-text">
+                    Создавайте публикации, истории,
+                    видео и Reels. Подписывайтесь
+                    на интересных людей.
+                </p>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<nav class="cw-mobile-nav">
+    <a href="/feed/">
+        <span class="cw-mobile-nav-icon">⌂</span>
+        <span>Лента</span>
+    </a>
+
+    <a href="/people/">
+        <span class="cw-mobile-nav-icon">⌕</span>
+        <span>Люди</span>
+    </a>
+
+    <a href="/chat/">
+        <span class="cw-mobile-nav-icon">✉</span>
+        <span>Чаты</span>
+    </a>
+
+    <a
+        class="active"
+        href="/profile/"
+    >
+        <span class="cw-mobile-nav-icon">◉</span>
+        <span>Профиль</span>
+    </a>
+</nav>
+
+<!-- Меню после нажатия на аватар -->
+<div
+    id="avatar-actions-modal"
+    class="cw-modal"
+    hidden
+>
+    <div class="avatar-actions-card">
+        <button
+            id="close-avatar-actions"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+        <div class="modal-icon">
+            ✨
+        </div>
+
+        <h2>
+            Создать
+        </h2>
+
+        <p>
+            Выберите, что хотите опубликовать
+        </p>
+
+        <button
+    id="upload-post-button"
+    type="button"
+>
+    Выложить фото или видео
+</button>
+
+        <button
+            id="upload-story-button"
+            class="avatar-action-button"
+            type="button"
+        >
+            <span>◉</span>
+            Добавить историю
+        </button>
+    </div>
+</div>
+
+<!-- Создание публикации -->
+<div
+    id="upload-post-modal"
+    class="cw-modal"
+    hidden
+>
+    <div class="upload-card">
+        <button
+            id="close-upload-post"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+        <h2>
+            Новая публикация
+        </h2>
+
+        <textarea
+            id="upload-post-text"
+            class="cw-textarea"
+            maxlength="5000"
+            rows="4"
+            placeholder="Что у вас нового?"
+        ></textarea>
+
+        <label class="upload-file-label">
+            Выбрать фото или видео
+
+            
+                <input
+    id="upload-post-media"
+    type="file"
+    multiple
+    accept="image/*,video/*"
+>
+        </label>
+
+        <div
+            id="upload-post-preview"
+            class="upload-preview"
+        ></div>
+
+        <div
+            id="upload-post-message"
+            class="cw-message"
+        ></div>
+
+        <button
+            id="publish-upload-post"
+            class="cw-button upload-submit"
+            type="button"
+        >
+            Опубликовать
+        </button>
+    </div>
+</div>
+
+<!-- Создание истории -->
+<div
+    id="upload-story-modal"
+    class="cw-modal"
+    hidden
+>
+    <div class="upload-card">
+        <button
+            id="close-upload-story"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+        <h2>
+            Новая история
+        </h2>
+
+        <label class="upload-file-label">
+            Выбрать фото или видео
+
+            <input
+                id="upload-story-media"
+                type="file"
+                accept="
+                    image/jpeg,
+                    image/png,
+                    image/webp,
+                    video/mp4,
+                    video/webm,
+                    video/quicktime
+                "
+            >
+        </label>
+
+        <div
+            id="upload-story-preview"
+            class="upload-preview"
+        ></div>
+
+        <div
+            id="upload-story-message"
+            class="cw-message"
+        ></div>
+
+        <button
+            id="publish-upload-story"
+            class="cw-button upload-submit"
+            type="button"
+        >
+            Опубликовать историю
+        </button>
+    </div>
+</div>
+
+<!-- Подписчики и подписки -->
+<div
+    id="connections-modal"
+    class="cw-modal"
+    hidden
+>
+    <div class="connections-card">
+        <button
+            id="close-connections"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+        <h2 id="connections-title">
+            Пользователи
+        </h2>
+
+        <div
+            id="connections-list"
+            class="connections-list"
+        >
+            Загружаем...
+        </div>
+    </div>
+</div>
+
+<!-- Просмотр публикации -->
+<div
+    id="post-modal"
+    class="cw-modal"
+    hidden
+>
+    <div class="post-modal-card">
+        <button
+            id="close-post-modal"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+        <div
+            id="post-modal-media"
+            class="post-modal-media"
+        ></div>
+
+        <div class="post-modal-info">
+            <p
+                id="post-modal-text"
+                class="post-modal-text"
+            ></p>
+
+            <div class="post-modal-actions">
+                <button
+                    id="modal-like-button"
+                    type="button"
+                >
+                    ♡ 0
+                </button>
+
+                <button
+                    id="modal-save-button"
+                    type="button"
+                >
+                    ♧ Сохранить
+                </button>
+
+                <button
+                    id="modal-delete-button"
+                    class="danger-button"
+                    type="button"
+                >
+                    Удалить
+                </button>
+            </div>
+
+            <div
+                id="modal-comments"
+                class="modal-comments"
+            ></div>
+
+            <form
+                id="comment-form"
+                class="comment-form"
+            >
+                <input
+                    id="comment-input"
+                    class="cw-input"
+                    type="text"
+                    maxlength="1000"
+                    placeholder="Добавить комментарий..."
+                    required
+                >
+
+                <button
+                    class="cw-button"
+                    type="submit"
+                >
+                    Отправить
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    [hidden] {
+        display: none !important;
+    }
+
+    .profile-header-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--cw-border);
+        border-radius: 50%;
+        color: var(--cw-text);
+        font-size: 24px;
+        text-decoration: none;
+        transition:
+            color .2s ease,
+            background .2s ease,
+            transform .2s ease;
+    }
+
+    .profile-header-icon:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+        transform: translateY(-2px);
+    }
+
+    .profile-card {
+        padding: 25px;
+        animation: profile-show .35s ease both;
+    }
+
+    @keyframes profile-show {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .profile-avatar-ring {
+        flex: 0 0 auto;
+        padding: 5px;
+        border-radius: 50%;
+        background: #bcbcc7;
+        cursor: pointer;
+        transition: transform .25s ease;
+    }
+
+    .profile-avatar-ring:hover {
+        transform: scale(1.04);
+    }
+
+    /*
+     * Кольцо не вращается.
+     * Здесь нет animation и @keyframes.
+     */
+    .profile-avatar-ring.has-story {
+        background: conic-gradient(
+            #7c3aed,
+            #ec4899,
+            #f97316,
+            #facc15,
+            #7c3aed
+        );
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border: 4px solid var(--cw-surface);
+        font-size: 40px;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-main-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .profile-title-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .profile-display-name {
+        margin: 0 0 5px;
+        color: var(--cw-text);
+        font-size: 27px;
+    }
+
+    .profile-username {
+        margin: 0 0 13px;
+        color: var(--cw-muted);
+        font-size: 14px;
+    }
+
+    .profile-bio {
+        max-width: 650px;
+        margin: 0 0 18px;
+        color: var(--cw-text);
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .profile-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+    }
+
+    .profile-stat {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+    }
+
+    .profile-stat strong {
+        color: var(--cw-text);
+        font-size: 18px;
+    }
+
+    .profile-stat span {
+        color: var(--cw-muted);
+        font-size: 13px;
+    }
+
+    .profile-stat-button {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+        transition:
+            color .2s ease,
+            transform .2s ease;
+    }
+
+    .profile-stat-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .profile-stat-button:hover strong,
+    .profile-stat-button:hover span {
+        color: var(--cw-primary);
+    }
+
+    .profile-more-wrapper {
+        position: relative;
+    }
+
+    .profile-more-button {
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--cw-text);
+        cursor: pointer;
+        font-size: 28px;
+        line-height: 1;
+        transition:
+            background .2s ease,
+            color .2s ease;
+    }
+
+    .profile-more-button:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+    }
+
+    .profile-menu {
+        position: absolute;
+        top: 45px;
+        right: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        width: 220px;
+        padding: 7px;
+        border: 1px solid var(--cw-border);
+        border-radius: 14px;
+        background: var(--cw-surface);
+        box-shadow: 0 15px 40px rgba(20, 20, 40, .17);
+        animation: menu-show .2s ease both;
+    }
+
+    @keyframes menu-show {
+        from {
+            opacity: 0;
+            transform: translateY(-5px) scale(.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .profile-menu a,
+    .profile-menu button {
+        padding: 11px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--cw-text);
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+        text-decoration: none;
+    }
+
+    .profile-menu a:hover,
+    .profile-menu button:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+    }
+
+    .profile-menu button {
+        color: #dc3545;
+    }
+
+    .profile-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 25px;
+        overflow-x: auto;
+        border-top: 1px solid var(--cw-border);
+    }
+
+    .profile-tab {
+        position: relative;
+        flex: 0 0 auto;
+        padding: 13px 15px;
+        border: 0;
+        background: transparent;
+        color: var(--cw-muted);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        transition:
+            color .2s ease,
+            transform .2s ease;
+    }
+
+    .profile-tab::after {
+        position: absolute;
+        right: 12px;
+        bottom: -1px;
+        left: 12px;
+        height: 2px;
+        border-radius: 8px;
+        background: transparent;
+        content: "";
+    }
+
+    .profile-tab:hover {
+        color: var(--cw-primary);
+        transform: translateY(-1px);
+    }
+
+    .profile-tab.active {
+        color: var(--cw-primary);
+        font-weight: 700;
+    }
+
+    .profile-tab.active::after {
+        background: var(--cw-primary);
+    }
+
+    .profile-posts-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .profile-post {
+        position: relative;
+        min-height: 210px;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--cw-surface-soft);
+        cursor: pointer;
+        opacity: 1;
+animation: post-show .35s ease both;
+        transition:
+            transform .25s ease,
+            box-shadow .25s ease;
+    }
+
+    .profile-post:hover {
+        z-index: 2;
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 28px rgba(20, 20, 40, .17);
+    }
+
+    .profile-post img,
+    .profile-post video {
+        display: block;
+        width: 100%;
+        height: 235px;
+        object-fit: cover;
+    }
+
+    .profile-post video {
+        pointer-events: none;
+    }
+
+    .profile-post-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 210px;
+        padding: 20px;
+        color: var(--cw-text);
+        line-height: 1.5;
+        text-align: center;
+        white-space: pre-wrap;
+    }
+
+    .profile-post-overlay {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding: 17px 8px 10px;
+        background: linear-gradient(
+            transparent,
+            rgba(0, 0, 0, .72)
+        );
+        color: white;
+        font-size: 13px;
+        opacity: 0;
+        transition: opacity .2s ease;
+    }
+
+    .profile-post:hover .profile-post-overlay {
+        opacity: 1;
+    }
+
+    .profile-post-pinned {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        z-index: 3;
+        padding: 5px 7px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, .65);
+        color: white;
+    }
+
+    .profile-side-text {
+        margin: 0;
+        color: var(--cw-muted);
+        line-height: 1.5;
+    }
+
+    .cw-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(12, 12, 25, .76);
+        opacity: 0;
+        transition: opacity .25s ease;
+    }
+
+    .cw-modal:not([hidden]) {
+        opacity: 1;
+    }
+
+    .avatar-actions-card,
+    .upload-card,
+    .connections-card {
+        position: relative;
+        width: min(100%, 440px);
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 27px;
+        border-radius: 22px;
+        background: var(--cw-surface);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .22);
+        animation: modal-card-show .25s ease both;
+    }
+
+    @keyframes modal-card-show {
+        from {
+            opacity: 0;
+            transform: scale(.94) translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .avatar-actions-card {
+        text-align: center;
+    }
+
+    .avatar-actions-card h2,
+    .upload-card h2,
+    .connections-card h2 {
+        margin: 0 0 8px;
+        color: var(--cw-text);
+    }
+
+    .avatar-actions-card p {
+        margin: 0 0 20px;
+        color: var(--cw-muted);
+    }
+
+    .modal-icon {
+        margin-bottom: 8px;
+        font-size: 38px;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 13px;
+        z-index: 5;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--cw-muted);
+        cursor: pointer;
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    .modal-close:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+    }
+
+    .avatar-action-button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        margin-top: 10px;
+        padding: 14px;
+        border: 1px solid var(--cw-border);
+        border-radius: 13px;
+        background: var(--cw-surface);
+        color: var(--cw-text);
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+        transition:
+            background .2s ease,
+            color .2s ease,
+            transform .2s ease;
+    }
+
+    .avatar-action-button:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+        transform: translateY(-2px);
+    }
+
+    .avatar-action-button span {
+        font-size: 22px;
+    }
+
+    .upload-card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .upload-file-label {
+        display: block;
+        padding: 14px;
+        border: 1px dashed var(--cw-primary);
+        border-radius: 13px;
+        color: var(--cw-primary);
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .upload-file-label input {
+        display: none;
+    }
+
+    .upload-preview {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .upload-preview img,
+    .upload-preview video {
+        width: 100%;
+        height: 170px;
+        border-radius: 12px;
+        background: #11111b;
+        object-fit: cover;
+    }
+
+    .upload-submit {
+        width: 100%;
+    }
+
+    .connections-card {
+        width: min(100%, 470px);
+    }
+
+    .connections-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .connection-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid var(--cw-border);
+        border-radius: 12px;
+        transition:
+            background .2s ease,
+            transform .2s ease;
+    }
+
+    .connection-user:hover {
+        background: var(--cw-primary-soft);
+        transform: translateX(3px);
+    }
+
+    .connection-user a {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+        color: var(--cw-text);
+        text-decoration: none;
+    }
+
+    .connection-user small {
+        color: var(--cw-muted);
+    }
+
+    .connection-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        overflow: hidden;
+        flex: 0 0 44px;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            var(--cw-primary),
+            #a78bfa
+        );
+        color: white;
+        font-weight: 700;
+    }
+
+    .connection-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .post-modal-card {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1.2fr .8fr;
+        width: min(100%, 900px);
+        max-height: 90vh;
+        overflow: hidden;
+        border-radius: 20px;
+        background: var(--cw-surface);
+        animation: modal-card-show .25s ease both;
+    }
+
+    .post-modal-media {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 500px;
+        background: #11111b;
+    }
+
+    .post-modal-media img,
+    .post-modal-media video {
+        width: 100%;
+        height: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+    }
+
+    .post-modal-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 25px 18px 18px;
+    }
+
+    .post-modal-text {
+        max-height: 170px;
+        overflow-y: auto;
+        margin: 0 0 15px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .post-modal-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--cw-border);
+    }
+
+    .post-modal-actions button {
+        padding: 8px 10px;
+        border: 1px solid var(--cw-border);
+        border-radius: 9px;
+        background: transparent;
+        color: var(--cw-text);
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+    }
+
+    .post-modal-actions button:hover {
+        background: var(--cw-primary-soft);
+        color: var(--cw-primary);
+    }
+
+    .post-modal-actions button.liked {
+        color: #e53935;
+    }
+
+    .danger-button {
+        color: #dc3545 !important;
+    }
+
+    .modal-comments {
+        flex: 1;
+        min-height: 120px;
+        overflow-y: auto;
+        padding: 12px 0;
+    }
+
+    .modal-comment {
+        padding: 9px 0;
+        border-bottom: 1px solid var(--cw-border);
+    }
+
+    .modal-comment strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+
+    .modal-comment span {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .comment-form {
+        display: flex;
+        gap: 7px;
+        padding-top: 12px;
+        border-top: 1px solid var(--cw-border);
+    }
+
+    .comment-form .cw-input {
+        min-width: 0;
+        flex: 1;
+    }
+
+    @media (max-width: 850px) {
+        .post-modal-card {
+            display: block;
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        .post-modal-media {
+            min-height: 320px;
+            max-height: 55vh;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .cw-header-actions .cw-button-secondary {
+            display: none;
+        }
+
+        .profile-card {
+            padding: 18px;
+        }
+
+        .profile-header {
+            gap: 14px;
+        }
+
+        .profile-avatar {
+            width: 82px;
+            height: 82px;
+            font-size: 28px;
+        }
+
+        .profile-display-name {
+            font-size: 21px;
+        }
+
+        .profile-stats {
+            gap: 12px;
+        }
+
+        .profile-stat {
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .profile-tabs {
+            justify-content: flex-start;
+        }
+
+        .profile-tab {
+            padding: 12px 9px;
+            font-size: 11px;
+        }
+
+        .profile-posts-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 7px;
+        }
+
+        .profile-post {
+            min-height: 160px;
+        }
+
+        .profile-post img,
+        .profile-post video {
+            height: 170px;
+        }
+
+        .profile-post-overlay {
+            opacity: 1;
+        }
+
+        .upload-preview {
+            grid-template-columns: 1fr;
+        }
+
+        .upload-preview img,
+        .upload-preview video {
+            height: 220px;
+        }
+
+        .comment-form {
+            flex-direction: column;
+        }
+
+        .comment-form .cw-button {
+            width: 100%;
+        }
+    }
+
+    .profile-media-wrapper {
+    position: relative;
+    width: 100%;
+    height: 235px;
+    overflow: hidden;
+    background: #11111b;
+}
+
+.profile-media-wrapper img,
+.profile-media-wrapper video {
+    display: block;
+    width: 100%;
+    height: 235px;
+    object-fit: cover;
+}
+
+.profile-media-counter {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    z-index: 5;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, .65);
+    color: white;
+    font-size: 12px;
+}
+
+.profile-media-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 31px;
+    height: 31px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .62);
+    color: white;
+    cursor: pointer;
+    font-size: 25px;
+    line-height: 1;
+    transform: translateY(-50%);
+}
+
+.profile-media-arrow:hover {
+    background: var(--cw-primary);
+}
+
+.profile-media-prev {
+    left: 8px;
+}
+
+.profile-media-next {
+    right: 8px;
+}
+
+.follow-request-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px;
+    border: 1px solid var(--cw-border);
+    border-radius: 13px;
+    background: var(--cw-surface);
+}
+
+.follow-request-item:hover {
+    background: var(--cw-primary-soft);
+}
+
+.follow-request-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.follow-request-info strong,
+.follow-request-info small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.follow-request-info strong {
+    color: var(--cw-text);
+    font-size: 13px;
+}
+
+.follow-request-info small {
+    margin-top: 3px;
+    color: var(--cw-muted);
+    font-size: 11px;
+}
+
+.follow-request-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+}
+
+.follow-request-action {
+    min-height: 34px;
+    padding: 0 9px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.follow-request-accept {
+    background: var(--cw-primary);
+    color: #ffffff;
+}
+
+.follow-request-accept:hover {
+    filter: brightness(.92);
+}
+
+.follow-request-reject {
+    border: 1px solid var(--cw-border);
+    background: transparent;
+    color: var(--cw-muted);
+}
+
+.follow-request-reject:hover {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.follow-request-action:disabled {
+    cursor: wait;
+    opacity: .6;
+}
+
+.follow-requests-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    margin-left: 4px;
+    padding: 0 4px;
+    border-radius: 20px;
+    background: #dc3545;
+    color: #ffffff;
+    font-size: 10px;
+}
+</style>
+
+<script>
+(function () {
+    "use strict";
+
+    const ACCESS_TOKEN_KEY =
+        "chatwell_access_token";
+
+    const REFRESH_TOKEN_KEY =
+        "chatwell_refresh_token";
+
+    const accessToken =
+        localStorage.getItem(
+            ACCESS_TOKEN_KEY
+        );
+
+    if (!accessToken) {
+        window.location.href =
+            "/register/";
+
+        return;
+    }
+
+    const profileUserId =
+        window.profileUserId || "";
+
+    let currentUserId = "";
+    let allPosts = [];
+    let activePost = null;
+    let activeTab = "all";
+    let objectUrls = [];
+
+    const $ = function (selector) {
+        return document.querySelector(
+            selector
+        );
+    };
+
+    function byId(id) {
+        return document.getElementById(id);
+    }
+
+    const postsContainer =
+        byId("posts-container");
+
+    const profileMessage =
+        byId("profile-message");
+
+    const profileAvatar =
+        byId("profile-avatar");
+
+    const profileAvatarRing =
+        byId("profile-avatar-ring");
+
+    const profileMoreButton =
+        byId("profile-more-button");
+
+    const profileMenu =
+        byId("profile-menu");
+
+    const avatarActionsModal =
+        byId("avatar-actions-modal");
+
+    const uploadPostModal =
+        byId("upload-post-modal");
+
+    const uploadStoryModal =
+        byId("upload-story-modal");
+
+    const connectionsModal =
+        byId("connections-modal");
+
+    const followRequestsButton =
+        byId("follow-requests-button");
+
+    const followRequestsCount =
+        byId("follow-requests-count");
+
+    const postModal =
+        byId("post-modal");
+
+    const uploadPostMedia =
+        byId("upload-post-media");
+
+    const uploadStoryMedia =
+        byId("upload-story-media");
+
+    const uploadPostPreview =
+        byId("upload-post-preview");
+
+    const uploadStoryPreview =
+        byId("upload-story-preview");
+
+    const modalMedia =
+        byId("post-modal-media");
+
+    const modalText =
+        byId("post-modal-text");
+
+    const modalLikeButton =
+        byId("modal-like-button");
+
+    const modalSaveButton =
+        byId("modal-save-button");
+
+    const modalDeleteButton =
+        byId("modal-delete-button");
+
+    const modalComments =
+        byId("modal-comments");
+
+    const commentForm =
+        byId("comment-form");
+
+    const commentInput =
+        byId("comment-input");
+
+    function authHeaders(json) {
+        const headers = {
+            "Authorization":
+                "Bearer " + accessToken
+        };
+
+        if (json) {
+            headers["Content-Type"] =
+                "application/json";
+        }
+
+        return headers;
+    }
+
+    async function readJson(response) {
+        const text =
+            await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return {
+                detail:
+                    "Сервер вернул некорректный ответ."
+            };
+        }
+    }
+
+    function errorText(
+        data,
+        fallback
+    ) {
+        if (
+            data
+            && data.detail
+        ) {
+            return String(
+                data.detail
+            );
+        }
+
+        if (
+            data
+            && typeof data === "object"
+        ) {
+            const messages =
+                Object.entries(data)
+                    .map(function (entry) {
+                        const key =
+                            entry[0];
+
+                        const value =
+                            Array.isArray(entry[1])
+                                ? entry[1].join(", ")
+                                : String(entry[1]);
+
+                        return (
+                            key
+                            + ": "
+                            + value
+                        );
+                    })
+                    .filter(Boolean);
+
+            if (messages.length) {
+                return messages.join(" ");
+            }
+        }
+
+        return (
+            fallback
+            || "Произошла ошибка."
+        );
+    }
+
+    function showMessage(
+        text,
+        success
+    ) {
+        if (!profileMessage) {
+            return;
+        }
+
+        profileMessage.textContent =
+            text || "";
+
+        profileMessage.style.color =
+            success
+                ? "#198754"
+                : "#dc3545";
+    }
+
+    function displayName(user) {
+        if (!user) {
+            return "Пользователь";
+        }
+
+        return (
+            user.display_name
+            || user.username
+            || "Пользователь"
+        );
+    }
+
+    function openModal(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.hidden =
+            false;
+
+        requestAnimationFrame(
+            function () {
+                modal.style.opacity =
+                    "1";
+            }
+        );
+    }
+
+    function closeModal(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.style.opacity =
+            "0";
+
+        window.setTimeout(
+            function () {
+                modal.hidden =
+                    true;
+
+                modal.style.opacity =
+                    "";
+            },
+            250
+        );
+    }
+
+    function closeAllModals() {
+        [
+            avatarActionsModal,
+            uploadPostModal,
+            uploadStoryModal,
+            connectionsModal,
+            postModal
+        ].forEach(
+            function (modal) {
+                if (modal) {
+                    closeModal(modal);
+                }
+            }
+        );
+    }
+
+    function getMediaUrl(media) {
+        if (!media) {
+            return "";
+        }
+
+        if (typeof media === "string") {
+            return media;
+        }
+
+        return (
+            media.url
+            || media.file
+            || media.file_url
+            || media.media_url
+            || media.src
+            || ""
+        );
+    }
+
+    function normalizeMedia(media) {
+        if (!media) {
+            return null;
+        }
+
+        if (typeof media === "string") {
+            return {
+                url: media,
+                media_type:
+                    /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(
+                        media
+                    )
+                        ? "video"
+                        : "image"
+            };
+        }
+
+        const url =
+            getMediaUrl(media);
+
+        if (!url) {
+            return null;
+        }
+
+        return {
+            id:
+                media.id || "",
+            url: url,
+            media_type:
+                media.media_type
+                || media.type
+                || media.content_type
+                || media.mime_type
+                || "image"
+        };
+    }
+
+    function isVideoMedia(media) {
+        const item =
+            normalizeMedia(media);
+
+        if (!item) {
+            return false;
+        }
+
+        const type =
+            String(
+                item.media_type
+                || ""
+            ).toLowerCase();
+
+        return (
+            type.includes("video")
+            || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(
+                item.url
+            )
+        );
+    }
+
+    function getMediaList(post) {
+        if (!post) {
+            return [];
+        }
+
+        const fields = [
+            post.media,
+            post.media_files,
+            post.media_items,
+            post.files,
+            post.images,
+            post.videos
+        ];
+
+        for (const field of fields) {
+            if (Array.isArray(field)) {
+                return field
+                    .map(normalizeMedia)
+                    .filter(Boolean);
+            }
+
+            if (
+                field
+                && typeof field === "object"
+            ) {
+                const item =
+                    normalizeMedia(field);
+
+                return item
+                    ? [item]
+                    : [];
+            }
+
+            if (
+                typeof field === "string"
+                && field.trim()
+            ) {
+                const item =
+                    normalizeMedia(field);
+
+                return item
+                    ? [item]
+                    : [];
+            }
+        }
+
+        if (post.media_url) {
+            const item =
+                normalizeMedia({
+                    url: post.media_url,
+                    media_type:
+                        post.media_type
+                        || "image"
+                });
+
+            return item
+                ? [item]
+                : [];
+        }
+
+        if (post.file) {
+            const item =
+                normalizeMedia({
+                    url: post.file,
+                    media_type:
+                        post.media_type
+                        || "image"
+                });
+
+            return item
+                ? [item]
+                : [];
+        }
+
+        return [];
+    }
+
+    function createMediaElement(
+        media,
+        modal
+    ) {
+        const item =
+            normalizeMedia(media);
+
+        if (!item) {
+            return null;
+        }
+
+        if (isVideoMedia(item)) {
+            const video =
+                document.createElement(
+                    "video"
+                );
+
+            video.src =
+                item.url;
+
+            video.controls =
+                Boolean(modal);
+
+            video.preload =
+                "metadata";
+
+            video.playsInline =
+                true;
+
+            video.muted =
+                !modal;
+
+            return video;
+        }
+
+        const image =
+            document.createElement(
+                "img"
+            );
+
+        image.src =
+            item.url;
+
+        image.alt =
+            "Фотография публикации";
+
+        image.loading =
+            "lazy";
+
+        return image;
+    }
+
+    function createProfileMedia(
+        mediaItems
+    ) {
+        const items =
+            mediaItems
+                .map(normalizeMedia)
+                .filter(Boolean);
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+        wrapper.className =
+            "profile-media-wrapper";
+
+        let index = 0;
+
+        function render() {
+            wrapper.innerHTML =
+                "";
+
+            const media =
+                createMediaElement(
+                    items[index],
+                    false
+                );
+
+            if (media) {
+                wrapper.appendChild(
+                    media
+                );
+            }
+
+            if (items.length <= 1) {
+                return;
+            }
+
+            const counter =
+                document.createElement(
+                    "span"
+                );
+
+            counter.className =
+                "profile-media-counter";
+
+            counter.textContent =
+                (index + 1)
+                + " / "
+                + items.length;
+
+            const previous =
+                document.createElement(
+                    "button"
+                );
+
+            previous.type =
+                "button";
+
+            previous.className =
+                "profile-media-arrow "
+                + "profile-media-prev";
+
+            previous.textContent =
+                "‹";
+
+            previous.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+
+                    index =
+                        index === 0
+                            ? items.length - 1
+                            : index - 1;
+
+                    render();
+                }
+            );
+
+            const next =
+                document.createElement(
+                    "button"
+                );
+
+            next.type =
+                "button";
+
+            next.className =
+                "profile-media-arrow "
+                + "profile-media-next";
+
+            next.textContent =
+                "›";
+
+            next.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+
+                    index =
+                        index === items.length - 1
+                            ? 0
+                            : index + 1;
+
+                    render();
+                }
+            );
+
+            wrapper.appendChild(
+                counter
+            );
+
+            wrapper.appendChild(
+                previous
+            );
+
+            wrapper.appendChild(
+                next
+            );
+        }
+
+        render();
+
+        return wrapper;
+    }
+
+    function createPostCard(
+        post,
+        index
+    ) {
+        const media =
+            getMediaList(post);
+
+        if (!media.length) {
+            return null;
+        }
+
+        const card =
+            document.createElement(
+                "article"
+            );
+
+        card.className =
+            "profile-post";
+
+        card.style.animationDelay =
+            Math.min(
+                index * 40,
+                350
+            ) + "ms";
+
+        if (post.is_pinned) {
+            const pinned =
+                document.createElement(
+                    "span"
+                );
+
+            pinned.className =
+                "profile-post-pinned";
+
+            pinned.textContent =
+                "📌";
+
+            card.appendChild(
+                pinned
+            );
+        }
+
+        card.appendChild(
+            createProfileMedia(media)
+        );
+
+        const overlay =
+            document.createElement(
+                "div"
+            );
+
+        overlay.className =
+            "profile-post-overlay";
+
+        const likes =
+            document.createElement(
+                "span"
+            );
+
+        likes.textContent =
+            "♥ "
+            + Number(
+                post.likes_count || 0
+            );
+
+        const comments =
+            document.createElement(
+                "span"
+            );
+
+        comments.textContent =
+            "💬 "
+            + Number(
+                post.comments_count || 0
+            );
+
+        overlay.appendChild(
+            likes
+        );
+
+        overlay.appendChild(
+            comments
+        );
+
+        if (
+            post.post_type === "reel"
+            || media.some(isVideoMedia)
+        ) {
+            const reel =
+                document.createElement(
+                    "span"
+                );
+
+            reel.textContent =
+                "▶ Reel";
+
+            overlay.appendChild(
+                reel
+            );
+        }
+
+        card.appendChild(
+            overlay
+        );
+
+        card.addEventListener(
+            "click",
+            function () {
+                openPostModal(post);
+            }
+        );
+
+        return card;
+    }
+
+    function getFilteredPosts() {
+        const mediaPosts =
+            allPosts.filter(
+                function (post) {
+                    return getMediaList(post)
+                        .length > 0;
+                }
+            );
+
+        if (activeTab === "video") {
+            return mediaPosts.filter(
+                function (post) {
+                    return getMediaList(post)
+                        .some(isVideoMedia);
+                }
+            );
+        }
+
+        if (activeTab === "reel") {
+            return mediaPosts.filter(
+                function (post) {
+                    return (
+                        post.post_type
+                        === "reel"
+                    );
+                }
+            );
+        }
+
+        return mediaPosts;
+    }
+
+    function renderPosts() {
+        if (!postsContainer) {
+            return;
+        }
+
+        postsContainer.innerHTML =
+            "";
+
+        const posts =
+            getFilteredPosts();
+
+        if (!posts.length) {
+            postsContainer.innerHTML =
+                '<div class="cw-empty">'
+                + "Публикаций пока нет."
+                + "</div>";
+
+            return;
+        }
+
+        posts.forEach(
+            function (post, index) {
+                const card =
+                    createPostCard(
+                        post,
+                        index
+                    );
+
+                if (card) {
+                    postsContainer.appendChild(
+                        card
+                    );
+                }
+            }
+        );
+    }
+
+    function setProfileData(user) {
+        if (!user) {
+            return;
+        }
+
+        currentUserId =
+            user.id || "";
+
+        if (profileAvatar) {
+            profileAvatar.innerHTML =
+                "";
+
+            if (user.avatar) {
+                const image =
+                    document.createElement(
+                        "img"
+                    );
+
+                image.src =
+                    user.avatar;
+
+                image.alt =
+                    "Аватар пользователя";
+
+                profileAvatar.appendChild(
+                    image
+                );
+            } else {
+                profileAvatar.textContent =
+                    displayName(user)
+                        .charAt(0)
+                        .toUpperCase();
+            }
+        }
+
+        const displayNameElement =
+            byId("profile-display-name");
+
+        if (displayNameElement) {
+            displayNameElement.textContent =
+                displayName(user);
+        }
+
+        const usernameElement =
+            byId("profile-username");
+
+        if (usernameElement) {
+            usernameElement.textContent =
+                user.username
+                    ? "@" + user.username
+                    : "";
+        }
+
+        const bioElement =
+            byId("profile-bio");
+
+        if (bioElement) {
+            bioElement.textContent =
+                user.bio || "";
+        }
+
+        const followersElement =
+            byId("followers-count");
+
+        if (followersElement) {
+            followersElement.textContent =
+                String(
+                    user.followers_count
+                    || 0
+                );
+        }
+
+        const followingElement =
+            byId("following-count");
+
+        if (followingElement) {
+            followingElement.textContent =
+                String(
+                    user.following_count
+                    || 0
+                );
+        }
+    }
+
+    async function loadProfile() {
+        const response =
+            await fetch(
+                "/api/auth/me/",
+                {
+                    method: "GET",
+                    headers: authHeaders(false)
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(
+                errorText(
+                    data,
+                    "Не удалось загрузить профиль."
+                )
+            );
+        }
+
+        window.profileUserId =
+            data.id;
+
+        setProfileData(data);
+    }
+
+    async function loadPosts() {
+        if (!postsContainer) {
+            return;
+        }
+
+        postsContainer.innerHTML =
+            '<div class="cw-empty">'
+            + "Загружаем публикации..."
+            + "</div>";
+
+        const endpoint =
+            activeTab === "saved"
+                ? "/api/posts/saved/"
+                : "/api/posts/my/";
+
+        const response =
+            await fetch(
+                endpoint,
+                {
+                    method: "GET",
+                    headers: authHeaders(false)
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            throw new Error(
+                errorText(
+                    data,
+                    "Не удалось загрузить публикации."
+                )
+            );
+        }
+
+        if (Array.isArray(data)) {
+            allPosts =
+                data;
+        } else if (
+            data
+            && Array.isArray(data.posts)
+        ) {
+            allPosts =
+                data.posts;
+        } else if (
+            data
+            && Array.isArray(data.results)
+        ) {
+            allPosts =
+                data.results;
+        } else if (
+            data
+            && Array.isArray(data.items)
+        ) {
+            allPosts =
+                data.items;
+        } else {
+            allPosts =
+                [];
+        }
+
+        const postsCount =
+            byId("posts-count");
+
+        if (postsCount) {
+            postsCount.textContent =
+                String(
+                    allPosts.filter(
+                        function (post) {
+                            return getMediaList(post)
+                                .length > 0;
+                        }
+                    ).length
+                );
+        }
+
+        renderPosts();
+    }
+
+    async function loadStoryRing() {
+        if (!profileAvatarRing) {
+            return;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/stories/",
+                    {
+                        method: "GET",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                return;
+            }
+
+            const stories =
+                Array.isArray(data)
+                    ? data
+                    : (
+                        data.results
+                        || data.stories
+                        || []
+                    );
+
+            const hasStory =
+                stories.some(
+                    function (story) {
+                        const authorId =
+                            story.author_id
+                            || (
+                                story.author
+                                && story.author.id
+                            );
+
+                        return (
+                            String(authorId)
+                            === String(
+                                currentUserId
+                            )
+                        );
+                    }
+                );
+
+            profileAvatarRing.classList.toggle(
+                "has-story",
+                hasStory
+            );
+        } catch (error) {
+            console.warn(
+                "Не удалось загрузить истории:",
+                error
+            );
+        }
+    }
+
+    function updateFollowRequestsCount(
+        count
+    ) {
+        if (!followRequestsCount) {
+            return;
+        }
+
+        const value =
+            Math.max(
+                Number(count || 0),
+                0
+            );
+
+        followRequestsCount.textContent =
+            String(value);
+
+        if (followRequestsButton) {
+            followRequestsButton.classList.toggle(
+                "has-follow-requests",
+                value > 0
+            );
+
+            followRequestsButton.title =
+                value > 0
+                    ? "Есть запросы на подписку"
+                    : "Запросов на подписку нет";
+        }
+    }
+
+    async function loadFollowRequestsCount() {
+        if (!followRequestsCount) {
+            return;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/follow-requests/",
+                    {
+                        method: "GET",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                return;
+            }
+
+            const requests =
+                Array.isArray(data)
+                    ? data
+                    : (
+                        data.results
+                        || data.requests
+                        || data.items
+                        || []
+                    );
+
+            updateFollowRequestsCount(
+                requests.length
+            );
+        } catch (error) {
+            console.warn(
+                "Не удалось загрузить запросы:",
+                error
+            );
+        }
+    }
+
+    function createConnectionAvatar(user) {
+        const avatar =
+            document.createElement(
+                "div"
+            );
+
+        avatar.className =
+            "connection-avatar";
+
+        if (user && user.avatar) {
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+            image.src =
+                user.avatar;
+
+            image.alt =
+                "Аватар пользователя";
+
+            image.onerror =
+                function () {
+                    image.remove();
+
+                    avatar.textContent =
+                        displayName(user)
+                            .charAt(0)
+                            .toUpperCase();
+                };
+
+            avatar.appendChild(
+                image
+            );
+        } else {
+            avatar.textContent =
+                displayName(user)
+                    .charAt(0)
+                    .toUpperCase();
+        }
+
+        return avatar;
+    }
+
+    function getRequestUser(request) {
+        return (
+            request.follower
+            || request.user
+            || request.actor
+            || {}
+        );
+    }
+
+    function getRequestId(request) {
+        return String(
+            request.follow_id
+            || request.id
+            || ""
+        );
+    }
+
+    function showEmptyConnections(
+        list,
+        text
+    ) {
+        list.innerHTML =
+            '<div class="cw-empty">'
+            + text
+            + "</div>";
+    }
+
+    async function loadFollowRequests() {
+        const title =
+            byId("connections-title");
+
+        const list =
+            byId("connections-list");
+
+        if (!title || !list) {
+            return;
+        }
+
+        title.textContent =
+            "Запросы на подписку";
+
+        list.innerHTML =
+            '<div class="cw-empty">'
+            + "Загружаем запросы..."
+            + "</div>";
+
+        openModal(
+            connectionsModal
+        );
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/follow-requests/",
+                    {
+                        method: "GET",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось загрузить запросы."
+                    )
+                );
+            }
+
+            const requests =
+                Array.isArray(data)
+                    ? data
+                    : (
+                        data.results
+                        || data.requests
+                        || data.items
+                        || []
+                    );
+
+            updateFollowRequestsCount(
+                requests.length
+            );
+
+            list.innerHTML =
+                "";
+
+            if (!requests.length) {
+                showEmptyConnections(
+                    list,
+                    "Новых запросов нет."
+                );
+
+                return;
+            }
+
+            requests.forEach(
+                function (request) {
+                    const followId =
+                        getRequestId(request);
+
+                    if (!followId) {
+                        return;
+                    }
+
+                    const user =
+                        getRequestUser(request);
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "follow-request-item";
+
+                    item.dataset.followId =
+                        followId;
+
+                    item.appendChild(
+                        createConnectionAvatar(
+                            user
+                        )
+                    );
+
+                    const info =
+                        document.createElement(
+                            "div"
+                        );
+
+                    info.className =
+                        "follow-request-info";
+
+                    const name =
+                        document.createElement(
+                            "strong"
+                        );
+
+                    name.textContent =
+                        displayName(user);
+
+                    const username =
+                        document.createElement(
+                            "small"
+                        );
+
+                    username.textContent =
+                        user.username
+                            ? "@" + user.username
+                            : "";
+
+                    info.appendChild(
+                        name
+                    );
+
+                    info.appendChild(
+                        username
+                    );
+
+                    const actions =
+                        document.createElement(
+                            "div"
+                        );
+
+                    actions.className =
+                        "follow-request-actions";
+
+                    const accept =
+                        document.createElement(
+                            "button"
+                        );
+
+                    accept.type =
+                        "button";
+
+                    accept.className =
+                        "follow-request-action "
+                        + "follow-request-accept";
+
+                    accept.textContent =
+                        "Принять";
+
+                    const reject =
+                        document.createElement(
+                            "button"
+                        );
+
+                    reject.type =
+                        "button";
+
+                    reject.className =
+                        "follow-request-action "
+                        + "follow-request-reject";
+
+                    reject.textContent =
+                        "Отклонить";
+
+                    accept.addEventListener(
+                        "click",
+                        function () {
+                            processFollowRequest(
+                                followId,
+                                true,
+                                item,
+                                accept,
+                                reject
+                            );
+                        }
+                    );
+
+                    reject.addEventListener(
+                        "click",
+                        function () {
+                            processFollowRequest(
+                                followId,
+                                false,
+                                item,
+                                accept,
+                                reject
+                            );
+                        }
+                    );
+
+                    actions.appendChild(
+                        accept
+                    );
+
+                    actions.appendChild(
+                        reject
+                    );
+
+                    item.appendChild(
+                        info
+                    );
+
+                    item.appendChild(
+                        actions
+                    );
+
+                    list.appendChild(
+                        item
+                    );
+                }
+            );
+        } catch (error) {
+            list.innerHTML =
+                '<div class="cw-empty">'
+                + error.message
+                + "</div>";
+        }
+    }
+
+    async function processFollowRequest(
+        followId,
+        acceptRequest,
+        item,
+        acceptButton,
+        rejectButton
+    ) {
+        acceptButton.disabled =
+            true;
+
+        rejectButton.disabled =
+            true;
+
+        const endpoint =
+            acceptRequest
+                ? "/api/posts/follow-requests/"
+                    + followId
+                    + "/accept/"
+                : "/api/posts/follow-requests/"
+                    + followId
+                    + "/reject/";
+
+        const method =
+            acceptRequest
+                ? "POST"
+                : "DELETE";
+
+        try {
+            const response =
+                await fetch(
+                    endpoint,
+                    {
+                        method: method,
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        acceptRequest
+                            ? "Не удалось принять запрос."
+                            : "Не удалось отклонить запрос."
+                    )
+                );
+            }
+
+            if (item) {
+                item.remove();
+            }
+
+            const oldCount =
+                Number(
+                    followRequestsCount
+                        ? followRequestsCount.textContent
+                        : 0
+                );
+
+            updateFollowRequestsCount(
+                Math.max(oldCount - 1, 0)
+            );
+
+            if (acceptRequest) {
+                const followersCount =
+                    byId("followers-count");
+
+                if (followersCount) {
+                    followersCount.textContent =
+                        String(
+                            Number(
+                                followersCount.textContent
+                                || 0
+                            ) + 1
+                        );
+                }
+
+                showMessage(
+                    "Запрос принят.",
+                    true
+                );
+            } else {
+                showMessage(
+                    "Запрос отклонён.",
+                    true
+                );
+            }
+
+            const list =
+                byId("connections-list");
+
+            if (
+                list
+                && !list.querySelector(
+                    ".follow-request-item"
+                )
+            ) {
+                showEmptyConnections(
+                    list,
+                    "Новых запросов нет."
+                );
+            }
+        } catch (error) {
+            acceptButton.disabled =
+                false;
+
+            rejectButton.disabled =
+                false;
+
+            showMessage(
+                error.message
+            );
+        }
+    }
+
+    async function loadConnections(type) {
+        const title =
+            byId("connections-title");
+
+        const list =
+            byId("connections-list");
+
+        if (!title || !list) {
+            return;
+        }
+
+        title.textContent =
+            type === "followers"
+                ? "Подписчики"
+                : "Подписки";
+
+        list.innerHTML =
+            '<div class="cw-empty">'
+            + "Загружаем..."
+            + "</div>";
+
+        openModal(
+            connectionsModal
+        );
+
+        const endpoint =
+            type === "followers"
+                ? "/api/posts/followers/"
+                : "/api/posts/following/";
+
+        try {
+            const response =
+                await fetch(
+                    endpoint,
+                    {
+                        method: "GET",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось загрузить список."
+                    )
+                );
+            }
+
+            const users =
+                Array.isArray(data)
+                    ? data
+                    : (
+                        data.results
+                        || data.users
+                        || []
+                    );
+
+            list.innerHTML =
+                "";
+
+            if (!users.length) {
+                showEmptyConnections(
+                    list,
+                    type === "followers"
+                        ? "Подписчиков пока нет."
+                        : "Вы пока ни на кого не подписаны."
+                );
+
+                return;
+            }
+
+            users.forEach(
+                function (user) {
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "connection-user";
+
+                    item.appendChild(
+                        createConnectionAvatar(
+                            user
+                        )
+                    );
+
+                    const link =
+                        document.createElement(
+                            "a"
+                        );
+
+                    link.href =
+                        "/users/"
+                        + user.id
+                        + "/";
+
+                    const name =
+                        document.createElement(
+                            "strong"
+                        );
+
+                    name.textContent =
+                        displayName(user);
+
+                    const username =
+                        document.createElement(
+                            "small"
+                        );
+
+                    username.textContent =
+                        user.username
+                            ? "@" + user.username
+                            : "";
+
+                    link.appendChild(
+                        name
+                    );
+
+                    link.appendChild(
+                        username
+                    );
+
+                    item.appendChild(
+                        link
+                    );
+
+                    list.appendChild(
+                        item
+                    );
+                }
+            );
+        } catch (error) {
+            list.innerHTML =
+                '<div class="cw-empty">'
+                + error.message
+                + "</div>";
+        }
+    }
+
+    function createModalMedia(post) {
+        if (!modalMedia) {
+            return;
+        }
+
+        const mediaItems =
+            getMediaList(post);
+
+        modalMedia.innerHTML =
+            "";
+
+        if (!mediaItems.length) {
+            modalMedia.textContent =
+                "Медиафайл отсутствует.";
+
+            return;
+        }
+
+        let index = 0;
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+        wrapper.className =
+            "modal-media-carousel";
+
+        function render() {
+            wrapper.innerHTML =
+                "";
+
+            const media =
+                createMediaElement(
+                    mediaItems[index],
+                    true
+                );
+
+            if (media) {
+                wrapper.appendChild(
+                    media
+                );
+            }
+
+            if (mediaItems.length <= 1) {
+                return;
+            }
+
+            const counter =
+                document.createElement(
+                    "span"
+                );
+
+            counter.className =
+                "modal-media-counter";
+
+            counter.textContent =
+                (index + 1)
+                + " / "
+                + mediaItems.length;
+
+            const previous =
+                document.createElement(
+                    "button"
+                );
+
+            previous.type =
+                "button";
+
+            previous.className =
+                "modal-media-arrow "
+                + "modal-media-prev";
+
+            previous.textContent =
+                "‹";
+
+            previous.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+
+                    index =
+                        index === 0
+                            ? mediaItems.length - 1
+                            : index - 1;
+
+                    render();
+                }
+            );
+
+            const next =
+                document.createElement(
+                    "button"
+                );
+
+            next.type =
+                "button";
+
+            next.className =
+                "modal-media-arrow "
+                + "modal-media-next";
+
+            next.textContent =
+                "›";
+
+            next.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+
+                    index =
+                        index === mediaItems.length - 1
+                            ? 0
+                            : index + 1;
+
+                    render();
+                }
+            );
+
+            wrapper.appendChild(
+                counter
+            );
+
+            wrapper.appendChild(
+                previous
+            );
+
+            wrapper.appendChild(
+                next
+            );
+        }
+
+        render();
+
+        modalMedia.appendChild(
+            wrapper
+        );
+    }
+
+    function updateModalButtons() {
+        if (!activePost) {
+            return;
+        }
+
+        if (modalLikeButton) {
+            const liked =
+                Boolean(
+                    activePost.liked_by_me
+                );
+
+            modalLikeButton.textContent =
+                (liked ? "♥ " : "♡ ")
+                + Number(
+                    activePost.likes_count
+                    || 0
+                );
+
+            modalLikeButton.classList.toggle(
+                "liked",
+                liked
+            );
+        }
+
+        if (modalSaveButton) {
+            modalSaveButton.textContent =
+                activePost.saved_by_me
+                    ? "✓ Сохранено"
+                    : "♧ Сохранить";
+        }
+
+        if (modalDeleteButton) {
+            const authorId =
+                activePost.author
+                && activePost.author.id;
+
+            modalDeleteButton.hidden =
+                String(authorId)
+                !== String(currentUserId);
+        }
+    }
+
+    function openPostModal(post) {
+        if (!postModal) {
+            return;
+        }
+
+        activePost =
+            post;
+
+        if (modalText) {
+            modalText.textContent =
+                post.text || "";
+        }
+
+        createModalMedia(post);
+        updateModalButtons();
+        openModal(postModal);
+        loadComments();
+    }
+
+    async function loadComments() {
+        if (
+            !activePost
+            || !modalComments
+        ) {
+            return;
+        }
+
+        modalComments.textContent =
+            "Загружаем комментарии...";
+
+        const response =
+            await fetch(
+                "/api/posts/"
+                + activePost.id
+                + "/comments/",
+                {
+                    method: "GET",
+                    headers: authHeaders(false)
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (!response.ok) {
+            modalComments.textContent =
+                errorText(
+                    data,
+                    "Не удалось загрузить комментарии."
+                );
+
+            return;
+        }
+
+        const comments =
+            Array.isArray(data)
+                ? data
+                : (
+                    data.results
+                    || data.comments
+                    || []
+                );
+
+        modalComments.innerHTML =
+            "";
+
+        if (!comments.length) {
+            modalComments.textContent =
+                "Комментариев пока нет.";
+
+            return;
+        }
+
+        comments.forEach(
+            function (comment) {
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "modal-comment";
+
+                const author =
+                    document.createElement(
+                        "strong"
+                    );
+
+                author.textContent =
+                    displayName(
+                        comment.author
+                    );
+
+                const text =
+                    document.createElement(
+                        "span"
+                    );
+
+                text.textContent =
+                    comment.text || "";
+
+                item.appendChild(
+                    author
+                );
+
+                item.appendChild(
+                    text
+                );
+
+                modalComments.appendChild(
+                    item
+                );
+            }
+        );
+    }
+
+    async function toggleLike() {
+        if (!activePost) {
+            return;
+        }
+
+        const liked =
+            Boolean(
+                activePost.liked_by_me
+            );
+
+        if (modalLikeButton) {
+            modalLikeButton.disabled =
+                true;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/"
+                    + activePost.id
+                    + (
+                        liked
+                            ? "/unlike/"
+                            : "/like/"
+                    ),
+                    {
+                        method: liked
+                            ? "DELETE"
+                            : "POST",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось изменить лайк."
+                    )
+                );
+            }
+
+            activePost.liked_by_me =
+                !liked;
+
+            activePost.likes_count =
+                Number(
+                    data.likes_count
+                    ?? activePost.likes_count
+                    ?? 0
+                );
+
+            updateModalButtons();
+            renderPosts();
+        } catch (error) {
+            showMessage(
+                error.message
+            );
+        } finally {
+            if (modalLikeButton) {
+                modalLikeButton.disabled =
+                    false;
+            }
+        }
+    }
+
+    async function toggleSave() {
+        if (!activePost) {
+            return;
+        }
+
+        const saved =
+            Boolean(
+                activePost.saved_by_me
+            );
+
+        if (modalSaveButton) {
+            modalSaveButton.disabled =
+                true;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/"
+                    + activePost.id
+                    + "/save/",
+                    {
+                        method: saved
+                            ? "DELETE"
+                            : "POST",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось сохранить публикацию."
+                    )
+                );
+            }
+
+            activePost.saved_by_me =
+                !saved;
+
+            updateModalButtons();
+        } catch (error) {
+            showMessage(
+                error.message
+            );
+        } finally {
+            if (modalSaveButton) {
+                modalSaveButton.disabled =
+                    false;
+            }
+        }
+    }
+
+    async function deletePost() {
+        if (!activePost) {
+            return;
+        }
+
+        if (
+            !window.confirm(
+                "Удалить эту публикацию?"
+            )
+        ) {
+            return;
+        }
+
+        if (modalDeleteButton) {
+            modalDeleteButton.disabled =
+                true;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/"
+                    + activePost.id
+                    + "/delete/",
+                    {
+                        method: "DELETE",
+                        headers: authHeaders(false)
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (
+                !response.ok
+                && response.status !== 204
+            ) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось удалить публикацию."
+                    )
+                );
+            }
+
+            allPosts =
+                allPosts.filter(
+                    function (post) {
+                        return String(post.id)
+                            !== String(
+                                activePost.id
+                            );
+                    }
+                );
+
+            closeModal(postModal);
+            renderPosts();
+
+            showMessage(
+                "Публикация удалена.",
+                true
+            );
+        } catch (error) {
+            showMessage(
+                error.message
+            );
+        } finally {
+            if (modalDeleteButton) {
+                modalDeleteButton.disabled =
+                    false;
+            }
+        }
+    }
+
+    async function addComment(event) {
+        event.preventDefault();
+
+        if (
+            !activePost
+            || !commentInput
+        ) {
+            return;
+        }
+
+        const text =
+            commentInput.value.trim();
+
+        if (!text) {
+            return;
+        }
+
+        const button =
+            commentForm
+                ? commentForm.querySelector(
+                    "button"
+                )
+                : null;
+
+        if (button) {
+            button.disabled =
+                true;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/"
+                    + activePost.id
+                    + "/comments/",
+                    {
+                        method: "POST",
+                        headers: authHeaders(true),
+                        body: JSON.stringify({
+                            text: text
+                        })
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось добавить комментарий."
+                    )
+                );
+            }
+
+            commentInput.value =
+                "";
+
+            activePost.comments_count =
+                Number(
+                    activePost.comments_count
+                    || 0
+                ) + 1;
+
+            await loadComments();
+            renderPosts();
+        } catch (error) {
+            showMessage(
+                error.message
+            );
+        } finally {
+            if (button) {
+                button.disabled =
+                    false;
+            }
+        }
+    }
+
+    function previewFiles(
+        input,
+        container
+    ) {
+        if (!input || !container) {
+            return;
+        }
+
+        container.innerHTML =
+            "";
+
+        objectUrls.forEach(
+            function (url) {
+                URL.revokeObjectURL(url);
+            }
+        );
+
+        objectUrls =
+            [];
+
+        Array.from(
+            input.files || []
+        ).forEach(
+            function (file) {
+                const isImage =
+                    file.type.startsWith(
+                        "image/"
+                    );
+
+                const isVideo =
+                    file.type.startsWith(
+                        "video/"
+                    );
+
+                if (
+                    !isImage
+                    && !isVideo
+                ) {
+                    return;
+                }
+
+                const url =
+                    URL.createObjectURL(
+                        file
+                    );
+
+                objectUrls.push(
+                    url
+                );
+
+                const element =
+                    document.createElement(
+                        isVideo
+                            ? "video"
+                            : "img"
+                    );
+
+                element.src =
+                    url;
+
+                if (isVideo) {
+                    element.controls =
+                        true;
+
+                    element.muted =
+                        true;
+
+                    element.playsInline =
+                        true;
+                } else {
+                    element.alt =
+                        "Предпросмотр изображения";
+                }
+
+                container.appendChild(
+                    element
+                );
+            }
+        );
+    }
+
+    async function publishPost() {
+        const button =
+            byId("publish-upload-post");
+
+        const message =
+            byId("upload-post-message");
+
+        const textInput =
+            byId("upload-post-text");
+
+        if (
+            !button
+            || !message
+            || !uploadPostMedia
+        ) {
+            return;
+        }
+
+        const text =
+            textInput
+                ? textInput.value.trim()
+                : "";
+
+        const files =
+            Array.from(
+                uploadPostMedia.files || []
+            );
+
+        if (
+            !text
+            && !files.length
+        ) {
+            message.textContent =
+                "Добавьте текст, фото или видео.";
+
+            return;
+        }
+
+        if (files.length > 10) {
+            message.textContent =
+                "Можно выбрать максимум 10 файлов.";
+
+            return;
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "text",
+            text
+        );
+
+        formData.append(
+            "post_type",
+            "post"
+        );
+
+        files.forEach(
+            function (file) {
+                formData.append(
+                    "media",
+                    file
+                );
+            }
+        );
+
+        button.disabled =
+            true;
+
+        message.textContent =
+            "Публикуем...";
+
+        try {
+            const response =
+                await fetch(
+                    "/api/posts/create/",
+                    {
+                        method: "POST",
+                        headers: authHeaders(false),
+                        body: formData
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось создать публикацию."
+                    )
+                );
+            }
+
+            closeModal(
+                uploadPostModal
+            );
+
+            if (textInput) {
+                textInput.value =
+                    "";
+            }
+
+            uploadPostMedia.value =
+                "";
+
+            if (uploadPostPreview) {
+                uploadPostPreview.innerHTML =
+                    "";
+            }
+
+            message.textContent =
+                "";
+
+            activeTab =
+                "all";
+
+            await loadPosts();
+
+            showMessage(
+                "Публикация успешно размещена.",
+                true
+            );
+        } catch (error) {
+            message.textContent =
+                error.message;
+        } finally {
+            button.disabled =
+                false;
+        }
+    }
+
+    async function publishStory() {
+        const button =
+            byId("publish-upload-story");
+
+        const message =
+            byId("upload-story-message");
+
+        if (
+            !button
+            || !message
+            || !uploadStoryMedia
+        ) {
+            return;
+        }
+
+        const file =
+            uploadStoryMedia.files[0];
+
+        if (!file) {
+            message.textContent =
+                "Выберите фото или видео.";
+
+            return;
+        }
+
+        if (
+            !file.type.startsWith("image/")
+            && !file.type.startsWith("video/")
+        ) {
+            message.textContent =
+                "Разрешены только фото и видео.";
+
+            return;
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "media",
+            file
+        );
+
+        formData.append(
+            "text",
+            ""
+        );
+
+        formData.append(
+            "decorations",
+            JSON.stringify([])
+        );
+
+        button.disabled =
+            true;
+
+        message.textContent =
+            "Публикуем историю...";
+
+        try {
+            const response =
+                await fetch(
+                    "/api/stories/create/",
+                    {
+                        method: "POST",
+                        headers: authHeaders(false),
+                        body: formData
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(
+                        data,
+                        "Не удалось создать историю."
+                    )
+                );
+            }
+
+            closeModal(
+                uploadStoryModal
+            );
+
+            uploadStoryMedia.value =
+                "";
+
+            if (uploadStoryPreview) {
+                uploadStoryPreview.innerHTML =
+                    "";
+            }
+
+            if (profileAvatarRing) {
+                profileAvatarRing.classList.add(
+                    "has-story"
+                );
+            }
+
+            showMessage(
+                "История опубликована.",
+                true
+            );
+        } catch (error) {
+            message.textContent =
+                error.message;
+        } finally {
+            button.disabled =
+                false;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem(
+            ACCESS_TOKEN_KEY
+        );
+
+        localStorage.removeItem(
+            REFRESH_TOKEN_KEY
+        );
+
+        window.location.href =
+            "/register/";
+    }
+
+    if (profileAvatarRing) {
+        profileAvatarRing.addEventListener(
+            "click",
+            function () {
+                openModal(
+                    avatarActionsModal
+                );
+            }
+        );
+    }
+
+    if (followRequestsButton) {
+        followRequestsButton.addEventListener(
+            "click",
+            loadFollowRequests
+        );
+    }
+
+    const followersButton =
+        byId("followers-button");
+
+    if (followersButton) {
+        followersButton.addEventListener(
+            "click",
+            function () {
+                loadConnections(
+                    "followers"
+                );
+            }
+        );
+    }
+
+    const followingButton =
+        byId("following-button");
+
+    if (followingButton) {
+        followingButton.addEventListener(
+            "click",
+            function () {
+                loadConnections(
+                    "following"
+                );
+            }
+        );
+    }
+
+    const closeAvatarActions =
+        byId("close-avatar-actions");
+
+    if (closeAvatarActions) {
+        closeAvatarActions.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    avatarActionsModal
+                );
+            }
+        );
+    }
+
+    const uploadPostButton =
+        byId("upload-post-button");
+
+    if (uploadPostButton) {
+        uploadPostButton.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    avatarActionsModal
+                );
+
+                window.setTimeout(
+                    function () {
+                        openModal(
+                            uploadPostModal
+                        );
+                    },
+                    260
+                );
+            }
+        );
+    }
+
+    const uploadStoryButton =
+        byId("upload-story-button");
+
+    if (uploadStoryButton) {
+        uploadStoryButton.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    avatarActionsModal
+                );
+
+                window.setTimeout(
+                    function () {
+                        openModal(
+                            uploadStoryModal
+                        );
+                    },
+                    260
+                );
+            }
+        );
+    }
+
+    const closeUploadPost =
+        byId("close-upload-post");
+
+    if (closeUploadPost) {
+        closeUploadPost.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    uploadPostModal
+                );
+            }
+        );
+    }
+
+    const closeUploadStory =
+        byId("close-upload-story");
+
+    if (closeUploadStory) {
+        closeUploadStory.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    uploadStoryModal
+                );
+            }
+        );
+    }
+
+    const closeConnections =
+        byId("close-connections");
+
+    if (closeConnections) {
+        closeConnections.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    connectionsModal
+                );
+            }
+        );
+    }
+
+    const closePostModalButton =
+        byId("close-post-modal");
+
+    if (closePostModalButton) {
+        closePostModalButton.addEventListener(
+            "click",
+            function () {
+                closeModal(
+                    postModal
+                );
+            }
+        );
+    }
+
+    if (uploadPostMedia) {
+        uploadPostMedia.addEventListener(
+            "change",
+            function () {
+                previewFiles(
+                    uploadPostMedia,
+                    uploadPostPreview
+                );
+            }
+        );
+    }
+
+    if (uploadStoryMedia) {
+        uploadStoryMedia.addEventListener(
+            "change",
+            function () {
+                previewFiles(
+                    uploadStoryMedia,
+                    uploadStoryPreview
+                );
+            }
+        );
+    }
+
+    const publishPostButton =
+        byId("publish-upload-post");
+
+    if (publishPostButton) {
+        publishPostButton.addEventListener(
+            "click",
+            publishPost
+        );
+    }
+
+    const publishStoryButton =
+        byId("publish-upload-story");
+
+    if (publishStoryButton) {
+        publishStoryButton.addEventListener(
+            "click",
+            publishStory
+        );
+    }
+
+    if (modalLikeButton) {
+        modalLikeButton.addEventListener(
+            "click",
+            toggleLike
+        );
+    }
+
+    if (modalSaveButton) {
+        modalSaveButton.addEventListener(
+            "click",
+            toggleSave
+        );
+    }
+
+    if (modalDeleteButton) {
+        modalDeleteButton.addEventListener(
+            "click",
+            deletePost
+        );
+    }
+
+    if (commentForm) {
+        commentForm.addEventListener(
+            "submit",
+            addComment
+        );
+    }
+
+    const logoutButton =
+        byId("logout-button");
+
+    if (logoutButton) {
+        logoutButton.addEventListener(
+            "click",
+            function () {
+                if (
+                    window.confirm(
+                        "Выйти из аккаунта?"
+                    )
+                ) {
+                    logout();
+                }
+            }
+        );
+    }
+
+    document.querySelectorAll(
+        ".profile-tab"
+    ).forEach(
+        function (button) {
+            button.addEventListener(
+                "click",
+                async function () {
+                    document.querySelectorAll(
+                        ".profile-tab"
+                    ).forEach(
+                        function (tab) {
+                            tab.classList.remove(
+                                "active"
+                            );
+                        }
+                    );
+
+                    button.classList.add(
+                        "active"
+                    );
+
+                    activeTab =
+                        button.dataset.tab
+                        || "all";
+
+                    try {
+                        await loadPosts();
+                    } catch (error) {
+                        showMessage(
+                            error.message
+                        );
+                    }
+                }
+            );
+        }
+    );
+
+    [
+        avatarActionsModal,
+        uploadPostModal,
+        uploadStoryModal,
+        connectionsModal,
+        postModal
+    ].forEach(
+        function (modal) {
+            if (!modal) {
+                return;
+            }
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+                    if (
+                        event.target === modal
+                    ) {
+                        closeModal(modal);
+                    }
+                }
+            );
+        }
+    );
+
+    if (
+        profileMoreButton
+        && profileMenu
+    ) {
+        profileMoreButton.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+
+                profileMenu.hidden =
+                    !profileMenu.hidden;
+            }
+        );
+
+        document.addEventListener(
+            "click",
+            function (event) {
+                if (
+                    !profileMenu.contains(
+                        event.target
+                    )
+                    && !profileMoreButton.contains(
+                        event.target
+                    )
+                ) {
+                    profileMenu.hidden =
+                        true;
+                }
+            }
+        );
+    }
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key !== "Escape"
+            ) {
+                return;
+            }
+
+            closeAllModals();
+
+            if (profileMenu) {
+                profileMenu.hidden =
+                    true;
+            }
+        }
+    );
+
+    async function initialize() {
+        try {
+            await loadProfile();
+            await loadPosts();
+            await loadStoryRing();
+            await loadFollowRequestsCount();
+        } catch (error) {
+            console.error(
+                "Ошибка загрузки профиля:",
+                error
+            );
+
+            showMessage(
+                error.message
+            );
+        }
+    }
+
+    initialize();
+})();
+</script>
+
+{% endblock %}

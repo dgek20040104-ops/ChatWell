@@ -1,0 +1,775 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+    Вход и регистрация — ChatWell
+{% endblock %}
+
+{% block body %}
+
+<style>
+    [hidden] {
+        display: none !important;
+    }
+
+    .auth-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .auth-card {
+        width: min(100%, 440px);
+    }
+
+    .auth-description {
+        margin-bottom: 25px;
+        color: var(--cw-muted);
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    .auth-footer-link {
+        display: block;
+        margin-top: 20px;
+        color: var(--cw-primary);
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .auth-back-button {
+        display: block;
+        width: 100%;
+        margin-top: 14px;
+        padding: 10px;
+        border: 0;
+        background: transparent;
+        color: var(--cw-primary);
+        cursor: pointer;
+    }
+
+    .auth-hint {
+        display: block;
+        margin-top: 6px;
+        color: var(--cw-muted);
+    }
+</style>
+
+<main class="auth-page">
+    <section class="cw-card cw-card-padding auth-card">
+        <div
+            class="cw-logo"
+            style="
+                margin-bottom: 10px;
+                text-align: center;
+            "
+        >
+            ChatWell
+        </div>
+
+        <section id="phone-section">
+            <h1
+                class="cw-page-title"
+                style="text-align: center;"
+            >
+                Вход и регистрация
+            </h1>
+
+            <p class="auth-description">
+                Введите номер телефона.
+                Мы отправим код подтверждения.
+            </p>
+
+            <form id="phone-form">
+                <div class="cw-form-group">
+                    <label
+                        class="cw-label"
+                        for="phone"
+                    >
+                        Номер телефона
+                    </label>
+
+                    <input
+                        id="phone"
+                        class="cw-input"
+                        type="tel"
+                        placeholder="+79991234567"
+                        autocomplete="tel"
+                        required
+                    >
+                </div>
+
+                <button
+                    id="request-button"
+                    class="cw-button"
+                    type="submit"
+                    style="width: 100%;"
+                >
+                    Получить код
+                </button>
+            </form>
+        </section>
+
+        <section id="code-section" hidden>
+            <h1
+                class="cw-page-title"
+                style="text-align: center;"
+            >
+                Подтверждение номера
+            </h1>
+
+            <p
+                id="code-description"
+                class="auth-description"
+            >
+                Введите шестизначный код,
+                отправленный на ваш номер.
+            </p>
+
+            <form id="code-form">
+                <div class="cw-form-group">
+                    <label
+                        class="cw-label"
+                        for="code"
+                    >
+                        Код подтверждения
+                    </label>
+
+                    <input
+                        id="code"
+                        class="cw-input"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        minlength="6"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        placeholder="123456"
+                        required
+                    >
+                </div>
+
+                <div
+                    id="username-field"
+                    class="cw-form-group"
+                    hidden
+                >
+                    <label
+                        class="cw-label"
+                        for="username"
+                    >
+                        Тег пользователя
+                    </label>
+
+                    <input
+                        id="username"
+                        class="cw-input"
+                        type="text"
+                        maxlength="30"
+                        placeholder="@username"
+                        autocomplete="username"
+                    >
+
+                    <small class="auth-hint">
+                        Только латинские буквы,
+                        цифры и символ _
+                    </small>
+                </div>
+
+                <div
+                    id="display-name-field"
+                    class="cw-form-group"
+                    hidden
+                >
+                    <label
+                        class="cw-label"
+                        for="display-name"
+                    >
+                        Имя
+                    </label>
+
+                    <input
+                        id="display-name"
+                        class="cw-input"
+                        type="text"
+                        maxlength="100"
+                        placeholder="Ваше имя"
+                        autocomplete="name"
+                    >
+                </div>
+
+                <button
+                    id="verify-button"
+                    class="cw-button"
+                    type="submit"
+                    style="width: 100%;"
+                >
+                    Войти
+                </button>
+            </form>
+
+            <button
+                id="back-button"
+                class="auth-back-button"
+                type="button"
+            >
+                Изменить номер
+            </button>
+        </section>
+
+        <div
+            id="message"
+            class="cw-message"
+            aria-live="polite"
+        ></div>
+
+        <a
+            href="/"
+            class="auth-footer-link"
+        >
+            Вернуться на главную
+        </a>
+    </section>
+</main>
+
+<script>
+(function () {
+    "use strict";
+
+    const phoneForm = document.getElementById(
+        "phone-form"
+    );
+
+    const codeForm = document.getElementById(
+        "code-form"
+    );
+
+    const phoneSection = document.getElementById(
+        "phone-section"
+    );
+
+    const codeSection = document.getElementById(
+        "code-section"
+    );
+
+    const codeDescription =
+        document.getElementById(
+            "code-description"
+        );
+
+    const phoneInput = document.getElementById(
+        "phone"
+    );
+
+    const codeInput = document.getElementById(
+        "code"
+    );
+
+    const usernameInput =
+        document.getElementById(
+            "username"
+        );
+
+    const displayNameInput =
+        document.getElementById(
+            "display-name"
+        );
+
+    const usernameField =
+        document.getElementById(
+            "username-field"
+        );
+
+    const displayNameField =
+        document.getElementById(
+            "display-name-field"
+        );
+
+    const requestButton =
+        document.getElementById(
+            "request-button"
+        );
+
+    const verifyButton =
+        document.getElementById(
+            "verify-button"
+        );
+
+    const backButton =
+        document.getElementById(
+            "back-button"
+        );
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+    let currentPhone = "";
+    let isExistingUser = false;
+
+    function normalizePhone(value) {
+        return String(value || "")
+            .trim()
+            .replace(/\s+/g, "")
+            .replace(/-/g, "")
+            .replace(/\(/g, "")
+            .replace(/\)/g, "");
+    }
+
+    function normalizeUsername(value) {
+        return String(value || "")
+            .trim()
+            .replace(/^@+/, "");
+    }
+
+    function showMessage(
+        text,
+        success = false
+    ) {
+        message.textContent = text;
+
+        message.className = success
+            ? "cw-message cw-message-success"
+            : "cw-message";
+    }
+
+    function getErrorMessage(
+        data,
+        fallback
+    ) {
+        if (!data) {
+            return fallback;
+        }
+
+        if (
+            typeof data.detail === "string"
+        ) {
+            return data.detail;
+        }
+
+        if (
+            typeof data === "string"
+        ) {
+            return data;
+        }
+
+        if (
+            typeof data === "object"
+        ) {
+            const errors = [];
+
+            Object.entries(data).forEach(
+                function (entry) {
+                    const value = entry[1];
+
+                    if (Array.isArray(value)) {
+                        errors.push(
+                            value.join(", ")
+                        );
+                    } else {
+                        errors.push(
+                            String(value)
+                        );
+                    }
+                }
+            );
+
+            if (errors.length) {
+                return errors.join(" ");
+            }
+        }
+
+        return fallback;
+    }
+
+    async function parseResponse(response) {
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = {};
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                getErrorMessage(
+                    data,
+                    "Произошла ошибка."
+                )
+            );
+        }
+
+        return data;
+    }
+
+    function getAccessToken(data) {
+        if (
+            data
+            && typeof data.access === "string"
+            && data.access
+        ) {
+            return data.access;
+        }
+
+        if (
+            data
+            && data.tokens
+            && typeof data.tokens.access
+                === "string"
+            && data.tokens.access
+        ) {
+            return data.tokens.access;
+        }
+
+        return null;
+    }
+
+    function getRefreshToken(data) {
+        if (
+            data
+            && typeof data.refresh === "string"
+            && data.refresh
+        ) {
+            return data.refresh;
+        }
+
+        if (
+            data
+            && data.tokens
+            && typeof data.tokens.refresh
+                === "string"
+            && data.tokens.refresh
+        ) {
+            return data.tokens.refresh;
+        }
+
+        return null;
+    }
+
+    function showRegistrationFields() {
+        usernameField.hidden = false;
+        displayNameField.hidden = false;
+
+        usernameInput.required = true;
+        displayNameInput.required = true;
+
+        codeDescription.textContent =
+            "Номер подтверждён. "
+            + "Придумайте тег и укажите имя.";
+    }
+
+    function hideRegistrationFields() {
+        usernameField.hidden = true;
+        displayNameField.hidden = true;
+
+        usernameInput.required = false;
+        displayNameInput.required = false;
+
+        usernameInput.value = "";
+        displayNameInput.value = "";
+
+        codeDescription.textContent =
+            "Введите шестизначный код, "
+            + "отправленный на ваш номер.";
+    }
+
+    phoneForm.addEventListener(
+        "submit",
+        async function (event) {
+            event.preventDefault();
+
+            currentPhone = normalizePhone(
+                phoneInput.value
+            );
+
+            if (!currentPhone) {
+                showMessage(
+                    "Введите номер телефона."
+                );
+
+                return;
+            }
+
+            if (!currentPhone.startsWith("+")) {
+                showMessage(
+                    "Номер должен начинаться "
+                    + "с символа +."
+                );
+
+                return;
+            }
+
+            if (
+                !/^\+[0-9]{9,19}$/.test(
+                    currentPhone
+                )
+            ) {
+                showMessage(
+                    "Введите номер в формате "
+                    + "+79991234567."
+                );
+
+                return;
+            }
+
+            requestButton.disabled = true;
+
+            showMessage(
+                "Отправляем код..."
+            );
+
+            try {
+                const response = await fetch(
+                    "/api/auth/request-code/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            phone: currentPhone
+                        })
+                    }
+                );
+
+                const data =
+                    await parseResponse(
+                        response
+                    );
+
+                isExistingUser =
+                    data.is_existing_user
+                    === true;
+
+                if (isExistingUser) {
+                    hideRegistrationFields();
+
+                    verifyButton.textContent =
+                        "Войти";
+
+                    showMessage(
+                        "Код отправлен. "
+                        + "Введите его для входа.",
+                        true
+                    );
+                } else {
+                    showRegistrationFields();
+
+                    verifyButton.textContent =
+                        "Создать аккаунт";
+
+                    showMessage(
+                        "Код отправлен. После "
+                        + "проверки заполните профиль.",
+                        true
+                    );
+                }
+
+                if (data.debug_code) {
+                    showMessage(
+                        "Код для разработки: "
+                        + data.debug_code,
+                        true
+                    );
+                }
+
+                phoneSection.hidden = true;
+                codeSection.hidden = false;
+
+                codeInput.value = "";
+                codeInput.focus();
+            } catch (error) {
+                showMessage(
+                    error.message
+                    || "Не удалось отправить код."
+                );
+            } finally {
+                requestButton.disabled = false;
+            }
+        }
+    );
+
+    codeForm.addEventListener(
+        "submit",
+        async function (event) {
+            event.preventDefault();
+
+            const code =
+                codeInput.value.trim();
+
+            if (!/^[0-9]{6}$/.test(code)) {
+                showMessage(
+                    "Введите ровно 6 цифр."
+                );
+
+                codeInput.focus();
+
+                return;
+            }
+
+            const requestData = {
+                phone: currentPhone,
+                code: code
+            };
+
+            if (!isExistingUser) {
+                requestData.username =
+                    normalizeUsername(
+                        usernameInput.value
+                    );
+
+                requestData.display_name =
+                    displayNameInput.value.trim();
+
+                if (!requestData.username) {
+                    showMessage(
+                        "Введите тег пользователя."
+                    );
+
+                    usernameInput.focus();
+
+                    return;
+                }
+
+                if (!requestData.display_name) {
+                    showMessage(
+                        "Введите имя."
+                    );
+
+                    displayNameInput.focus();
+
+                    return;
+                }
+            }
+
+            verifyButton.disabled = true;
+
+            showMessage(
+                "Проверяем код..."
+            );
+
+            try {
+                const response = await fetch(
+                    "/api/auth/verify-code/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify(
+                            requestData
+                        )
+                    }
+                );
+
+                const data =
+                    await parseResponse(
+                        response
+                    );
+
+                const accessToken =
+                    getAccessToken(data);
+
+                const refreshToken =
+                    getRefreshToken(data);
+
+                if (
+                    !accessToken
+                    || !refreshToken
+                ) {
+                    console.error(
+                        "Ответ сервера:",
+                        data
+                    );
+
+                    showMessage(
+                        "Сервер не вернул токены."
+                    );
+
+                    return;
+                }
+
+                localStorage.setItem(
+                    "chatwell_access_token",
+                    accessToken
+                );
+
+                localStorage.setItem(
+                    "chatwell_refresh_token",
+                    refreshToken
+                );
+
+                showMessage(
+                    "Авторизация успешна. "
+                    + "Открываем ленту...",
+                    true
+                );
+
+                window.location.replace(
+                    "/feed/"
+                );
+            } catch (error) {
+                showMessage(
+                    error.message
+                    || "Не удалось подтвердить код."
+                );
+
+                codeInput.focus();
+            } finally {
+                verifyButton.disabled = false;
+            }
+        }
+    );
+
+    backButton.addEventListener(
+        "click",
+        function () {
+            codeForm.reset();
+
+            currentPhone = "";
+            isExistingUser = false;
+
+            hideRegistrationFields();
+
+            verifyButton.textContent =
+                "Войти";
+
+            codeSection.hidden = true;
+            phoneSection.hidden = false;
+
+            showMessage("");
+
+            phoneInput.focus();
+        }
+    );
+
+    phoneInput.addEventListener(
+        "input",
+        function () {
+            phoneInput.value =
+                phoneInput.value.replace(
+                    /[^\d+\s()-]/g,
+                    ""
+                );
+        }
+    );
+
+    codeInput.addEventListener(
+        "input",
+        function () {
+            codeInput.value =
+                codeInput.value.replace(
+                    /\D/g,
+                    ""
+                );
+        }
+    );
+})();
+</script>
+
+{% endblock %}

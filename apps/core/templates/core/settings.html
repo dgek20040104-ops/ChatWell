@@ -1,0 +1,2617 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+    Настройки — ChatWell
+{% endblock %}
+
+{% block body %}
+
+<style>
+    [hidden] {
+        display: none !important;
+    }
+
+    :root {
+        --settings-bg: #f5f6fb;
+        --settings-card: #ffffff;
+        --settings-text: #20212a;
+        --settings-muted: #858b9e;
+        --settings-border: #e5e7ef;
+        --settings-primary: #6253e6;
+        --settings-primary-soft: #eeecff;
+        --settings-danger: #dc3545;
+        --settings-success: #198754;
+    }
+
+    body {
+        background: var(--settings-bg);
+    }
+
+    body.settings-dark {
+        --settings-bg: #0e0e18;
+        --settings-card: #191927;
+        --settings-text: #f7f7fb;
+        --settings-muted: #a9a9ba;
+        --settings-border: #303044;
+        --settings-primary: #8174ff;
+        --settings-primary-soft: #29254b;
+    }
+
+    .settings-page {
+        min-height: calc(100vh - 80px);
+        padding: 30px 20px 80px;
+        background: var(--settings-bg);
+    }
+
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 700px);
+        gap: 25px;
+        width: min(100%, 1000px);
+        margin: 0 auto;
+    }
+
+    .settings-sidebar,
+    .settings-content-card {
+        border: 1px solid var(--settings-border);
+        border-radius: 20px;
+        background: var(--settings-card);
+        box-shadow: 0 12px 40px rgba(40, 42, 75, .07);
+    }
+
+    .settings-sidebar {
+        align-self: start;
+        padding: 13px;
+    }
+
+    .settings-sidebar-title {
+        margin: 8px 11px 14px;
+        color: var(--settings-text);
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .settings-menu-button {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 11px;
+        padding: 12px;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--settings-muted);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        text-align: left;
+        transition: .2s ease;
+    }
+
+    .settings-menu-button:hover,
+    .settings-menu-button.active {
+        background: var(--settings-primary-soft);
+        color: var(--settings-primary);
+    }
+
+    .settings-menu-icon {
+        width: 22px;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .settings-content-card {
+        min-width: 0;
+        padding: 28px;
+    }
+
+    .settings-title {
+        margin: 0 0 7px;
+        color: var(--settings-text);
+        font-size: 27px;
+    }
+
+    .settings-subtitle {
+        margin: 0 0 25px;
+        color: var(--settings-muted);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .settings-section {
+        display: none;
+    }
+
+    .settings-section.active {
+        display: block;
+        animation: settings-show .2s ease both;
+    }
+
+    @keyframes settings-show {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .settings-section-title {
+        margin: 0 0 16px;
+        color: var(--settings-text);
+        font-size: 18px;
+    }
+
+    .profile-edit-header {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        margin-bottom: 25px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid var(--settings-border);
+    }
+
+    .settings-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 82px;
+        height: 82px;
+        overflow: hidden;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            #806ff2,
+            #b66cdc
+        );
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .settings-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-change-label {
+        display: inline-block;
+        padding: 9px 13px;
+        border-radius: 10px;
+        background: var(--settings-primary-soft);
+        color: var(--settings-primary);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .avatar-change-label input {
+        display: none;
+    }
+
+    .settings-form-group {
+        margin-bottom: 17px;
+    }
+
+    .settings-label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--settings-text);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .settings-input,
+    .settings-textarea {
+        box-sizing: border-box;
+        width: 100%;
+        border: 1px solid var(--settings-border);
+        border-radius: 11px;
+        outline: none;
+        background: var(--settings-card);
+        color: var(--settings-text);
+        font: inherit;
+        transition: .2s ease;
+    }
+
+    .settings-input {
+        height: 43px;
+        padding: 0 13px;
+    }
+
+    .settings-textarea {
+        min-height: 105px;
+        padding: 12px 13px;
+        resize: vertical;
+    }
+
+    .settings-input:focus,
+    .settings-textarea:focus {
+        border-color: var(--settings-primary);
+        box-shadow: 0 0 0 3px var(--settings-primary-soft);
+    }
+
+    .settings-input[readonly] {
+        cursor: not-allowed;
+        opacity: .65;
+    }
+
+    .settings-hint {
+        display: block;
+        margin-top: 6px;
+        color: var(--settings-muted);
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .settings-save-button {
+        min-height: 43px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 11px;
+        background: var(--settings-primary);
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .settings-save-button:hover {
+        filter: brightness(.94);
+    }
+
+    .settings-save-button:disabled {
+        cursor: not-allowed;
+        opacity: .6;
+    }
+
+    .settings-message {
+        min-height: 20px;
+        margin-top: 12px;
+        color: var(--settings-success);
+        font-size: 12px;
+    }
+
+    .settings-message.error {
+        color: var(--settings-danger);
+    }
+
+    .settings-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--settings-border);
+    }
+
+    .settings-option:last-child {
+        border-bottom: 0;
+    }
+
+    .settings-option-title {
+        color: var(--settings-text);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .settings-option-description {
+        margin-top: 4px;
+        color: var(--settings-muted);
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .settings-switch {
+        position: relative;
+        display: inline-block;
+        width: 47px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .settings-switch input {
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    .settings-slider {
+        position: absolute;
+        inset: 0;
+        border-radius: 30px;
+        background: #c9cbd5;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .settings-slider::before {
+        position: absolute;
+        bottom: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #ffffff;
+        content: "";
+        transition: .2s ease;
+    }
+
+    .settings-switch input:checked + .settings-slider {
+        background: var(--settings-primary);
+    }
+
+    .settings-switch input:checked + .settings-slider::before {
+        transform: translateX(21px);
+    }
+
+    .danger-zone {
+        margin-top: 28px;
+        padding: 17px;
+        border: 1px solid rgba(220, 53, 69, .28);
+        border-radius: 14px;
+        background: rgba(220, 53, 69, .06);
+    }
+
+    .danger-zone-title {
+        margin: 0 0 6px;
+        color: var(--settings-danger);
+        font-size: 15px;
+    }
+
+    .danger-zone-text {
+        margin: 0 0 14px;
+        color: var(--settings-muted);
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .danger-button {
+        min-height: 40px;
+        padding: 0 14px;
+        border: 1px solid var(--settings-danger);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--settings-danger);
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .danger-button:hover {
+        background: var(--settings-danger);
+        color: #ffffff;
+    }
+
+    .account-info {
+        display: grid;
+        gap: 11px;
+    }
+
+    .account-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--settings-border);
+        font-size: 13px;
+    }
+
+    .account-info-row span:first-child {
+        color: var(--settings-muted);
+    }
+
+    .account-info-row span:last-child {
+        overflow: hidden;
+        color: var(--settings-text);
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 750px) {
+        .settings-page {
+            padding: 15px 10px 80px;
+        }
+
+        .settings-layout {
+            display: block;
+        }
+
+        .settings-sidebar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 14px;
+            overflow-x: auto;
+        }
+
+        .settings-sidebar-title {
+            display: none;
+        }
+
+        .settings-menu-button {
+            width: auto;
+            flex: 0 0 auto;
+            justify-content: center;
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        .settings-menu-icon {
+            width: auto;
+        }
+
+        .settings-menu-text {
+            display: none;
+        }
+
+        .settings-content-card {
+            padding: 19px 15px;
+        }
+
+        .settings-title {
+            font-size: 23px;
+        }
+
+        .profile-edit-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .settings-option {
+            align-items: flex-start;
+        }
+    }
+
+    .theme-settings-group {
+    margin-bottom: 30px;
+}
+
+.theme-settings-group
+.settings-section-title {
+    margin-bottom: 5px;
+}
+
+.theme-description {
+    margin-bottom: 15px;
+}
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        2,
+        minmax(0, 1fr)
+    );
+    gap: 12px;
+}
+
+.theme-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 10px;
+    border: 2px solid var(--settings-border);
+    border-radius: 15px;
+    background: var(--settings-card);
+    cursor: pointer;
+    transition:
+        border-color .2s ease,
+        background .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.theme-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--settings-primary);
+    box-shadow: 0 8px 22px rgba(60, 50, 130, .1);
+}
+
+.theme-card input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.theme-card:has(input:checked) {
+    border-color: var(--settings-primary);
+    background: var(--settings-primary-soft);
+    box-shadow:
+        0 0 0 3px
+        color-mix(
+            in srgb,
+            var(--settings-primary) 18%,
+            transparent
+        );
+}
+
+.theme-card-title {
+    margin-top: 10px;
+    color: var(--settings-text);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.theme-card-description {
+    margin-top: 4px;
+    color: var(--settings-muted);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.theme-preview {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 80px;
+    padding: 9px;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.theme-preview span {
+    display: block;
+    height: 13px;
+    border-radius: 8px;
+}
+
+.theme-preview span:nth-child(1) {
+    width: 48%;
+}
+
+.theme-preview span:nth-child(2) {
+    width: 67%;
+}
+
+.theme-preview span:nth-child(3) {
+    width: 38%;
+}
+
+.theme-preview-light {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #f2f3f8;
+}
+
+.theme-preview-light span {
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .1);
+}
+
+.theme-preview-light span:nth-child(2) {
+    align-self: flex-end;
+    background: #ded9ff;
+}
+
+.theme-preview-dark {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #171824;
+}
+
+.theme-preview-dark span {
+    background: #292c3d;
+}
+
+.theme-preview-dark span:nth-child(2) {
+    align-self: flex-end;
+    background: #5f55a8;
+}
+
+.theme-preview-amoled {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #000000;
+}
+
+.theme-preview-amoled span {
+    background: #121212;
+}
+
+.theme-preview-amoled span:nth-child(2) {
+    align-self: flex-end;
+    background: #443b8a;
+}
+
+.theme-preview-lavender {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #f3eaff;
+}
+
+.theme-preview-lavender span {
+    background: #ffffff;
+}
+
+.theme-preview-lavender span:nth-child(2) {
+    align-self: flex-end;
+    background: #dcb8fa;
+}
+
+.chat-preview-classic {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #eaf3f8;
+}
+
+.chat-preview-classic span {
+    background: #ffffff;
+}
+
+.chat-preview-classic span:nth-child(2) {
+    align-self: flex-end;
+    background: #d7f8c6;
+}
+
+.chat-preview-midnight {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #17212b;
+}
+
+.chat-preview-midnight span {
+    background: #263645;
+}
+
+.chat-preview-midnight span:nth-child(2) {
+    align-self: flex-end;
+    background: #2b5278;
+}
+
+.chat-preview-ocean {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #dff6fa;
+}
+
+.chat-preview-ocean span {
+    background: #ffffff;
+}
+
+.chat-preview-ocean span:nth-child(2) {
+    align-self: flex-end;
+    background: #a8e6e8;
+}
+
+.chat-preview-forest {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #e4f0e6;
+}
+
+.chat-preview-forest span {
+    background: #ffffff;
+}
+
+.chat-preview-forest span:nth-child(2) {
+    align-self: flex-end;
+    background: #b9dfba;
+}
+
+@media (max-width: 600px) {
+    .theme-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<header class="cw-header">
+    <div class="cw-header-inner">
+        <a
+            class="cw-logo"
+            href="/feed/"
+        >
+            ChatWell
+        </a>
+
+        <div class="cw-header-actions">
+            <a
+                class="cw-header-icon-button"
+                href="/notifications/"
+                title="Уведомления"
+            >
+                ♡
+            </a>
+
+            <a
+                class="cw-header-avatar-link"
+                href="/profile/"
+            >
+                ◉
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="settings-page">
+    <div class="settings-layout">
+        <aside class="settings-sidebar">
+            <h2 class="settings-sidebar-title">
+                Настройки
+            </h2>
+
+            <button
+                class="settings-menu-button active"
+                type="button"
+                data-section="profile-settings"
+            >
+                <span class="settings-menu-icon">
+                    ◉
+                </span>
+
+                <span class="settings-menu-text">
+                    Профиль
+                </span>
+            </button>
+
+            <button
+                class="settings-menu-button"
+                type="button"
+                data-section="privacy-settings"
+            >
+                <span class="settings-menu-icon">
+                    ♙
+                </span>
+
+                <span class="settings-menu-text">
+                    Приватность
+                </span>
+            </button>
+
+            <button
+                class="settings-menu-button"
+                type="button"
+                data-section="notification-settings"
+            >
+                <span class="settings-menu-icon">
+                    ♡
+                </span>
+
+                <span class="settings-menu-text">
+                    Уведомления
+                </span>
+            </button>
+
+            <button
+                class="settings-menu-button"
+                type="button"
+                data-section="appearance-settings"
+            >
+                <span class="settings-menu-icon">
+                    ◐
+                </span>
+
+                <span class="settings-menu-text">
+                    Вид
+                </span>
+            </button>
+
+            <button
+                class="settings-menu-button"
+                type="button"
+                data-section="account-settings"
+            >
+                <span class="settings-menu-icon">
+                    ⚙
+                </span>
+
+                <span class="settings-menu-text">
+                    Аккаунт
+                </span>
+            </button>
+        </aside>
+
+        <section class="settings-content-card">
+            <section
+                id="profile-settings"
+                class="settings-section active"
+            >
+                <h1 class="settings-title">
+                    Профиль
+                </h1>
+
+                <p class="settings-subtitle">
+                    Измените информацию, которую видят
+                    другие пользователи.
+                </p>
+
+                <div class="profile-edit-header">
+                    <div
+                        id="settings-avatar"
+                        class="settings-avatar"
+                    >
+                        ?
+                    </div>
+
+                    <div>
+                        <label class="avatar-change-label">
+                            Изменить фотографию
+
+                            <input
+                                id="avatar-input"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                            >
+                        </label>
+
+                        <span class="settings-hint">
+                            JPG, PNG или WEBP.
+                            Максимальный размер — 10 МБ.
+                        </span>
+                    </div>
+                </div>
+
+                <form id="profile-form">
+                    <div class="settings-form-group">
+                        <label
+                            class="settings-label"
+                            for="phone-input"
+                        >
+                            Номер телефона
+                        </label>
+
+                        <input
+                            id="phone-input"
+                            class="settings-input"
+                            type="text"
+                            readonly
+                        >
+
+                        <span class="settings-hint">
+                            Номер телефона используется
+                            для входа и не изменяется в настройках.
+                        </span>
+                    </div>
+
+                    <div class="settings-form-group">
+                        <label
+                            class="settings-label"
+                            for="display-name-input"
+                        >
+                            Имя
+                        </label>
+
+                        <input
+                            id="display-name-input"
+                            class="settings-input"
+                            type="text"
+                            maxlength="100"
+                            placeholder="Ваше имя"
+                        >
+                    </div>
+
+                    <div class="settings-form-group">
+                        <label
+                            class="settings-label"
+                            for="username-input"
+                        >
+                            Тег пользователя
+                        </label>
+
+                        <input
+                            id="username-input"
+                            class="settings-input"
+                            type="text"
+                            maxlength="30"
+                            placeholder="@username"
+                        >
+
+                        <span class="settings-hint">
+                            Только латинские буквы, цифры
+                            и символ подчёркивания.
+                        </span>
+                    </div>
+
+                    <div class="settings-form-group">
+                        <label
+                            class="settings-label"
+                            for="bio-input"
+                        >
+                            О себе
+                        </label>
+
+                        <textarea
+                            id="bio-input"
+                            class="settings-textarea"
+                            maxlength="500"
+                            placeholder="Расскажите немного о себе"
+                        ></textarea>
+                    </div>
+
+                    <button
+                        id="save-profile-button"
+                        class="settings-save-button"
+                        type="submit"
+                    >
+                        Сохранить изменения
+                    </button>
+
+                    <div
+                        id="profile-message"
+                        class="settings-message"
+                        aria-live="polite"
+                    ></div>
+                </form>
+            </section>
+
+            <section
+                id="privacy-settings"
+                class="settings-section"
+            >
+                <h1 class="settings-title">
+                    Приватность
+                </h1>
+
+                <p class="settings-subtitle">
+                    Управляйте видимостью профиля
+                    и публикаций.
+                </p>
+
+                <div class="settings-option">
+                    <div>
+                        <div class="settings-option-title">
+                            Приватный профиль
+                        </div>
+
+                        <div class="settings-option-description">
+                            Только подтверждённые подписчики
+                            смогут видеть ваши публикации.
+                        </div>
+                    </div>
+
+                    <label class="settings-switch">
+                        <input
+                            id="private-profile-toggle"
+                            type="checkbox"
+                        >
+
+                        <span class="settings-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <div class="settings-option-title">
+                            Показывать мой профиль в поиске
+                        </div>
+
+                        <div class="settings-option-description">
+                            Локальная настройка интерфейса.
+                        </div>
+                    </div>
+
+                    <label class="settings-switch">
+                        <input
+                            id="search-profile-toggle"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <span class="settings-slider"></span>
+                    </label>
+                </div>
+
+                <button
+                    id="save-privacy-button"
+                    class="settings-save-button"
+                    type="button"
+                >
+                    Сохранить приватность
+                </button>
+
+                <div
+                    id="privacy-message"
+                    class="settings-message"
+                    aria-live="polite"
+                ></div>
+            </section>
+
+            <section
+                id="notification-settings"
+                class="settings-section"
+            >
+                <h1 class="settings-title">
+                    Уведомления
+                </h1>
+
+                <p class="settings-subtitle">
+                    Выберите, какие уведомления показывать
+                    в интерфейсе ChatWell.
+                </p>
+
+                <div class="settings-option">
+                    <div>
+                        <div class="settings-option-title">
+                            Все уведомления
+                        </div>
+
+                        <div class="settings-option-description">
+                            Показывать уведомления о действиях
+                            пользователей.
+                        </div>
+                    </div>
+
+                    <label class="settings-switch">
+                        <input
+                            id="notifications-enabled-toggle"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <span class="settings-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <div class="settings-option-title">
+                            Лайки
+                        </div>
+
+                        <div class="settings-option-description">
+                            Уведомления о лайках ваших публикаций.
+                        </div>
+                    </div>
+
+                    <label class="settings-switch">
+                        <input
+                            id="like-notifications-toggle"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <span class="settings-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <div class="settings-option-title">
+                            Комментарии
+                        </div>
+
+                        <div class="settings-option-description">
+                            Уведомления о новых комментариях.
+                        </div>
+                    </div>
+
+                    <label class="settings-switch">
+                        <input
+                            id="comment-notifications-toggle"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <span class="settings-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <div class="settings-option-title">
+                            Подписки
+                        </div>
+
+                        <div class="settings-option-description">
+                            Уведомления о новых подписчиках
+                            и запросах.
+                        </div>
+                    </div>
+
+                    <label class="settings-switch">
+                        <input
+                            id="follow-notifications-toggle"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <span class="settings-slider"></span>
+                    </label>
+                </div>
+
+                <button
+                    id="save-notifications-button"
+                    class="settings-save-button"
+                    type="button"
+                >
+                    Сохранить уведомления
+                </button>
+
+                <div
+                    id="notifications-message"
+                    class="settings-message"
+                    aria-live="polite"
+                ></div>
+            </section>
+
+            <section
+    id="appearance-settings"
+    class="settings-section"
+>
+    <h1 class="settings-title">
+        Внешний вид
+    </h1>
+
+    <p class="settings-subtitle">
+        Настройте общий дизайн ChatWell
+        и внешний вид чатов отдельно.
+    </p>
+
+    <div class="theme-settings-group">
+        <h2 class="settings-section-title">
+            Тема всего мессенджера
+        </h2>
+
+        <p class="settings-hint theme-description">
+            Эта тема применяется ко всем страницам ChatWell.
+        </p>
+
+        <div class="theme-grid">
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="global-theme"
+                    value="light"
+                >
+
+                <span class="theme-preview theme-preview-light">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Светлая
+                </span>
+
+                <span class="theme-card-description">
+                    Классический светлый интерфейс
+                </span>
+            </label>
+
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="global-theme"
+                    value="dark"
+                >
+
+                <span class="theme-preview theme-preview-dark">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Тёмная
+                </span>
+
+                <span class="theme-card-description">
+                    Комфортная тема для вечера
+                </span>
+            </label>
+
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="global-theme"
+                    value="amoled"
+                >
+
+                <span class="theme-preview theme-preview-amoled">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    AMOLED
+                </span>
+
+                <span class="theme-card-description">
+                    Глубокий чёрный фон
+                </span>
+            </label>
+
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="global-theme"
+                    value="lavender"
+                >
+
+                <span class="theme-preview theme-preview-lavender">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Лавандовая
+                </span>
+
+                <span class="theme-card-description">
+                    Мягкие фиолетовые оттенки
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div class="theme-settings-group">
+        <h2 class="settings-section-title">
+            Тема чата
+        </h2>
+
+        <p class="settings-hint theme-description">
+            Эта тема применяется только к сообщениям и чатам.
+        </p>
+
+        <div class="theme-grid chat-theme-grid">
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="chat-theme"
+                    value="classic"
+                >
+
+                <span class="theme-preview chat-preview-classic">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Классическая
+                </span>
+
+                <span class="theme-card-description">
+                    Светлый Telegram-подобный чат
+                </span>
+            </label>
+
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="chat-theme"
+                    value="midnight"
+                >
+
+                <span class="theme-preview chat-preview-midnight">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Полночь
+                </span>
+
+                <span class="theme-card-description">
+                    Тёмный синий чат
+                </span>
+            </label>
+
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="chat-theme"
+                    value="ocean"
+                >
+
+                <span class="theme-preview chat-preview-ocean">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Океан
+                </span>
+
+                <span class="theme-card-description">
+                    Голубые и бирюзовые оттенки
+                </span>
+            </label>
+
+            <label class="theme-card">
+                <input
+                    type="radio"
+                    name="chat-theme"
+                    value="forest"
+                >
+
+                <span class="theme-preview chat-preview-forest">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+                <span class="theme-card-title">
+                    Лес
+                </span>
+
+                <span class="theme-card-description">
+                    Спокойные зелёные оттенки
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div class="settings-option">
+        <div>
+            <div class="settings-option-title">
+                Компактный режим
+            </div>
+
+            <div class="settings-option-description">
+                Уменьшает расстояния между элементами интерфейса.
+            </div>
+        </div>
+
+        <label class="settings-switch">
+            <input
+                id="compact-mode-toggle"
+                type="checkbox"
+            >
+
+            <span class="settings-slider"></span>
+        </label>
+    </div>
+
+    <div
+        id="appearance-message"
+        class="settings-message"
+        aria-live="polite"
+    ></div>
+</section>
+
+            <section
+                id="account-settings"
+                class="settings-section"
+            >
+                <h1 class="settings-title">
+                    Аккаунт
+                </h1>
+
+                <p class="settings-subtitle">
+                    Информация о вашей учётной записи.
+                </p>
+
+                <div class="account-info">
+                    <div class="account-info-row">
+                        <span>
+                            Телефон
+                        </span>
+
+                        <span id="account-phone">
+                            —
+                        </span>
+                    </div>
+
+                    <div class="account-info-row">
+                        <span>
+                            Тег
+                        </span>
+
+                        <span id="account-username">
+                            —
+                        </span>
+                    </div>
+
+                    <div class="account-info-row">
+                        <span>
+                            Дата регистрации
+                        </span>
+
+                        <span id="account-created-at">
+                            —
+                        </span>
+                    </div>
+                </div>
+
+                <div class="danger-zone">
+                    <h2 class="danger-zone-title">
+                        Выход из аккаунта
+                    </h2>
+
+                    <p class="danger-zone-text">
+                        После выхода потребуется снова
+                        подтвердить номер телефона.
+                    </p>
+
+                    <button
+                        id="logout-button"
+                        class="danger-button"
+                        type="button"
+                    >
+                        Выйти из аккаунта
+                    </button>
+                </div>
+            </section>
+        </section>
+    </div>
+</main>
+
+<script>
+(function () {
+    "use strict";
+
+    const ACCESS_TOKEN_KEY =
+        "chatwell_access_token";
+
+    const REFRESH_TOKEN_KEY =
+        "chatwell_refresh_token";
+
+    const token =
+        localStorage.getItem(
+            ACCESS_TOKEN_KEY
+        );
+
+    if (!token) {
+        window.location.href =
+            "/register/";
+
+        return;
+    }
+
+    function byId(id) {
+        return document.getElementById(id);
+    }
+
+    const profileForm =
+        byId("profile-form");
+
+    const avatarInput =
+        byId("avatar-input");
+
+    const settingsAvatar =
+        byId("settings-avatar");
+
+    const phoneInput =
+        byId("phone-input");
+
+    const displayNameInput =
+        byId("display-name-input");
+
+    const usernameInput =
+        byId("username-input");
+
+    const bioInput =
+        byId("bio-input");
+
+    const privateProfileToggle =
+        byId("private-profile-toggle");
+
+    const searchProfileToggle =
+        byId("search-profile-toggle");
+
+    const compactModeToggle =
+        byId("compact-mode-toggle");
+
+    const notificationsEnabledToggle =
+        byId("notifications-enabled-toggle");
+
+    const likeNotificationsToggle =
+        byId("like-notifications-toggle");
+
+    const commentNotificationsToggle =
+        byId("comment-notifications-toggle");
+
+    const followNotificationsToggle =
+        byId("follow-notifications-toggle");
+
+    let avatarObjectUrl = null;
+
+    function showMessage(
+        element,
+        text,
+        isError
+    ) {
+        if (!element) {
+            return;
+        }
+
+        element.textContent =
+            text || "";
+
+        element.classList.toggle(
+            "error",
+            Boolean(isError)
+        );
+    }
+
+    function errorText(data) {
+        if (
+            data
+            && typeof data.detail === "string"
+        ) {
+            return data.detail;
+        }
+
+        if (
+            data
+            && typeof data === "object"
+        ) {
+            const messages =
+                Object.entries(data)
+                    .map(function (entry) {
+                        const key =
+                            entry[0];
+
+                        const value =
+                            entry[1];
+
+                        const text =
+                            Array.isArray(value)
+                                ? value.join(", ")
+                                : String(value);
+
+                        return (
+                            key
+                            + ": "
+                            + text
+                        );
+                    });
+
+            if (messages.length) {
+                return messages.join(" ");
+            }
+        }
+
+        return "Произошла ошибка.";
+    }
+
+    async function readJson(response) {
+        const text =
+            await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return {
+                detail:
+                    "Сервер вернул некорректный ответ."
+            };
+        }
+    }
+
+    function authHeaders(json) {
+        const headers = {
+            "Authorization":
+                "Bearer " + token
+        };
+
+        if (json) {
+            headers["Content-Type"] =
+                "application/json";
+        }
+
+        return headers;
+    }
+
+    function userDisplayName(user) {
+        if (!user) {
+            return "Пользователь";
+        }
+
+        return (
+            user.display_name
+            || user.username
+            || "Пользователь"
+        );
+    }
+
+    function setAvatar(user) {
+        if (!settingsAvatar) {
+            return;
+        }
+
+        settingsAvatar.innerHTML =
+            "";
+
+        if (
+            user
+            && user.avatar
+        ) {
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+            image.src =
+                user.avatar;
+
+            image.alt =
+                "Аватар пользователя";
+
+            image.onerror =
+                function () {
+                    image.remove();
+
+                    settingsAvatar.textContent =
+                        userDisplayName(user)
+                            .charAt(0)
+                            .toUpperCase();
+                };
+
+            settingsAvatar.appendChild(
+                image
+            );
+
+            return;
+        }
+
+        settingsAvatar.textContent =
+            userDisplayName(user)
+                .charAt(0)
+                .toUpperCase();
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return "—";
+        }
+
+        const date =
+            new Date(value);
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return "—";
+        }
+
+        return date.toLocaleDateString(
+            "ru-RU"
+        );
+    }
+
+    function fillProfile(user) {
+        if (!user) {
+            return;
+        }
+
+        setAvatar(user);
+
+        if (phoneInput) {
+            phoneInput.value =
+                user.phone || "";
+        }
+
+        if (displayNameInput) {
+            displayNameInput.value =
+                user.display_name || "";
+        }
+
+        if (usernameInput) {
+            usernameInput.value =
+                user.username || "";
+        }
+
+        if (bioInput) {
+            bioInput.value =
+                user.bio || "";
+        }
+
+        if (privateProfileToggle) {
+            privateProfileToggle.checked =
+                Boolean(
+                    user.is_private
+                );
+        }
+
+        const accountPhone =
+            byId("account-phone");
+
+        if (accountPhone) {
+            accountPhone.textContent =
+                user.phone || "—";
+        }
+
+        const accountUsername =
+            byId("account-username");
+
+        if (accountUsername) {
+            accountUsername.textContent =
+                user.username
+                    ? "@" + user.username
+                    : "—";
+        }
+
+        const accountCreatedAt =
+            byId("account-created-at");
+
+        if (accountCreatedAt) {
+            accountCreatedAt.textContent =
+                formatDate(
+                    user.created_at
+                );
+        }
+    }
+
+    async function loadProfile() {
+        const response =
+            await fetch(
+                "/api/auth/me/",
+                {
+                    method: "GET",
+                    headers: authHeaders(false)
+                }
+            );
+
+        const data =
+            await readJson(response);
+
+        if (
+            response.status === 401
+        ) {
+            logout();
+
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                errorText(data)
+            );
+        }
+
+        fillProfile(data);
+    }
+
+    async function saveProfile(event) {
+        event.preventDefault();
+
+        const button =
+            byId("save-profile-button");
+
+        const message =
+            byId("profile-message");
+
+        if (
+            !usernameInput
+            || !displayNameInput
+            || !bioInput
+        ) {
+            return;
+        }
+
+        const username =
+            usernameInput.value
+                .trim()
+                .replace(/^@+/, "");
+
+        const displayName =
+            displayNameInput.value.trim();
+
+        const bio =
+            bioInput.value.trim();
+
+        if (
+            username
+            && !/^[A-Za-z0-9_]{3,30}$/.test(
+                username
+            )
+        ) {
+            showMessage(
+                message,
+                "Тег должен содержать от 3 до 30 символов: "
+                + "латинские буквы, цифры и _.",
+                true
+            );
+
+            usernameInput.focus();
+
+            return;
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "username",
+            username
+        );
+
+        formData.append(
+            "display_name",
+            displayName
+        );
+
+        formData.append(
+            "bio",
+            bio
+        );
+
+        if (
+            avatarInput
+            && avatarInput.files
+            && avatarInput.files[0]
+        ) {
+            const avatar =
+                avatarInput.files[0];
+
+            if (
+                avatar.size
+                > 10 * 1024 * 1024
+            ) {
+                showMessage(
+                    message,
+                    "Размер аватара не должен превышать 10 МБ.",
+                    true
+                );
+
+                return;
+            }
+
+            if (
+                ![
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ].includes(
+                    avatar.type
+                )
+            ) {
+                showMessage(
+                    message,
+                    "Разрешены только JPG, PNG и WEBP.",
+                    true
+                );
+
+                return;
+            }
+
+            formData.append(
+                "avatar",
+                avatar
+            );
+        }
+
+        if (button) {
+            button.disabled =
+                true;
+        }
+
+        showMessage(
+            message,
+            "Сохраняем изменения..."
+        );
+
+        try {
+            const response =
+                await fetch(
+                    "/api/auth/me/",
+                    {
+                        method: "PATCH",
+                        headers: authHeaders(false),
+                        body: formData
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (
+                response.status === 401
+            ) {
+                logout();
+
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(data)
+                );
+            }
+
+            fillProfile(data);
+
+            if (avatarInput) {
+                avatarInput.value =
+                    "";
+            }
+
+            showMessage(
+                message,
+                "Профиль успешно сохранён."
+            );
+        } catch (error) {
+            showMessage(
+                message,
+                error.message
+                || "Не удалось сохранить профиль.",
+                true
+            );
+        } finally {
+            if (button) {
+                button.disabled =
+                    false;
+            }
+        }
+    }
+
+    async function savePrivacy() {
+        const button =
+            byId("save-privacy-button");
+
+        const message =
+            byId("privacy-message");
+
+        if (!privateProfileToggle) {
+            return;
+        }
+
+        if (button) {
+            button.disabled =
+                true;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    "/api/auth/me/",
+                    {
+                        method: "PATCH",
+                        headers: authHeaders(true),
+                        body: JSON.stringify({
+                            is_private:
+                                privateProfileToggle.checked
+                        })
+                    }
+                );
+
+            const data =
+                await readJson(response);
+
+            if (
+                response.status === 401
+            ) {
+                logout();
+
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    errorText(data)
+                );
+            }
+
+            if (searchProfileToggle) {
+                localStorage.setItem(
+                    "chatwell_search_profile",
+                    searchProfileToggle.checked
+                        ? "true"
+                        : "false"
+                );
+            }
+
+            showMessage(
+                message,
+                "Настройки приватности сохранены."
+            );
+        } catch (error) {
+            showMessage(
+                message,
+                error.message
+                || "Не удалось сохранить настройки.",
+                true
+            );
+        } finally {
+            if (button) {
+                button.disabled =
+                    false;
+            }
+        }
+    }
+
+    function applyGlobalTheme(theme) {
+        const allowedThemes = [
+            "light",
+            "dark",
+            "amoled",
+            "lavender"
+        ];
+
+        if (
+            !allowedThemes.includes(
+                theme
+            )
+        ) {
+            theme =
+                "light";
+        }
+
+        document.documentElement.dataset.globalTheme =
+            theme;
+
+        localStorage.setItem(
+            "chatwell_global_theme",
+            theme
+        );
+
+        /*
+         * Поддержка текущих переменных
+         * настроек.
+         */
+        const themes = {
+            light: {
+                bg: "#f5f6fb",
+                card: "#ffffff",
+                text: "#20212a",
+                muted: "#858b9e",
+                border: "#e5e7ef",
+                primary: "#6253e6",
+                primarySoft: "#eeecff"
+            },
+
+            dark: {
+                bg: "#151622",
+                card: "#202231",
+                text: "#f7f7fb",
+                muted: "#a8abbd",
+                border: "#393c50",
+                primary: "#897dff",
+                primarySoft: "#343052"
+            },
+
+            amoled: {
+                bg: "#000000",
+                card: "#090909",
+                text: "#ffffff",
+                muted: "#9b9b9b",
+                border: "#292929",
+                primary: "#9b8cff",
+                primarySoft: "#211d3b"
+            },
+
+            lavender: {
+                bg: "#f5efff",
+                card: "#ffffff",
+                text: "#302546",
+                muted: "#887da1",
+                border: "#e6daf7",
+                primary: "#9a63d8",
+                primarySoft: "#f0e4ff"
+            }
+        };
+
+        const selected =
+            themes[theme];
+
+        const root =
+            document.documentElement;
+
+        root.style.setProperty(
+            "--settings-bg",
+            selected.bg
+        );
+
+        root.style.setProperty(
+            "--settings-card",
+            selected.card
+        );
+
+        root.style.setProperty(
+            "--settings-text",
+            selected.text
+        );
+
+        root.style.setProperty(
+            "--settings-muted",
+            selected.muted
+        );
+
+        root.style.setProperty(
+            "--settings-border",
+            selected.border
+        );
+
+        root.style.setProperty(
+            "--settings-primary",
+            selected.primary
+        );
+
+        root.style.setProperty(
+            "--settings-primary-soft",
+            selected.primarySoft
+        );
+
+        document.body.classList.toggle(
+            "settings-dark",
+            theme === "dark"
+            || theme === "amoled"
+        );
+
+        document.querySelectorAll(
+            'input[name="global-theme"]'
+        ).forEach(
+            function (input) {
+                input.checked =
+                    input.value === theme;
+            }
+        );
+    }
+
+    function applyChatTheme(theme) {
+        const allowedThemes = [
+            "classic",
+            "midnight",
+            "ocean",
+            "forest"
+        ];
+
+        if (
+            !allowedThemes.includes(
+                theme
+            )
+        ) {
+            theme =
+                "classic";
+        }
+
+        document.documentElement.dataset.chatTheme =
+            theme;
+
+        localStorage.setItem(
+            "chatwell_chat_theme",
+            theme
+        );
+
+        document.querySelectorAll(
+            'input[name="chat-theme"]'
+        ).forEach(
+            function (input) {
+                input.checked =
+                    input.value === theme;
+            }
+        );
+    }
+
+    function applyCompactMode(enabled) {
+        const value =
+            Boolean(enabled);
+
+        document.body.classList.toggle(
+            "settings-compact",
+            value
+        );
+
+        localStorage.setItem(
+            "chatwell_compact_mode",
+            value
+                ? "true"
+                : "false"
+        );
+
+        if (compactModeToggle) {
+            compactModeToggle.checked =
+                value;
+        }
+    }
+
+    function loadLocalSettings() {
+        let globalTheme =
+            localStorage.getItem(
+                "chatwell_global_theme"
+            );
+
+        /*
+         * Перенос старой настройки
+         * тёмной темы в новую систему.
+         */
+        if (!globalTheme) {
+            const oldDarkTheme =
+                localStorage.getItem(
+                    "chatwell_dark_theme"
+                ) === "true";
+
+            globalTheme =
+                oldDarkTheme
+                    ? "dark"
+                    : "light";
+        }
+
+        const chatTheme =
+            localStorage.getItem(
+                "chatwell_chat_theme"
+            ) || "classic";
+
+        const compactMode =
+            localStorage.getItem(
+                "chatwell_compact_mode"
+            ) === "true";
+
+        const notificationsEnabled =
+            localStorage.getItem(
+                "chatwell_notifications_enabled"
+            ) !== "false";
+
+        const likes =
+            localStorage.getItem(
+                "chatwell_like_notifications"
+            ) !== "false";
+
+        const comments =
+            localStorage.getItem(
+                "chatwell_comment_notifications"
+            ) !== "false";
+
+        const follows =
+            localStorage.getItem(
+                "chatwell_follow_notifications"
+            ) !== "false";
+
+        const searchProfile =
+            localStorage.getItem(
+                "chatwell_search_profile"
+            ) !== "false";
+
+        applyGlobalTheme(
+            globalTheme
+        );
+
+        applyChatTheme(
+            chatTheme
+        );
+
+        applyCompactMode(
+            compactMode
+        );
+
+        if (notificationsEnabledToggle) {
+            notificationsEnabledToggle.checked =
+                notificationsEnabled;
+        }
+
+        if (likeNotificationsToggle) {
+            likeNotificationsToggle.checked =
+                likes;
+        }
+
+        if (commentNotificationsToggle) {
+            commentNotificationsToggle.checked =
+                comments;
+        }
+
+        if (followNotificationsToggle) {
+            followNotificationsToggle.checked =
+                follows;
+        }
+
+        if (searchProfileToggle) {
+            searchProfileToggle.checked =
+                searchProfile;
+        }
+
+        updateNotificationAvailability();
+    }
+
+    function updateNotificationAvailability() {
+        if (
+            !notificationsEnabledToggle
+        ) {
+            return;
+        }
+
+        const disabled =
+            !notificationsEnabledToggle.checked;
+
+        [
+            likeNotificationsToggle,
+            commentNotificationsToggle,
+            followNotificationsToggle
+        ].forEach(
+            function (toggle) {
+                if (toggle) {
+                    toggle.disabled =
+                        disabled;
+                }
+            }
+        );
+    }
+
+    function saveNotificationSettings() {
+        if (notificationsEnabledToggle) {
+            localStorage.setItem(
+                "chatwell_notifications_enabled",
+                notificationsEnabledToggle.checked
+                    ? "true"
+                    : "false"
+            );
+        }
+
+        if (likeNotificationsToggle) {
+            localStorage.setItem(
+                "chatwell_like_notifications",
+                likeNotificationsToggle.checked
+                    ? "true"
+                    : "false"
+            );
+        }
+
+        if (commentNotificationsToggle) {
+            localStorage.setItem(
+                "chatwell_comment_notifications",
+                commentNotificationsToggle.checked
+                    ? "true"
+                    : "false"
+            );
+        }
+
+        if (followNotificationsToggle) {
+            localStorage.setItem(
+                "chatwell_follow_notifications",
+                followNotificationsToggle.checked
+                    ? "true"
+                    : "false"
+            );
+        }
+
+        showMessage(
+            byId("notifications-message"),
+            "Настройки уведомлений сохранены."
+        );
+    }
+
+    function logout() {
+        localStorage.removeItem(
+            ACCESS_TOKEN_KEY
+        );
+
+        localStorage.removeItem(
+            REFRESH_TOKEN_KEY
+        );
+
+        window.location.href =
+            "/register/";
+    }
+
+    document.querySelectorAll(
+        ".settings-menu-button"
+    ).forEach(
+        function (button) {
+            button.addEventListener(
+                "click",
+                function () {
+                    const sectionId =
+                        button.dataset.section;
+
+                    document.querySelectorAll(
+                        ".settings-menu-button"
+                    ).forEach(
+                        function (item) {
+                            item.classList.remove(
+                                "active"
+                            );
+                        }
+                    );
+
+                    document.querySelectorAll(
+                        ".settings-section"
+                    ).forEach(
+                        function (section) {
+                            section.classList.remove(
+                                "active"
+                            );
+                        }
+                    );
+
+                    button.classList.add(
+                        "active"
+                    );
+
+                    const section =
+                        byId(sectionId);
+
+                    if (section) {
+                        section.classList.add(
+                            "active"
+                        );
+                    }
+                }
+            );
+        }
+    );
+
+    if (profileForm) {
+        profileForm.addEventListener(
+            "submit",
+            saveProfile
+        );
+    }
+
+    const savePrivacyButton =
+        byId("save-privacy-button");
+
+    if (savePrivacyButton) {
+        savePrivacyButton.addEventListener(
+            "click",
+            savePrivacy
+        );
+    }
+
+    const saveNotificationsButton =
+        byId("save-notifications-button");
+
+    if (saveNotificationsButton) {
+        saveNotificationsButton.addEventListener(
+            "click",
+            saveNotificationSettings
+        );
+    }
+
+    document.querySelectorAll(
+        'input[name="global-theme"]'
+    ).forEach(
+        function (input) {
+            input.addEventListener(
+                "change",
+                function () {
+                    if (!input.checked) {
+                        return;
+                    }
+
+                    applyGlobalTheme(
+                        input.value
+                    );
+
+                    showMessage(
+                        byId("appearance-message"),
+                        "Общая тема изменена."
+                    );
+                }
+            );
+        }
+    );
+
+    document.querySelectorAll(
+        'input[name="chat-theme"]'
+    ).forEach(
+        function (input) {
+            input.addEventListener(
+                "change",
+                function () {
+                    if (!input.checked) {
+                        return;
+                    }
+
+                    applyChatTheme(
+                        input.value
+                    );
+
+                    showMessage(
+                        byId("appearance-message"),
+                        "Тема чата изменена."
+                    );
+                }
+            );
+        }
+    );
+
+    if (compactModeToggle) {
+        compactModeToggle.addEventListener(
+            "change",
+            function () {
+                applyCompactMode(
+                    compactModeToggle.checked
+                );
+            }
+        );
+    }
+
+    if (notificationsEnabledToggle) {
+        notificationsEnabledToggle.addEventListener(
+            "change",
+            updateNotificationAvailability
+        );
+    }
+
+    const logoutButton =
+        byId("logout-button");
+
+    if (logoutButton) {
+        logoutButton.addEventListener(
+            "click",
+            function () {
+                if (
+                    window.confirm(
+                        "Выйти из аккаунта?"
+                    )
+                ) {
+                    logout();
+                }
+            }
+        );
+    }
+
+    if (avatarInput) {
+        avatarInput.addEventListener(
+            "change",
+            function () {
+                const file =
+                    avatarInput.files
+                    && avatarInput.files[0];
+
+                if (!file || !settingsAvatar) {
+                    return;
+                }
+
+                if (avatarObjectUrl) {
+                    URL.revokeObjectURL(
+                        avatarObjectUrl
+                    );
+                }
+
+                avatarObjectUrl =
+                    URL.createObjectURL(
+                        file
+                    );
+
+                settingsAvatar.innerHTML =
+                    "";
+
+                const image =
+                    document.createElement(
+                        "img"
+                    );
+
+                image.src =
+                    avatarObjectUrl;
+
+                image.alt =
+                    "Предпросмотр аватара";
+
+                settingsAvatar.appendChild(
+                    image
+                );
+            }
+        );
+    }
+
+    loadLocalSettings();
+
+    loadProfile().catch(
+        function (error) {
+            console.error(
+                "Ошибка загрузки настроек:",
+                error
+            );
+
+            showMessage(
+                byId("profile-message"),
+                error.message
+                || "Не удалось загрузить настройки.",
+                true
+            );
+        }
+    );
+})();
+</script>
+
+{% endblock %}

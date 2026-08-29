@@ -1,0 +1,791 @@
+{% extends "core/base.html" %}
+
+{% block title %}Люди — ChatWell{% endblock %}
+
+{% block body %}
+<header class="cw-header">
+    <div class="cw-header-inner">
+        <a class="cw-logo" href="/">
+            ChatWell
+        </a>
+
+        <div class="cw-header-actions">
+            <a
+                class="cw-button cw-button-secondary"
+                href="/feed/"
+            >
+                Лента
+            </a>
+<a
+    class="cw-menu-link"
+    href="/chat/"
+>
+    <span class="cw-menu-icon">✉</span>
+    Сообщения
+</a>
+            <a
+                class="cw-button"
+                href="/profile/"
+            >
+                Профиль
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="cw-main">
+    <div class="cw-layout">
+        <aside class="cw-sidebar">
+            <nav class="cw-menu">
+                <a
+                    class="cw-menu-link"
+                    href="/feed/"
+                >
+                    <span class="cw-menu-icon">⌂</span>
+                    Лента
+                </a>
+
+                <a
+                    class="cw-menu-link active"
+                    href="/people/"
+                >
+                    <span class="cw-menu-icon">⌕</span>
+                    Люди
+                </a>
+                <a
+    href="/reels/"
+    class="cw-menu-link"
+>
+    <span class="cw-menu-icon">▶</span>
+    Reels
+</a>
+                <a
+                    class="cw-menu-link"
+                    href="/profile/"
+                >
+                    <span class="cw-menu-icon">◉</span>
+                    Профиль
+                </a>
+            </nav>
+        </aside>
+
+        <section class="cw-content">
+            <h1 class="cw-page-title">
+                Найти людей
+            </h1>
+
+            <form
+                id="search-form"
+                class="cw-search"
+            >
+                <input
+                    id="search-input"
+                    class="cw-input"
+                    type="search"
+                    minlength="2"
+                    placeholder="Имя или username"
+                    required
+                >
+
+                <button
+                    class="cw-button"
+                    type="submit"
+                >
+                    Найти
+                </button>
+            </form>
+
+            <div
+                id="hint"
+                class="cw-empty"
+            >
+                Введите минимум 2 символа.
+            </div>
+
+            <section
+                id="results"
+                class="cw-user-list"
+            ></section>
+        </section>
+    </div>
+</main>
+
+<nav class="cw-mobile-nav">
+    <a href="/feed/">
+        <span class="cw-mobile-nav-icon">⌂</span>
+        <span>Лента</span>
+    </a>
+
+    <a
+        class="active"
+        href="/people/"
+    >
+        <span class="cw-mobile-nav-icon">⌕</span>
+        <span>Люди</span>
+    </a>
+
+    <a href="/profile/">
+        <span class="cw-mobile-nav-icon">◉</span>
+        <span>Профиль</span>
+    </a>
+</nav>
+
+<script>
+    const token =
+        localStorage.getItem(
+            "chatwell_access_token"
+        );
+
+    if (!token) {
+        window.location.href =
+            "/register/";
+    }
+
+    const searchForm =
+        document.getElementById(
+            "search-form"
+        );
+
+    const searchInput =
+        document.getElementById(
+            "search-input"
+        );
+
+    const results =
+        document.getElementById(
+            "results"
+        );
+
+    const hint =
+        document.getElementById(
+            "hint"
+        );
+
+    function authHeaders(json = false) {
+        const headers = {
+            "Authorization":
+                "Bearer " + token
+        };
+
+        if (json) {
+            headers["Content-Type"] =
+                "application/json";
+        }
+
+        return headers;
+    }
+
+    async function readJson(response) {
+        const text =
+            await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return {
+                detail:
+                    "Сервер вернул некорректный ответ."
+            };
+        }
+    }
+
+    function getError(data, fallback) {
+        if (
+            data
+            && data.detail
+        ) {
+            return String(
+                data.detail
+            );
+        }
+
+        if (
+            data
+            && typeof data === "object"
+        ) {
+            return Object.entries(data)
+                .map(
+                    function (entry) {
+                        const field =
+                            entry[0];
+
+                        const value =
+                            Array.isArray(
+                                entry[1]
+                            )
+                                ? entry[1].join(", ")
+                                : String(entry[1]);
+
+                        return (
+                            field
+                            + ": "
+                            + value
+                        );
+                    }
+                )
+                .join(" ");
+        }
+
+        return fallback;
+    }
+
+    function getUserName(user) {
+        if (!user) {
+            return "Пользователь";
+        }
+
+        return (
+            user.display_name
+            || user.username
+            || "Пользователь"
+        );
+    }
+
+    function getBoolean(
+        object,
+        first,
+        second,
+        fallback = false
+    ) {
+        if (
+            object
+            && object[first] !== undefined
+            && object[first] !== null
+        ) {
+            return Boolean(
+                object[first]
+            );
+        }
+
+        if (
+            object
+            && second
+            && object[second] !== undefined
+            && object[second] !== null
+        ) {
+            return Boolean(
+                object[second]
+            );
+        }
+
+        return fallback;
+    }
+
+    function getCount(value) {
+        const count =
+            Number(value);
+
+        return Number.isFinite(count)
+            ? count
+            : 0;
+    }
+
+    function createAvatar(user) {
+        const avatar =
+            document.createElement(
+                "div"
+            );
+
+        avatar.className =
+            "cw-avatar";
+
+        if (
+            user
+            && user.avatar
+        ) {
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+            image.src =
+                user.avatar;
+
+            image.alt =
+                "Аватар пользователя";
+
+            image.onerror =
+                function () {
+                    image.remove();
+
+                    avatar.textContent =
+                        getUserName(user)
+                            .charAt(0)
+                            .toUpperCase();
+                };
+
+            avatar.appendChild(
+                image
+            );
+        } else {
+            avatar.textContent =
+                getUserName(user)
+                    .charAt(0)
+                    .toUpperCase();
+        }
+
+        return avatar;
+    }
+
+    function updateFollowButton(
+        button,
+        user
+    ) {
+        const isFollowing =
+            Boolean(
+                user.is_following
+            );
+
+        const isPending =
+            Boolean(
+                user.is_pending
+                || user.pending
+            );
+
+        button.classList.remove(
+            "cw-button-secondary"
+        );
+
+        button.classList.remove(
+            "is-following"
+        );
+
+        button.classList.remove(
+            "is-pending"
+        );
+
+        if (isFollowing) {
+            button.textContent =
+                "Отписаться";
+
+            button.classList.add(
+                "cw-button-secondary"
+            );
+
+            button.classList.add(
+                "is-following"
+            );
+
+            return;
+        }
+
+        if (isPending) {
+            button.textContent =
+                "Запрос отправлен";
+
+            button.classList.add(
+                "cw-button-secondary"
+            );
+
+            button.classList.add(
+                "is-pending"
+            );
+
+            return;
+        }
+
+        button.textContent =
+            user.is_private
+                ? "Запросить подписку"
+                : "Подписаться";
+    }
+
+    function normalizeUser(user) {
+        const normalized =
+            user || {};
+
+        normalized.is_following =
+            getBoolean(
+                normalized,
+                "is_following",
+                "following"
+            );
+
+        normalized.is_pending =
+            getBoolean(
+                normalized,
+                "is_pending",
+                "pending"
+            );
+
+        normalized.is_private =
+            Boolean(
+                normalized.is_private
+            );
+
+        normalized.followers_count =
+            getCount(
+                normalized.followers_count
+            );
+
+        normalized.following_count =
+            getCount(
+                normalized.following_count
+            );
+
+        return normalized;
+    }
+
+    function renderUser(userData) {
+        const user =
+            normalizeUser(
+                userData
+            );
+
+        const card =
+            document.createElement(
+                "article"
+            );
+
+        card.className =
+            "cw-card cw-user-card";
+
+        const main =
+            document.createElement(
+                "div"
+            );
+
+        main.className =
+            "cw-user-main";
+
+        main.appendChild(
+            createAvatar(user)
+        );
+
+        const info =
+            document.createElement(
+                "div"
+            );
+
+        const name =
+            document.createElement(
+                "a"
+            );
+
+        name.className =
+            "cw-user-name";
+
+        name.href =
+            "/users/"
+            + user.id
+            + "/";
+
+        name.textContent =
+            getUserName(user);
+
+        name.style.textDecoration =
+            "none";
+
+        const username =
+            document.createElement(
+                "div"
+            );
+
+        username.className =
+            "cw-user-username";
+
+        username.textContent =
+            user.username
+                ? "@" + user.username
+                : "Username не указан";
+
+        const stats =
+            document.createElement(
+                "div"
+            );
+
+        stats.className =
+            "cw-user-stats";
+
+        function updateStats() {
+            stats.textContent =
+                "Подписчики: "
+                + user.followers_count
+                + " · Подписок: "
+                + user.following_count;
+        }
+
+        updateStats();
+
+        info.appendChild(
+            name
+        );
+
+        info.appendChild(
+            username
+        );
+
+        info.appendChild(
+            stats
+        );
+
+        main.appendChild(
+            info
+        );
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        button.type =
+            "button";
+
+        button.className =
+            "cw-button";
+
+        updateFollowButton(
+            button,
+            user
+        );
+
+        button.addEventListener(
+            "click",
+            async function () {
+                if (!user.id) {
+                    return;
+                }
+
+                button.disabled =
+                    true;
+
+                const wasFollowing =
+                    Boolean(
+                        user.is_following
+                    );
+
+                const wasPending =
+                    Boolean(
+                        user.is_pending
+                        || user.pending
+                    );
+
+                const shouldUnfollow =
+                    wasFollowing
+                    || wasPending;
+
+                const endpoint =
+                    "/api/posts/users/"
+                    + user.id
+                    + (
+                        shouldUnfollow
+                            ? "/unfollow/"
+                            : "/follow/"
+                    );
+
+                try {
+                    const response =
+                        await fetch(
+                            endpoint,
+                            {
+                                method:
+                                    shouldUnfollow
+                                        ? "DELETE"
+                                        : "POST",
+                                headers:
+                                    authHeaders()
+                            }
+                        );
+
+                    const data =
+                        await readJson(
+                            response
+                        );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            getError(
+                                data,
+                                "Ошибка подписки."
+                            )
+                        );
+                    }
+
+                    if (shouldUnfollow) {
+                        user.is_following =
+                            false;
+
+                        user.is_pending =
+                            false;
+
+                        /*
+                         * Счётчик подписчиков
+                         * уменьшаем только если
+                         * была активная подписка.
+                         */
+                        if (wasFollowing) {
+                            user.followers_count =
+                                Math.max(
+                                    0,
+                                    user.followers_count
+                                    - 1
+                                );
+                        }
+                    } else {
+                        user.is_following =
+                            getBoolean(
+                                data,
+                                "is_following",
+                                "following"
+                            );
+
+                        user.is_pending =
+                            getBoolean(
+                                data,
+                                "is_pending",
+                                "pending"
+                            );
+
+                        /*
+                         * Ожидающий запрос не является
+                         * активной подпиской и не должен
+                         * увеличивать счётчик подписчиков.
+                         */
+                        if (
+                            user.is_following
+                        ) {
+                            user.followers_count +=
+                                1;
+                        }
+                    }
+
+                    if (
+                        data.followers_count
+                        !== undefined
+                    ) {
+                        user.followers_count =
+                            getCount(
+                                data.followers_count
+                            );
+                    }
+
+                    if (
+                        data.following_count
+                        !== undefined
+                    ) {
+                        user.following_count =
+                            getCount(
+                                data.following_count
+                            );
+                    }
+
+                    updateFollowButton(
+                        button,
+                        user
+                    );
+
+                    updateStats();
+                } catch (error) {
+                    alert(
+                        error.message
+                    );
+                } finally {
+                    button.disabled =
+                        false;
+                }
+            }
+        );
+
+        card.appendChild(
+            main
+        );
+
+        card.appendChild(
+            button
+        );
+
+        return card;
+    }
+
+    searchForm.addEventListener(
+        "submit",
+        async function (event) {
+            event.preventDefault();
+
+            const query =
+                searchInput.value.trim();
+
+            if (
+                query.length < 2
+            ) {
+                hint.textContent =
+                    "Введите минимум 2 символа.";
+
+                results.innerHTML =
+                    "";
+
+                return;
+            }
+
+            hint.textContent =
+                "Ищем...";
+
+            results.innerHTML =
+                "";
+
+            try {
+                const response =
+                    await fetch(
+                        "/api/auth/users/search/?q="
+                        + encodeURIComponent(
+                            query
+                        ),
+                        {
+                            method: "GET",
+                            headers:
+                                authHeaders()
+                        }
+                    );
+
+                const data =
+                    await readJson(
+                        response
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        getError(
+                            data,
+                            "Ошибка поиска."
+                        )
+                    );
+                }
+
+                const users =
+                    Array.isArray(data)
+                        ? data
+                        : (
+                            data.results
+                            || data.users
+                            || []
+                        );
+
+                if (!users.length) {
+                    hint.textContent =
+                        "Пользователи не найдены.";
+
+                    return;
+                }
+
+                hint.textContent =
+                    "";
+
+                users.forEach(
+                    function (user) {
+                        results.appendChild(
+                            renderUser(user)
+                        );
+                    }
+                );
+            } catch (error) {
+                hint.textContent =
+                    error.message;
+            }
+        }
+    );
+</script>
+{% endblock %}
