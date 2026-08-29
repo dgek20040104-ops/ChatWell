@@ -14,16 +14,25 @@ env = environ.Env(
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
 DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get(
-        "ALLOWED_HOSTS",
-        "localhost,127.0.0.1",
-    ).split(",")
-    if host.strip()
-]
 
+# --- ИСПРАВЛЕНИЕ ALLOWED_HOSTS ---
+# Приоритет 1: Берем домен, который Render автоматически выдает сервису (RENDER_EXTERNAL_HOSTNAME)
+# Приоритет 2: Если переменной нет (локальная разработка), берем из ALLOWED_HOSTS или ставим localhost
+render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
+if render_host:
+    ALLOWED_HOSTS = [render_host, "localhost", "127.0.0.1"]
+else:
+    # Фоллбэк для локальной разработки, если RENDER_EXTERNAL_HOSTNAME не задан
+    ALLOWED_HOSTS = [
+        host.strip()
+        for host in os.environ.get(
+            "ALLOWED_HOSTS",
+            "localhost,127.0.0.1",
+        ).split(",")
+        if host.strip()
+    ]
+# ---------------------------------
 
 INSTALLED_APPS = [
     "daphne",
@@ -77,7 +86,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-# ИСПРАВЛЕНО: Используем env() вместо os.environ.get()
 DATABASES = {
     "default": dj_database_url.config(
         default=env("DATABASE_URL"),
@@ -107,7 +115,12 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "https://chatwell-1-nkp3.onrender.com/"
+# --- ИСПРАВЛЕНИЕ STATIC_URL ---
+# НИКОГДА не прописывай здесь полный домен (chatwell-...onrender.com).
+# Домен меняется при каждом деплое. Django сам сформирует правильный URL.
+STATIC_URL = "/static/"
+# -------------------------------
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
@@ -149,6 +162,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = "same-origin"
 
+# На Render балансировщик (nginx) уже держит SSL, поэтому Django не должен делать редирект сам
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -179,4 +193,3 @@ CSRF_TRUSTED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
-
