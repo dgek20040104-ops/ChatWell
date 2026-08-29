@@ -14,8 +14,8 @@ env = environ.Env(
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
 DEBUG = env.bool("DEBUG", default=False)
-# ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=['localhost', '127.0.0.1'])
-ALLOWED_HOSTS = ['chatwell-9we6.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=['localhost', '127.0.0.1'])
+
 
 
 INSTALLED_APPS = [
