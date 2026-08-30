@@ -159,8 +159,9 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "staticfiles", # <-- Измените "static" на "staticfiles"
 ]
+
 
 CHANNEL_LAYERS = {
     "default": {
