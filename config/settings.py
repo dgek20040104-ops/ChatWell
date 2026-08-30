@@ -106,7 +106,7 @@ USE_TZ = True
 # --- ИСПРАВЛЕНИЕ STATIC_URL ---
 # НИКОГДА не прописывай здесь полный домен (chatwell-...onrender.com).
 # Домен меняется при каждом деплое. Django сам сформирует правильный URL.
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 # -------------------------------
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -159,7 +159,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
 STATICFILES_DIRS = [
-    BASE_DIR / "staticfiles", # <-- Измените "static" на "staticfiles"
+    BASE_DIR / "static",  # ← здесь должно быть "static", НЕ "staticfiles"
 ]
 
 
