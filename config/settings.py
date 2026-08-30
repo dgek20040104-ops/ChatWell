@@ -2,48 +2,38 @@ import os
 from pathlib import Path
 import environ
 import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
 )
 
-environ.Env.read_env(BASE_DIR / ".env")
+# ВАЖНО: Строки environ.Env.read_env(...) ЗДЕСЬ НЕТ.
+# Мы НЕ читаем локальный файл .env. Все настройки берутся из переменных окружения Render.
 
-SECRET_KEY = env(
-    "SECRET_KEY",
-    default="unsafe-development-secret-key",
-)
-
-DEBUG = os.environ.get(
-    "DEBUG",
-    "False",
-).lower() == "true"
+SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
+DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in env(
-        "ALLOWED_HOSTS",
-        default="127.0.0.1,localhost",
-    ).split(",")
-    if host.strip()
+    "chatwell-9we6.onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
+# ---------------------------------
 
 INSTALLED_APPS = [
     "daphne",
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "channels",
-
     "apps.accounts.apps.AccountsConfig",
     "apps.core.apps.CoreConfig",
     "apps.posts.apps.PostsConfig",
@@ -86,9 +76,7 @@ ASGI_APPLICATION = "config.asgi.application"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ.get(
-            "DATABASE_URL"
-        ),
+        default=env("DATABASE_URL"),
         conn_max_age=600,
         ssl_require=True,
     )
@@ -98,16 +86,10 @@ AUTH_USER_MODEL = "accounts.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "UserAttributeSimilarityValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "MinimumLengthValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
 ]
 
@@ -121,7 +103,12 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+# --- ИСПРАВЛЕНИЕ STATIC_URL ---
+# НИКОГДА не прописывай здесь полный домен (chatwell-...onrender.com).
+# Домен меняется при каждом деплое. Django сам сформирует правильный URL.
+STATIC_URL = "/static/"
+# -------------------------------
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
@@ -131,10 +118,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in env(
-        "CORS_ALLOWED_ORIGINS",
-        default="http://localhost:3000",
-    ).split(",")
+    for origin in env("CORS_ALLOWED_ORIGINS", default="http://localhost:3000").split(",")
     if origin.strip()
 ]
 
@@ -166,6 +150,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = "same-origin"
 
+# На Render балансировщик (nginx) уже держит SSL, поэтому Django не должен делать редирект сам
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -179,15 +164,10 @@ STATICFILES_DIRS = [
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": (
-            "channels_redis.core.RedisChannelLayer"
-        ),
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                os.environ.get(
-                    "REDIS_URL",
-                    "redis://127.0.0.1:6379",
-                )
+                env("REDIS_URL", default="redis://127.0.0.1:6379"),
             ],
         },
     },
