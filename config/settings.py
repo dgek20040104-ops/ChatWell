@@ -158,9 +158,12 @@ SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
+
+
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # ← здесь должно быть "static", НЕ "staticfiles"
+    os.path.join(BASE_DIR, 'static'),
 ]
+
 
 
 CHANNEL_LAYERS = {
