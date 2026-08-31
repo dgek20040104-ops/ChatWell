@@ -510,25 +510,44 @@ else:
 
 
 # ==================================================
-# Channels и Redis
+# Channels
 # ==================================================
+
+USE_REDIS = (
+    os.environ.get(
+        "USE_REDIS",
+        "false",
+    ).strip().lower()
+    == "true"
+)
+
 
 REDIS_URL = os.environ.get(
     "REDIS_URL",
-    "redis://127.0.0.1:6379",
+    "",
 ).strip()
 
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": (
-            "channels_redis.core."
-            "RedisChannelLayer"
-        ),
-        "CONFIG": {
-            "hosts": [
-                REDIS_URL,
-            ],
+if USE_REDIS and REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": (
+                "channels_redis.core."
+                "RedisChannelLayer"
+            ),
+            "CONFIG": {
+                "hosts": [
+                    REDIS_URL,
+                ],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": (
+                "channels.layers."
+                "InMemoryChannelLayer"
+            ),
+        },
+    }
