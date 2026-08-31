@@ -202,6 +202,14 @@ class UserSerializer(
         ],
     )
 
+    MAX_AVATAR_SIZE = 10 * 1024 * 1024
+
+    ALLOWED_AVATAR_TYPES = {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    }
+
     class Meta:
         model = User
 
@@ -244,6 +252,26 @@ class UserSerializer(
                 "required": False,
             },
         }
+
+    def validate_avatar(self, value):
+        if value is None:
+            return value
+
+        if value.size > self.MAX_AVATAR_SIZE:
+            raise serializers.ValidationError(
+                "Аватарка не должна быть больше 10 МБ."
+            )
+
+        content_type = (
+            value.content_type or ""
+        ).lower()
+
+        if content_type not in self.ALLOWED_AVATAR_TYPES:
+            raise serializers.ValidationError(
+                "Разрешены только JPG, PNG и WEBP."
+            )
+
+        return value
 
     def validate_username(self, value):
         if value is None:

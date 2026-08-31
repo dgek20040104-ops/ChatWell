@@ -1,4 +1,5 @@
 from asgiref.sync import async_to_sync
+
 from channels.layers import get_channel_layer
 
 from django.contrib.auth import get_user_model
@@ -747,8 +748,10 @@ class UploadMessageView(APIView):
 
         if content_type.startswith("image/"):
             message_type = Message.IMAGE
+
         elif content_type.startswith("video/"):
             message_type = Message.VIDEO
+
         else:
             message_type = Message.FILE
 
@@ -1316,3 +1319,4 @@ class DeleteMessageView(APIView):
             serialized_message,
             status=status.HTTP_200_OK,
         )
+

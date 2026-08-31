@@ -1,6 +1,8 @@
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 
@@ -169,26 +171,11 @@ class Message(models.Model):
     SHARED_POST = "shared_post"
 
     MESSAGE_TYPES = (
-        (
-            TEXT,
-            "Текст",
-        ),
-        (
-            IMAGE,
-            "Изображение",
-        ),
-        (
-            VIDEO,
-            "Видео",
-        ),
-        (
-            FILE,
-            "Файл",
-        ),
-        (
-            SHARED_POST,
-            "Публикация",
-        ),
+        (TEXT, "Текст"),
+        (IMAGE, "Изображение"),
+        (VIDEO, "Видео"),
+        (FILE, "Файл"),
+        (SHARED_POST, "Публикация"),
     )
 
     id = models.UUIDField(
@@ -198,7 +185,7 @@ class Message(models.Model):
     )
 
     chat = models.ForeignKey(
-        Chat,
+        "Chat",
         on_delete=models.CASCADE,
         related_name="messages",
     )
@@ -224,6 +211,27 @@ class Message(models.Model):
         upload_to="chats/files/%Y/%m/%d/",
         null=True,
         blank=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp",
+                    "gif",
+                    "mp4",
+                    "webm",
+                    "mov",
+                    "avi",
+                    "pdf",
+                    "doc",
+                    "docx",
+                    "xls",
+                    "xlsx",
+                    "zip",
+                ],
+            ),
+        ],
     )
 
     file_name = models.CharField(
@@ -289,16 +297,11 @@ class Message(models.Model):
     )
 
     class Meta:
-        ordering = [
-            "created_at",
-        ]
+        ordering = ["created_at"]
 
         indexes = [
             models.Index(
-                fields=[
-                    "chat",
-                    "created_at",
-                ],
+                fields=["chat", "created_at"],
             ),
             models.Index(
                 fields=[
@@ -314,6 +317,59 @@ class Message(models.Model):
                 ],
             ),
         ]
+
+    def clean(self):
+        super().clean()
+
+        if self.message_type == self.TEXT:
+            if self.file:
+                raise ValidationError(
+                    "Текстовое сообщение не должно содержать файл."
+                )
+
+            if not self.text.strip():
+                raise ValidationError(
+                    "Текст сообщения не может быть пустым."
+                )
+
+        if self.message_type in {
+            self.IMAGE,
+            self.VIDEO,
+            self.FILE,
+        }:
+            if not self.file:
+                raise ValidationError(
+                    "Для сообщения необходимо выбрать файл."
+                )
+
+        if self.message_type == self.SHARED_POST:
+            if not self.shared_post_id:
+                raise ValidationError(
+                    "Необходимо указать публикацию."
+                )
+
+        if self.file and self.file.size > 100 * 1024 * 1024:
+            raise ValidationError(
+                "Размер файла не может превышать 100 МБ."
+            )
+
+    def save(self, *args, **kwargs):
+        if self.file:
+            if not self.file_name:
+                self.file_name = self.file.name
+
+            if not self.file_size:
+                self.file_size = self.file.size
+
+            if not self.mime_type:
+                self.mime_type = getattr(
+                    self.file,
+                    "content_type",
+                    "",
+                )
+
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.sender} в {self.chat}"

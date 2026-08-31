@@ -132,50 +132,71 @@
 
                     <div class="profile-main-info">
                         <div class="profile-title-row">
-                            <div>
-                                <h2
-                                    id="profile-display-name"
-                                    class="profile-display-name"
-                                >
-                                    Пользователь
-                                </h2>
+    <div>
+        <h2
+            id="profile-display-name"
+            class="profile-display-name"
+        >
+            Пользователь
+        </h2>
 
-                                <p
-                                    id="profile-username"
-                                    class="profile-username"
-                                >
-                                    @username
-                                </p>
-                            </div>
+        <p
+            id="profile-username"
+            class="profile-username"
+        >
+            @username
+        </p>
+    </div>
 
-                            <div class="profile-more-wrapper">
-                                <button
-                                    id="profile-more-button"
-                                    class="profile-more-button"
-                                    type="button"
-                                    aria-label="Дополнительные действия"
-                                >
-                                    ⋯
-                                </button>
+    <div class="profile-actions">
+        <label
+            class="cw-button cw-button-secondary"
+            for="profile-avatar-input"
+        >
+            Изменить аватар
+        </label>
 
-                                <div
-                                    id="profile-menu"
-                                    class="profile-menu"
-                                    hidden
-                                >
-                                    <a href="/settings/">
-                                        Настройки профиля
-                                    </a>
+        <input
+            id="profile-avatar-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+        >
 
-                                    <button
-                                        id="logout-button"
-                                        type="button"
-                                    >
-                                        Выйти
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        <div class="profile-more-wrapper">
+            <button
+                id="profile-more-button"
+                class="profile-more-button"
+                type="button"
+                aria-label="Дополнительные действия"
+            >
+                ⋯
+            </button>
+
+            <div
+                id="profile-menu"
+                class="profile-menu"
+                hidden
+            >
+                <a href="/settings/">
+                    Настройки профиля
+                </a>
+
+                <button
+                    id="logout-button"
+                    type="button"
+                >
+                    Выйти
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div
+    id="avatar-upload-message"
+    class="cw-message"
+></div>
 
                         <p
                             id="profile-bio"
@@ -1549,6 +1570,32 @@ animation: post-show .35s ease both;
     color: #ffffff;
     font-size: 10px;
 }
+.profile-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#avatar-upload-message {
+    margin-top: 10px;
+}
+
+#avatar-upload-message:empty {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    .profile-actions {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 7px;
+    }
+
+    .profile-actions label {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+}
 </style>
 
 <script>
@@ -1642,6 +1689,12 @@ animation: post-show .35s ease both;
 
     const uploadStoryPreview =
         byId("upload-story-preview");
+
+const profileAvatarInput =
+    byId("profile-avatar-input");
+
+const avatarUploadMessage =
+    byId("avatar-upload-message");
 
     const modalMedia =
         byId("post-modal-media");
@@ -2428,6 +2481,81 @@ animation: post-show .35s ease both;
                 );
         }
     }
+
+async function uploadProfileAvatar(file) {
+    if (!file) {
+        return;
+    }
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+        throw new Error(
+            "Разрешены только JPG, PNG и WEBP."
+        );
+    }
+
+    const maxSize =
+        10 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+        throw new Error(
+            "Аватарка не должна быть больше 10 МБ."
+        );
+    }
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "avatar",
+        file
+    );
+
+    if (avatarUploadMessage) {
+        avatarUploadMessage.textContent =
+            "Загружаем аватарку...";
+
+        avatarUploadMessage.style.color =
+            "#6c757d";
+    }
+
+    const response =
+        await fetch(
+            "/api/auth/me/",
+            {
+                method: "PATCH",
+                headers: authHeaders(false),
+                body: formData,
+            }
+        );
+
+    const data =
+        await readJson(response);
+
+    if (!response.ok) {
+        throw new Error(
+            errorText(
+                data,
+                "Не удалось загрузить аватарку."
+            )
+        );
+    }
+
+    setProfileData(data);
+
+    if (avatarUploadMessage) {
+        avatarUploadMessage.textContent =
+            "Аватарка успешно обновлена.";
+
+        avatarUploadMessage.style.color =
+            "#198754";
+    }
+}
 
     async function loadProfile() {
         const response =
@@ -4333,6 +4461,35 @@ animation: post-show .35s ease both;
             }
         );
     }
+
+if (profileAvatarInput) {
+    profileAvatarInput.addEventListener(
+        "change",
+        async function () {
+            const file =
+                profileAvatarInput.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            try {
+                await uploadProfileAvatar(file);
+            } catch (error) {
+                if (avatarUploadMessage) {
+                    avatarUploadMessage.textContent =
+                        error.message;
+
+                    avatarUploadMessage.style.color =
+                        "#dc3545";
+                }
+            } finally {
+                profileAvatarInput.value =
+                    "";
+            }
+        }
+    );
+}
 
     const publishPostButton =
         byId("publish-upload-post");

@@ -178,7 +178,7 @@ class CreateFileMessageSerializer(
     serializers.Serializer
 ):
     file = serializers.FileField(
-        required=True
+        required=True,
     )
 
     text = serializers.CharField(
@@ -191,19 +191,27 @@ class CreateFileMessageSerializer(
     reply_to = serializers.UUIDField(
         required=False,
         allow_null=True,
+        default=None,
     )
 
-    MAX_FILE_SIZE = 50 * 1024 * 1024
+    MAX_FILE_SIZE = 100 * 1024 * 1024
 
-    ALLOWED_EXTENSIONS = {
+    IMAGE_EXTENSIONS = {
         ".jpg",
         ".jpeg",
         ".png",
         ".gif",
         ".webp",
+    }
+
+    VIDEO_EXTENSIONS = {
         ".mp4",
         ".webm",
         ".mov",
+        ".avi",
+    }
+
+    FILE_EXTENSIONS = {
         ".pdf",
         ".doc",
         ".docx",
@@ -214,12 +222,21 @@ class CreateFileMessageSerializer(
         ".txt",
     }
 
-    ALLOWED_MIME_PREFIXES = {
-        "image/",
-        "video/",
+    IMAGE_MIME_TYPES = {
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
     }
 
-    ALLOWED_MIME_TYPES = {
+    VIDEO_MIME_TYPES = {
+        "video/mp4",
+        "video/webm",
+        "video/quicktime",
+        "video/x-msvideo",
+    }
+
+    FILE_MIME_TYPES = {
         "application/pdf",
         "application/msword",
         "application/zip",
@@ -240,22 +257,31 @@ class CreateFileMessageSerializer(
     def validate_file(self, value):
         if value.size > self.MAX_FILE_SIZE:
             raise serializers.ValidationError(
-                "Размер файла не может превышать 50 МБ."
+                "Размер файла не может превышать 100 МБ."
             )
 
         file_name = value.name.lower()
-        extension = ""
 
-        if "." in file_name:
-            extension = (
-                "."
-                + file_name.rsplit(
-                    ".",
-                    1,
-                )[1]
+        if "." not in file_name:
+            raise serializers.ValidationError(
+                "У файла отсутствует расширение."
             )
 
-        if extension not in self.ALLOWED_EXTENSIONS:
+        extension = (
+            "."
+            + file_name.rsplit(
+                ".",
+                1,
+            )[1]
+        )
+
+        allowed_extensions = (
+            self.IMAGE_EXTENSIONS
+            | self.VIDEO_EXTENSIONS
+            | self.FILE_EXTENSIONS
+        )
+
+        if extension not in allowed_extensions:
             raise serializers.ValidationError(
                 "Этот тип файла не поддерживается."
             )
@@ -264,17 +290,38 @@ class CreateFileMessageSerializer(
             value.content_type or ""
         ).lower()
 
-        is_allowed_mime = (
-            content_type in self.ALLOWED_MIME_TYPES
-            or any(
-                content_type.startswith(prefix)
-                for prefix in self.ALLOWED_MIME_PREFIXES
+        allowed_mime_types = (
+            self.IMAGE_MIME_TYPES
+            | self.VIDEO_MIME_TYPES
+            | self.FILE_MIME_TYPES
+        )
+
+        if content_type not in allowed_mime_types:
+            raise serializers.ValidationError(
+                "Недопустимый MIME-тип файла."
+            )
+
+        extension_group_is_correct = (
+            (
+                extension in self.IMAGE_EXTENSIONS
+                and content_type
+                in self.IMAGE_MIME_TYPES
+            )
+            or (
+                extension in self.VIDEO_EXTENSIONS
+                and content_type
+                in self.VIDEO_MIME_TYPES
+            )
+            or (
+                extension in self.FILE_EXTENSIONS
+                and content_type
+                in self.FILE_MIME_TYPES
             )
         )
 
-        if not is_allowed_mime:
+        if not extension_group_is_correct:
             raise serializers.ValidationError(
-                "Недопустимый MIME-тип файла."
+                "Расширение файла не соответствует его типу."
             )
 
         return value

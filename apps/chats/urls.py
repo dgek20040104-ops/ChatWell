@@ -86,4 +86,5 @@ urlpatterns = [
         LeaveChatView.as_view(),
         name="chat-leave",
     ),
+    
 ]
