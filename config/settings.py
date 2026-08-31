@@ -16,9 +16,12 @@ SECRET_KEY = env("SECRET_KEY", default="unsafe-development-secret-key")
 DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = [
-    "chatwell-9we6.onrender.com",
-    "localhost",
-    "127.0.0.1",
+    host.strip()
+    for host in os.environ.get(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1",
+    ).split(",")
+    if host.strip()
 ]
 # ---------------------------------
 
