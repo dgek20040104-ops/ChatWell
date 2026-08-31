@@ -13,9 +13,12 @@ from dotenv import load_dotenv
 # Базовые настройки
 # ==================================================
 
-BASE_DIR = Path(
-    __file__
-).resolve().parent.parent
+BASE_DIR = (
+    Path(__file__)
+    .resolve()
+    .parent
+    .parent
+)
 
 
 load_dotenv(
@@ -24,7 +27,10 @@ load_dotenv(
 
 
 env = environ.Env(
-    DEBUG=(bool, False),
+    DEBUG=(
+        bool,
+        False,
+    ),
 )
 
 
@@ -41,14 +47,6 @@ def get_env_list(
     name,
     default="",
 ):
-    """
-    Читает список значений из переменной окружения.
-
-    Пример:
-
-    ALLOWED_HOSTS=localhost,127.0.0.1,example.com
-    """
-
     value = os.environ.get(
         name,
         default,
@@ -69,20 +67,27 @@ SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     env(
         "DJANGO_SECRET_KEY",
-        default="unsafe-development-secret-key",
+        default=(
+            "unsafe-development-secret-key"
+        ),
     ),
 )
 
 
-DEBUG = os.environ.get(
-    "DEBUG",
-    "False",
-).strip().lower() in {
-    "true",
-    "1",
-    "yes",
-    "on",
-}
+DEBUG = (
+    os.environ.get(
+        "DEBUG",
+        "False",
+    )
+    .strip()
+    .lower()
+    in {
+        "true",
+        "1",
+        "yes",
+        "on",
+    }
+)
 
 
 # ==================================================
@@ -152,10 +157,15 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
+
     "django.middleware.common.CommonMiddleware",
+
     "django.middleware.csrf.CsrfViewMiddleware",
+
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
+
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -173,10 +183,13 @@ TEMPLATES = [
             "django.template.backends.django."
             "DjangoTemplates"
         ),
+
         "DIRS": [
             BASE_DIR / "templates",
         ],
+
         "APP_DIRS": True,
+
         "OPTIONS": {
             "context_processors": [
                 (
@@ -226,6 +239,7 @@ if DATABASE_URL:
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
+            conn_health_checks=True,
             ssl_require=True,
         ),
     }
@@ -235,7 +249,9 @@ else:
             "ENGINE": (
                 "django.db.backends.sqlite3"
             ),
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": (
+                BASE_DIR / "db.sqlite3"
+            ),
         },
     }
 
@@ -268,8 +284,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.Argon2PasswordHasher",
-    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    (
+        "django.contrib.auth.hashers."
+        "Argon2PasswordHasher"
+    ),
+    (
+        "django.contrib.auth.hashers."
+        "PBKDF2PasswordHasher"
+    ),
 ]
 
 
@@ -292,11 +314,35 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+)
+
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+
+# ==================================================
+# Пользовательские файлы
+# ==================================================
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = (
+    BASE_DIR / "media"
+)
+
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = (
+    25 * 1024 * 1024
+)
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = (
+    110 * 1024 * 1024
+)
 
 
 # ==================================================
@@ -326,9 +372,15 @@ AWS_S3_ENDPOINT_URL = (
 )
 
 
-AWS_S3_REGION_NAME = "ru-central1"
+AWS_S3_REGION_NAME = (
+    "ru-central1"
+)
 
-AWS_S3_SIGNATURE_VERSION = "s3v4"
+
+AWS_S3_SIGNATURE_VERSION = (
+    "s3v4"
+)
+
 
 AWS_DEFAULT_ACL = None
 
@@ -340,8 +392,11 @@ AWS_QUERYSTRING_EXPIRE = 3600
 
 AWS_S3_VERIFY = True
 
+
 AWS_S3_OBJECT_PARAMETERS = {
-    "CacheControl": "max-age=86400",
+    "CacheControl": (
+        "max-age=86400"
+    ),
 }
 
 
@@ -351,6 +406,7 @@ STORAGES = {
             "storages.backends.s3.S3Storage"
         ),
     },
+
     "staticfiles": {
         "BACKEND": (
             "whitenoise.storage."
@@ -358,25 +414,6 @@ STORAGES = {
         ),
     },
 }
-
-
-# ==================================================
-# Пользовательские файлы
-# ==================================================
-
-MEDIA_URL = "/media/"
-
-MEDIA_ROOT = BASE_DIR / "media"
-
-
-FILE_UPLOAD_MAX_MEMORY_SIZE = (
-    10 * 1024 * 1024
-)
-
-
-DATA_UPLOAD_MAX_MEMORY_SIZE = (
-    110 * 1024 * 1024
-)
 
 
 # ==================================================
@@ -468,12 +505,13 @@ SMS_RU_API_ID = env(
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-SECURE_REFERRER_POLICY = "same-origin"
+SECURE_REFERRER_POLICY = (
+    "same-origin"
+)
 
 X_FRAME_OPTIONS = "DENY"
 
 
-# Render передаёт HTTPS через прокси.
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
@@ -481,7 +519,6 @@ SECURE_PROXY_SSL_HEADER = (
 
 
 if DEBUG:
-    # Локальная разработка через HTTP.
     SECURE_SSL_REDIRECT = False
 
     SESSION_COOKIE_SECURE = False
@@ -493,9 +530,7 @@ if DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
     SECURE_HSTS_PRELOAD = False
-
 else:
-    # Production на Render через HTTPS.
     SECURE_SSL_REDIRECT = True
 
     SESSION_COOKIE_SECURE = True
@@ -510,22 +545,29 @@ else:
 
 
 # ==================================================
-# Channels
+# Channels и Redis
 # ==================================================
-
-USE_REDIS = (
-    os.environ.get(
-        "USE_REDIS",
-        "false",
-    ).strip().lower()
-    == "true"
-)
-
 
 REDIS_URL = os.environ.get(
     "REDIS_URL",
     "",
 ).strip()
+
+
+USE_REDIS = (
+    os.environ.get(
+        "USE_REDIS",
+        "false",
+    )
+    .strip()
+    .lower()
+    in {
+        "true",
+        "1",
+        "yes",
+        "on",
+    }
+)
 
 
 if USE_REDIS and REDIS_URL:
@@ -535,6 +577,7 @@ if USE_REDIS and REDIS_URL:
                 "channels_redis.core."
                 "RedisChannelLayer"
             ),
+
             "CONFIG": {
                 "hosts": [
                     REDIS_URL,
