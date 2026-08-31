@@ -157,11 +157,12 @@
         </label>
 
         <input
-            id="profile-avatar-input"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            hidden
-        >
+    id="profile-avatar-input"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    capture="environment"
+    hidden
+>
 
         <div class="profile-more-wrapper">
             <button
@@ -2482,7 +2483,9 @@ const avatarUploadMessage =
         }
     }
 
-async function uploadProfileAvatar(file) {
+async function uploadProfileAvatar(
+    file
+) {
     if (!file) {
         return;
     }
@@ -2493,19 +2496,35 @@ async function uploadProfileAvatar(file) {
         "image/webp",
     ];
 
-    if (!allowedTypes.includes(file.type)) {
+    if (
+        !allowedTypes.includes(
+            file.type
+        )
+    ) {
         throw new Error(
             "Разрешены только JPG, PNG и WEBP."
         );
     }
 
     const maxSize =
-        10 * 1024 * 1024;
+        25 * 1024 * 1024;
 
     if (file.size > maxSize) {
         throw new Error(
-            "Аватарка не должна быть больше 10 МБ."
+            "Аватарка не должна быть больше 25 МБ."
         );
+    }
+
+    const token =
+        localStorage.getItem(
+            ACCESS_TOKEN_KEY
+        );
+
+    if (!token) {
+        window.location.href =
+            "/register/";
+
+        return;
     }
 
     const formData =
@@ -2513,7 +2532,8 @@ async function uploadProfileAvatar(file) {
 
     formData.append(
         "avatar",
-        file
+        file,
+        file.name
     );
 
     if (avatarUploadMessage) {
@@ -2529,7 +2549,13 @@ async function uploadProfileAvatar(file) {
             "/api/auth/me/",
             {
                 method: "PATCH",
-                headers: authHeaders(false),
+
+                headers: {
+                    "Authorization":
+                        "Bearer "
+                        + token,
+                },
+
                 body: formData,
             }
         );
