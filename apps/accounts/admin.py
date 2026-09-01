@@ -1,11 +1,15 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import User, VerificationCode
+
+from .models import User
+from .models import VerificationCode
 
 
 @admin.register(User)
-class ChatWellUserAdmin(UserAdmin):
+class ChatWellUserAdmin(
+    UserAdmin
+):
     model = User
 
     list_display = (
@@ -13,17 +17,17 @@ class ChatWellUserAdmin(UserAdmin):
         "username",
         "display_name",
         "is_phone_verified",
+        "is_verified",
         "is_active",
         "created_at",
-        "is_verified",
     )
 
     list_filter = (
         "is_phone_verified",
+        "is_verified",
         "is_active",
         "is_staff",
         "is_private",
-        "is_verified",
     )
 
     search_fields = (
@@ -32,7 +36,9 @@ class ChatWellUserAdmin(UserAdmin):
         "display_name",
     )
 
-    ordering = ("-created_at",)
+    ordering = (
+        "-created_at",
+    )
 
     fieldsets = (
         (
@@ -60,6 +66,7 @@ class ChatWellUserAdmin(UserAdmin):
             {
                 "fields": (
                     "is_phone_verified",
+                    "is_verified",
                     "is_private",
                     "is_active",
                     "is_staff",
@@ -91,7 +98,9 @@ class ChatWellUserAdmin(UserAdmin):
 
 
 @admin.register(VerificationCode)
-class VerificationCodeAdmin(admin.ModelAdmin):
+class VerificationCodeAdmin(
+    admin.ModelAdmin
+):
     list_display = (
         "phone",
         "attempts",
@@ -100,6 +109,14 @@ class VerificationCodeAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    search_fields = ("phone",)
-    list_filter = ("is_used",)
-    readonly_fields = ("code_hash",)
+    search_fields = (
+        "phone",
+    )
+
+    list_filter = (
+        "is_used",
+    )
+
+    readonly_fields = (
+        "code_hash",
+    )
