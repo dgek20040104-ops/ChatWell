@@ -56,12 +56,6 @@ def get_user_from_token(
     ):
         return AnonymousUser()
 
-    except Exception:
-        # Любой некорректный, просроченный
-        # или повреждённый JWT не должен
-        # ломать ASGI-приложение.
-        return AnonymousUser()
-
 
 class JWTAuthMiddleware(
     BaseMiddleware
