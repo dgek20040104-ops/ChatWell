@@ -3,35 +3,52 @@ from urllib.parse import parse_qs
 
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
+
+
 from rest_framework_simplejwt.exceptions import (
-    InvalidToken,
+    TokenError,
 )
 from rest_framework_simplejwt.tokens import (
     AccessToken,
 )
 
 
-User = get_user_model()
-
-
 @database_sync_to_async
-def get_user_from_token(token):
-    try:
-        access_token = AccessToken(token)
+def get_user_from_token(
+    token,
+):
+    from django.contrib.auth import (
+        get_user_model,
+    )
 
-        user_id = access_token.get("user_id")
+    from django.contrib.auth.models import (
+        AnonymousUser,
+    )
+
+    User = get_user_model()
+
+    if not token:
+        return AnonymousUser()
+
+    try:
+        access_token = AccessToken(
+            token
+        )
+
+        user_id = access_token.get(
+            "user_id"
+        )
 
         if not user_id:
             return AnonymousUser()
 
         return User.objects.get(
             id=user_id,
+            is_active=True,
         )
 
     except (
-        InvalidToken,
+        TokenError,
         User.DoesNotExist,
         KeyError,
         TypeError,
@@ -39,28 +56,44 @@ def get_user_from_token(token):
     ):
         return AnonymousUser()
 
+    except Exception:
+        # Любой некорректный, просроченный
+        # или повреждённый JWT не должен
+        # ломать ASGI-приложение.
+        return AnonymousUser()
 
-class JWTAuthMiddleware(BaseMiddleware):
+
+class JWTAuthMiddleware(
+    BaseMiddleware
+):
     async def __call__(
         self,
         scope,
         receive,
         send,
     ):
-        query_string = scope.get(
+        raw_query_string = scope.get(
             "query_string",
             b"",
-        ).decode(
-            "utf-8",
+        )
+
+        query_string = (
+            raw_query_string
+            .decode(
+                "utf-8",
+                errors="ignore",
+            )
         )
 
         query_params = parse_qs(
-            query_string,
+            query_string
         )
 
-        token_values = query_params.get(
-            "token",
-            [],
+        token_values = (
+            query_params.get(
+                "token",
+                [],
+            )
         )
 
         token = (
@@ -70,7 +103,9 @@ class JWTAuthMiddleware(BaseMiddleware):
         )
 
         scope["user"] = (
-            await get_user_from_token(token)
+            await get_user_from_token(
+                token
+            )
         )
 
         return await super().__call__(
@@ -80,7 +115,9 @@ class JWTAuthMiddleware(BaseMiddleware):
         )
 
 
-def JWTAuthMiddlewareStack(inner):
+def JWTAuthMiddlewareStack(
+    inner,
+):
     return JWTAuthMiddleware(
-        inner,
+        inner
     )
