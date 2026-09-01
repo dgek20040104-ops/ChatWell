@@ -548,7 +548,7 @@ else:
 
 
 # ==================================================
-# Channels и Redis
+# Channels
 # ==================================================
 
 REDIS_URL = os.environ.get(
@@ -580,7 +580,6 @@ if USE_REDIS and REDIS_URL:
                 "channels_redis.core."
                 "RedisChannelLayer"
             ),
-
             "CONFIG": {
                 "hosts": [
                     REDIS_URL,
