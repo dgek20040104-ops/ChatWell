@@ -1,12 +1,15 @@
 from django.contrib import admin
 
+
 from .models import Chat
 from .models import ChatMember
 from .models import Message
 
 
 @admin.register(Chat)
-class ChatAdmin(admin.ModelAdmin):
+class ChatAdmin(
+    admin.ModelAdmin
+):
     list_display = (
         "id",
         "chat_type",
@@ -18,11 +21,13 @@ class ChatAdmin(admin.ModelAdmin):
 
     list_filter = (
         "chat_type",
+        "is_public",
         "created_at",
     )
 
     search_fields = (
         "title",
+        "description",
         "owner__phone",
         "owner__username",
     )
@@ -35,7 +40,9 @@ class ChatAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChatMember)
-class ChatMemberAdmin(admin.ModelAdmin):
+class ChatMemberAdmin(
+    admin.ModelAdmin
+):
     list_display = (
         "chat",
         "user",
@@ -60,26 +67,38 @@ class ChatMemberAdmin(admin.ModelAdmin):
         "joined_at",
     )
 
+    list_select_related = (
+        "chat",
+        "user",
+    )
+
 
 @admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
+class MessageAdmin(
+    admin.ModelAdmin
+):
     list_display = (
         "id",
         "chat",
         "sender",
         "message_type",
+        "is_edited",
         "is_deleted",
+        "is_delivered",
         "created_at",
     )
 
     list_filter = (
         "message_type",
+        "is_edited",
         "is_deleted",
+        "is_delivered",
         "created_at",
     )
 
     search_fields = (
         "text",
+        "file_name",
         "sender__phone",
         "sender__username",
         "chat__title",
@@ -89,4 +108,9 @@ class MessageAdmin(admin.ModelAdmin):
         "id",
         "created_at",
         "updated_at",
+    )
+
+    list_select_related = (
+        "chat",
+        "sender",
     )
