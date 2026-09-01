@@ -1,8 +1,10 @@
 from pathlib import Path
 
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
+
 
 from rest_framework import status
 from rest_framework.parsers import FormParser
@@ -12,12 +14,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
 from .models import Comment
 from .models import Follow
 from .models import Post
 from .models import PostLike
 from .models import PostMedia
 from .models import SavedPost
+
+
 from .serializers import CommentSerializer
 from .serializers import CreateCommentSerializer
 from .serializers import CreatePostSerializer
@@ -28,17 +33,11 @@ User = get_user_model()
 
 
 def posts_queryset():
-    """
-    Общий queryset для публикаций.
-
-    Загружает связанные объекты заранее,
-    чтобы избежать большого количества SQL-запросов
-    при сериализации.
-    """
-
     return (
         Post.objects
-        .select_related("author")
+        .select_related(
+            "author",
+        )
         .prefetch_related(
             "media",
             "likes",
@@ -48,13 +47,10 @@ def posts_queryset():
     )
 
 
-def user_avatar_url(user, request):
-    """
-    Возвращает URL аватара пользователя.
-
-    Если request передан, возвращается абсолютный URL.
-    """
-
+def user_avatar_url(
+    user,
+    request,
+):
     avatar = getattr(
         user,
         "avatar",
@@ -70,36 +66,60 @@ def user_avatar_url(user, request):
         return None
 
     if request is not None:
-        return request.build_absolute_uri(url)
+        return request.build_absolute_uri(
+            url,
+        )
 
     return url
 
 
-def serialize_user(user, request):
+def serialize_user(
+    user,
+    request,
+):
     """
-    Формирует краткую информацию о пользователе.
+    Краткая информация о пользователе.
+
+    Здесь также возвращается is_verified,
+    чтобы галочка отображалась в списках
+    подписчиков, подписок и поиска.
     """
 
     return {
-        "id": str(user.id),
+        "id": str(
+            user.id,
+        ),
+
         "username": getattr(
             user,
             "username",
             None,
         ),
+
         "display_name": getattr(
             user,
             "display_name",
             None,
         ),
+
         "avatar": user_avatar_url(
             user,
             request,
         ),
+
+        "is_verified": bool(
+            getattr(
+                user,
+                "is_verified",
+                False,
+            )
+        ),
     }
 
 
-class CreatePostView(APIView):
+class CreatePostView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
@@ -112,8 +132,13 @@ class CreatePostView(APIView):
 
     MAX_FILES = 10
 
-    MAX_IMAGE_SIZE = 10 * 1024 * 1024
-    MAX_VIDEO_SIZE = 100 * 1024 * 1024
+    MAX_IMAGE_SIZE = (
+        10 * 1024 * 1024
+    )
+
+    MAX_VIDEO_SIZE = (
+        100 * 1024 * 1024
+    )
 
     ALLOWED_IMAGE_TYPES = {
         "image/jpeg",
@@ -127,7 +152,10 @@ class CreatePostView(APIView):
         "video/quicktime",
     }
 
-    def post(self, request):
+    def post(
+        self,
+        request,
+    ):
         serializer = CreatePostSerializer(
             data=request.data,
         )
@@ -136,8 +164,10 @@ class CreatePostView(APIView):
             raise_exception=True,
         )
 
-        uploaded_files = request.FILES.getlist(
-            "media",
+        uploaded_files = (
+            request.FILES.getlist(
+                "media",
+            )
         )
 
         text = serializer.validated_data.get(
@@ -145,11 +175,15 @@ class CreatePostView(APIView):
             "",
         )
 
-        text = (text or "").strip()
+        text = (
+            text or ""
+        ).strip()
 
-        post_type = serializer.validated_data.get(
-            "post_type",
-            Post.POST,
+        post_type = (
+            serializer.validated_data.get(
+                "post_type",
+                Post.POST,
+            )
         )
 
         if post_type not in {
@@ -191,10 +225,12 @@ class CreatePostView(APIView):
 
         for uploaded_file in uploaded_files:
             content_type = (
-                uploaded_file.content_type or ""
+                uploaded_file.content_type
+                or ""
             ).lower()
 
             file_size = uploaded_file.size
+
             extension = Path(
                 uploaded_file.name,
             ).suffix.lower()
@@ -263,8 +299,10 @@ class CreatePostView(APIView):
                 )
 
             first_file = uploaded_files[0]
+
             first_content_type = (
-                first_file.content_type or ""
+                first_file.content_type
+                or ""
             ).lower()
 
             if first_content_type not in (
@@ -291,7 +329,8 @@ class CreatePostView(APIView):
 
             for uploaded_file in uploaded_files:
                 content_type = (
-                    uploaded_file.content_type or ""
+                    uploaded_file.content_type
+                    or ""
                 ).lower()
 
                 if content_type in (
@@ -310,7 +349,9 @@ class CreatePostView(APIView):
 
         post = (
             posts_queryset()
-            .get(id=post.id)
+            .get(
+                id=post.id,
+            )
         )
 
         return Response(
@@ -324,17 +365,25 @@ class CreatePostView(APIView):
         )
 
 
-class FeedView(APIView):
+class FeedView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         following_ids = (
             Follow.objects
             .filter(
-                follower=request.user,
+                follower_id=request.user.id,
                 is_accepted=True,
+            )
+            .exclude(
+                following_id=request.user.id,
             )
             .values_list(
                 "following_id",
@@ -345,8 +394,12 @@ class FeedView(APIView):
         posts = (
             posts_queryset()
             .filter(
-                Q(author=request.user)
-                | Q(author_id__in=following_ids),
+                Q(
+                    author_id=request.user.id,
+                )
+                | Q(
+                    author_id__in=following_ids,
+                ),
                 is_archived=False,
             )
         )
@@ -364,12 +417,18 @@ class FeedView(APIView):
             status=status.HTTP_200_OK,
         )
 
-class ReelsFeedView(APIView):
+
+class ReelsFeedView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         reels = (
             posts_queryset()
             .filter(
@@ -394,21 +453,26 @@ class ReelsFeedView(APIView):
             status=status.HTTP_200_OK,
         )
 
-class MyPostsView(APIView):
+
+class MyPostsView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         posts = (
-    posts_queryset()
-    .filter(
-        author=request.user,
-        is_archived=False,
-        media__isnull=False,
-    )
-    .distinct()
-)
+            posts_queryset()
+            .filter(
+                author_id=request.user.id,
+                is_archived=False,
+            )
+            .distinct()
+        )
 
         serializer = PostSerializer(
             posts,
@@ -424,12 +488,17 @@ class MyPostsView(APIView):
         )
 
 
-class SavedPostsView(APIView):
+class SavedPostsView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         posts = (
             posts_queryset()
             .filter(
@@ -453,16 +522,25 @@ class SavedPostsView(APIView):
         )
 
 
-class UserPostsView(APIView):
+class UserPostsView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request, user_id):
+    def get(
+        self,
+        request,
+        user_id,
+    ):
         try:
-            user = User.objects.get(
-                id=user_id,
-                is_active=True,
+            user = (
+                User.objects
+                .get(
+                    id=user_id,
+                    is_active=True,
+                )
             )
         except User.DoesNotExist:
             return Response(
@@ -474,23 +552,27 @@ class UserPostsView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        is_owner = request.user.id == user.id
+        is_owner = (
+            request.user.id == user.id
+        )
 
         relation = (
             Follow.objects
             .filter(
-                follower=request.user,
-                following=user,
+                follower_id=request.user.id,
+                following_id=user.id,
             )
             .first()
         )
 
         is_following = bool(
-            relation and relation.is_accepted
+            relation
+            and relation.is_accepted
         )
 
         is_pending = bool(
-            relation and not relation.is_accepted
+            relation
+            and not relation.is_accepted
         )
 
         is_private = bool(
@@ -515,26 +597,30 @@ class UserPostsView(APIView):
                     "is_following": False,
                     "is_pending": is_pending,
                     "posts_count": 0,
+                    "followers_count": 0,
+                    "following_count": 0,
                     "posts": [],
                 },
                 status=status.HTTP_200_OK,
             )
 
         posts = (
-    posts_queryset()
-    .filter(
-        author=user,
-        is_archived=False,
-        media__isnull=False,
-    )
-    .distinct()
-)
+            posts_queryset()
+            .filter(
+                author_id=user.id,
+                is_archived=False,
+            )
+            .distinct()
+        )
 
         followers_count = (
             Follow.objects
             .filter(
-                following=user,
+                following_id=user.id,
                 is_accepted=True,
+            )
+            .exclude(
+                follower_id=user.id,
             )
             .count()
         )
@@ -542,8 +628,11 @@ class UserPostsView(APIView):
         following_count = (
             Follow.objects
             .filter(
-                follower=user,
+                follower_id=user.id,
                 is_accepted=True,
+            )
+            .exclude(
+                following_id=user.id,
             )
             .count()
         )
@@ -558,6 +647,10 @@ class UserPostsView(APIView):
 
         return Response(
             {
+                "user": serialize_user(
+                    user,
+                    request,
+                ),
                 "is_private": is_private,
                 "can_view": True,
                 "is_following": is_following,
@@ -571,17 +664,26 @@ class UserPostsView(APIView):
         )
 
 
-class DeletePostView(APIView):
+class DeletePostView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def delete(self, request, post_id):
+    def delete(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                author=request.user,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    author=request.user,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -594,11 +696,12 @@ class DeletePostView(APIView):
             )
 
         post.is_archived = True
+
         post.save(
             update_fields=[
                 "is_archived",
                 "updated_at",
-            ],
+            ]
         )
 
         return Response(
@@ -606,13 +709,21 @@ class DeletePostView(APIView):
         )
 
 
-class FollowUserView(APIView):
+class FollowUserView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def post(self, request, user_id):
-        if request.user.id == user_id:
+    def post(
+        self,
+        request,
+        user_id,
+    ):
+        if str(
+            request.user.id
+        ) == str(user_id):
             return Response(
                 {
                     "detail": (
@@ -626,14 +737,19 @@ class FollowUserView(APIView):
             )
 
         try:
-            target_user = User.objects.get(
-                id=user_id,
-                is_active=True,
+            target_user = (
+                User.objects
+                .get(
+                    id=user_id,
+                    is_active=True,
+                )
             )
         except User.DoesNotExist:
             return Response(
                 {
-                    "detail": "Пользователь не найден.",
+                    "detail": (
+                        "Пользователь не найден."
+                    ),
                     "is_following": False,
                     "is_pending": False,
                 },
@@ -643,8 +759,8 @@ class FollowUserView(APIView):
         relation = (
             Follow.objects
             .filter(
-                follower=request.user,
-                following=target_user,
+                follower_id=request.user.id,
+                following_id=target_user.id,
             )
             .first()
         )
@@ -653,7 +769,9 @@ class FollowUserView(APIView):
             if relation.is_accepted:
                 return Response(
                     {
-                        "detail": "Вы уже подписаны.",
+                        "detail": (
+                            "Вы уже подписаны."
+                        ),
                         "is_following": True,
                         "is_pending": False,
                         "is_accepted": True,
@@ -712,7 +830,9 @@ class FollowUserView(APIView):
 
         return Response(
             {
-                "detail": "Вы подписались.",
+                "detail": (
+                    "Вы подписались."
+                ),
                 "is_following": True,
                 "is_pending": False,
                 "is_accepted": True,
@@ -724,16 +844,37 @@ class FollowUserView(APIView):
         )
 
 
-class UnfollowUserView(APIView):
+class UnfollowUserView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def delete(self, request, user_id):
+    def delete(
+        self,
+        request,
+        user_id,
+    ):
+        if str(
+            request.user.id
+        ) == str(user_id):
+            return Response(
+                {
+                    "detail": (
+                        "Нельзя удалить "
+                        "самоподписку."
+                    ),
+                    "is_following": False,
+                    "is_pending": False,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         deleted_count, _ = (
             Follow.objects
             .filter(
-                follower=request.user,
+                follower_id=request.user.id,
                 following_id=user_id,
             )
             .delete()
@@ -763,21 +904,22 @@ class UnfollowUserView(APIView):
             status=status.HTTP_200_OK,
         )
 
-class FollowRequestsView(APIView):
-    """
-    Возвращает входящие запросы
-    на подписку текущего пользователя.
-    """
 
+class FollowRequestsView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
         requests = (
             Follow.objects
             .filter(
-                following=request.user,
+                following_id=request.user.id,
                 is_accepted=False,
             )
             .select_related(
@@ -793,18 +935,21 @@ class FollowRequestsView(APIView):
         for relation in requests:
             follower = relation.follower
 
+            user_data = serialize_user(
+                follower,
+                request,
+            )
+
             result.append(
                 {
-                    "id": str(relation.id),
-                    "follow_id": str(relation.id),
-                    "user": serialize_user(
-                        follower,
-                        request,
+                    "id": str(
+                        relation.id,
                     ),
-                    "follower": serialize_user(
-                        follower,
-                        request,
+                    "follow_id": str(
+                        relation.id,
                     ),
+                    "user": user_data,
+                    "follower": user_data,
                     "created_at": relation.created_at,
                     "is_pending": True,
                     "is_accepted": False,
@@ -817,20 +962,19 @@ class FollowRequestsView(APIView):
         )
 
 
-class AcceptFollowRequestView(APIView):
-    """
-    Принимает запрос на подписку.
-
-    Владелец профиля может принять
-    только запрос, адресованный ему.
-    """
-
+class AcceptFollowRequestView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
     @transaction.atomic
-    def post(self, request, follow_id):
+    def post(
+        self,
+        request,
+        follow_id,
+    ):
         try:
             relation = (
                 Follow.objects
@@ -840,7 +984,7 @@ class AcceptFollowRequestView(APIView):
                 )
                 .get(
                     id=follow_id,
-                    following=request.user,
+                    following_id=request.user.id,
                 )
             )
         except Follow.DoesNotExist:
@@ -875,7 +1019,7 @@ class AcceptFollowRequestView(APIView):
         relation.save(
             update_fields=[
                 "is_accepted",
-            ],
+            ]
         )
 
         return Response(
@@ -898,23 +1042,27 @@ class AcceptFollowRequestView(APIView):
         )
 
 
-class RejectFollowRequestView(APIView):
-    """
-    Отклоняет и удаляет запрос
-    на подписку текущего пользователя.
-    """
-
+class RejectFollowRequestView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
     @transaction.atomic
-    def delete(self, request, follow_id):
+    def delete(
+        self,
+        request,
+        follow_id,
+    ):
         try:
-            relation = Follow.objects.get(
-                id=follow_id,
-                following=request.user,
-                is_accepted=False,
+            relation = (
+                Follow.objects
+                .get(
+                    id=follow_id,
+                    following_id=request.user.id,
+                    is_accepted=False,
+                )
             )
         except Follow.DoesNotExist:
             return Response(
@@ -944,20 +1092,41 @@ class RejectFollowRequestView(APIView):
             status=status.HTTP_200_OK,
         )
 
-class FollowersView(APIView):
+
+class FollowersView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
+        """
+        Подписчики — это follower
+        в отношениях, где following —
+        текущий пользователь.
+        """
+
         followers = (
             User.objects
             .filter(
-                follower_relations__following=request.user,
+                follower_relations__following_id=(
+                    request.user.id
+                ),
                 follower_relations__is_accepted=True,
                 is_active=True,
             )
+            .exclude(
+                id=request.user.id,
+            )
             .distinct()
+            .order_by(
+                "username",
+                "display_name",
+            )
         )
 
         return Response(
@@ -972,20 +1141,40 @@ class FollowersView(APIView):
         )
 
 
-class FollowingView(APIView):
+class FollowingView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request):
+    def get(
+        self,
+        request,
+    ):
+        """
+        Подписки — это following
+        в отношениях, где follower —
+        текущий пользователь.
+        """
+
         following = (
             User.objects
             .filter(
-                following_relations__follower=request.user,
+                following_relations__follower_id=(
+                    request.user.id
+                ),
                 following_relations__is_accepted=True,
                 is_active=True,
             )
+            .exclude(
+                id=request.user.id,
+            )
             .distinct()
+            .order_by(
+                "username",
+                "display_name",
+            )
         )
 
         return Response(
@@ -1000,16 +1189,25 @@ class FollowingView(APIView):
         )
 
 
-class LikePostView(APIView):
+class LikePostView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def post(self, request, post_id):
+    def post(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -1022,22 +1220,29 @@ class LikePostView(APIView):
             )
 
         like, created = (
-            PostLike.objects.get_or_create(
+            PostLike.objects
+            .get_or_create(
                 post=post,
                 user=request.user,
             )
         )
 
+        likes_count = (
+            PostLike.objects
+            .filter(
+                post=post,
+            )
+            .count()
+        )
+
         if not created:
             return Response(
                 {
-                    "detail": "Вы уже поставили лайк.",
-                    "liked": True,
-                    "likes_count": (
-                        PostLike.objects
-                        .filter(post=post)
-                        .count()
+                    "detail": (
+                        "Вы уже поставили лайк."
                     ),
+                    "liked": True,
+                    "likes_count": likes_count,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -1045,26 +1250,31 @@ class LikePostView(APIView):
         return Response(
             {
                 "liked": True,
-                "likes_count": (
-                    PostLike.objects
-                    .filter(post=post)
-                    .count()
-                ),
+                "likes_count": likes_count,
             },
             status=status.HTTP_201_CREATED,
         )
 
 
-class UnlikePostView(APIView):
+class UnlikePostView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def delete(self, request, post_id):
+    def delete(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -1085,16 +1295,20 @@ class UnlikePostView(APIView):
             .delete()
         )
 
+        likes_count = (
+            PostLike.objects
+            .filter(
+                post=post,
+            )
+            .count()
+        )
+
         if deleted_count == 0:
             return Response(
                 {
                     "detail": "Лайк не найден.",
                     "liked": False,
-                    "likes_count": (
-                        PostLike.objects
-                        .filter(post=post)
-                        .count()
-                    ),
+                    "likes_count": likes_count,
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -1102,22 +1316,24 @@ class UnlikePostView(APIView):
         return Response(
             {
                 "liked": False,
-                "likes_count": (
-                    PostLike.objects
-                    .filter(post=post)
-                    .count()
-                ),
+                "likes_count": likes_count,
             },
             status=status.HTTP_200_OK,
         )
 
 
-class PostCommentsView(APIView):
+class PostCommentsView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def get(self, request, post_id):
+    def get(
+        self,
+        request,
+        post_id,
+    ):
         try:
             Post.objects.get(
                 id=post_id,
@@ -1156,11 +1372,18 @@ class PostCommentsView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def post(self, request, post_id):
+    def post(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -1187,8 +1410,12 @@ class PostCommentsView(APIView):
 
         comment = (
             Comment.objects
-            .select_related("author")
-            .get(id=comment.id)
+            .select_related(
+                "author",
+            )
+            .get(
+                id=comment.id,
+            )
         )
 
         return Response(
@@ -1202,21 +1429,32 @@ class PostCommentsView(APIView):
         )
 
 
-class DeleteCommentView(APIView):
+class DeleteCommentView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def delete(self, request, comment_id):
+    def delete(
+        self,
+        request,
+        comment_id,
+    ):
         try:
-            comment = Comment.objects.get(
-                id=comment_id,
-                author=request.user,
+            comment = (
+                Comment.objects
+                .get(
+                    id=comment_id,
+                    author=request.user,
+                )
             )
         except Comment.DoesNotExist:
             return Response(
                 {
-                    "detail": "Комментарий не найден.",
+                    "detail": (
+                        "Комментарий не найден."
+                    ),
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -1228,16 +1466,25 @@ class DeleteCommentView(APIView):
         )
 
 
-class SavePostView(APIView):
+class SavePostView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def post(self, request, post_id):
+    def post(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -1250,7 +1497,8 @@ class SavePostView(APIView):
             )
 
         saved_post, created = (
-            SavedPost.objects.get_or_create(
+            SavedPost.objects
+            .get_or_create(
                 user=request.user,
                 post=post,
             )
@@ -1264,7 +1512,11 @@ class SavePostView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def delete(self, request, post_id):
+    def delete(
+        self,
+        request,
+        post_id,
+    ):
         deleted_count, _ = (
             SavedPost.objects
             .filter(
@@ -1293,17 +1545,26 @@ class SavePostView(APIView):
         )
 
 
-class PinPostView(APIView):
+class PinPostView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def post(self, request, post_id):
+    def post(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                author=request.user,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    author=request.user,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -1348,11 +1609,12 @@ class PinPostView(APIView):
             )
 
         post.is_pinned = True
+
         post.save(
             update_fields=[
                 "is_pinned",
                 "updated_at",
-            ],
+            ]
         )
 
         return Response(
@@ -1362,12 +1624,19 @@ class PinPostView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def delete(self, request, post_id):
+    def delete(
+        self,
+        request,
+        post_id,
+    ):
         try:
-            post = Post.objects.get(
-                id=post_id,
-                author=request.user,
-                is_archived=False,
+            post = (
+                Post.objects
+                .get(
+                    id=post_id,
+                    author=request.user,
+                    is_archived=False,
+                )
             )
         except Post.DoesNotExist:
             return Response(
@@ -1391,11 +1660,12 @@ class PinPostView(APIView):
             )
 
         post.is_pinned = False
+
         post.save(
             update_fields=[
                 "is_pinned",
                 "updated_at",
-            ],
+            ]
         )
 
         return Response(
