@@ -1210,12 +1210,19 @@ class EditMessageView(APIView):
         )
 
 
-class DeleteMessageView(APIView):
+class DeleteMessageView(
+    APIView
+):
     permission_classes = [
         IsAuthenticated,
     ]
 
-    def delete(self, request, chat_id, message_id):
+    def delete(
+        self,
+        request,
+        chat_id,
+        message_id,
+    ):
         chat = get_chat_for_user(
             chat_id,
             request.user,
@@ -1235,6 +1242,11 @@ class DeleteMessageView(APIView):
                 id=message_id,
                 chat=chat,
             )
+            .select_related(
+                "chat",
+                "sender",
+                "reply_to",
+            )
             .first()
         )
 
@@ -1252,8 +1264,11 @@ class DeleteMessageView(APIView):
         )
 
         can_delete = (
-            message.sender_id == request.user.id
-            or is_manager(membership)
+            message.sender_id
+            == request.user.id
+            or is_manager(
+                membership,
+            )
         )
 
         if not can_delete:
@@ -1270,45 +1285,40 @@ class DeleteMessageView(APIView):
         if message.is_deleted:
             return Response(
                 {
-                    "detail": "Сообщение уже удалено.",
+                    "detail": (
+                        "Сообщение уже удалено."
+                    ),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         message.is_deleted = True
-message.text = ""
-message.file = None
-message.file_name = ""
-message.file_size = None
-message.mime_type = ""
+        message.text = ""
+        message.file = None
+        message.file_name = ""
+        message.file_size = None
+        message.mime_type = ""
 
-message.save(
-    update_fields=[
-        "is_deleted",
-        "text",
-        "file",
-        "file_name",
-        "file_size",
-        "mime_type",
-        "updated_at",
-    ]
-)
+        message.save(
+            update_fields=[
+                "is_deleted",
+                "text",
+                "file",
+                "file_name",
+                "file_size",
+                "mime_type",
+                "updated_at",
+            ],
+        )
 
-        serialized_message = {
-            "id": str(message.id),
-            "chat": str(message.chat_id),
-            "message_type": message.message_type,
-            "text": "",
-            "file": None,
-            "file_name": "",
-            "file_size": None,
-            "mime_type": "",
-            "reply_to": None,
-            "is_edited": message.is_edited,
-            "is_deleted": True,
-            "created_at": message.created_at.isoformat(),
-            "updated_at": message.updated_at.isoformat(),
-        }
+        serialized_message = (
+            MessageSerializer(
+                message,
+                context={
+                    "request": request,
+                },
+            ).data
+        )
 
         broadcast_message_deleted(
             chat,
@@ -1319,4 +1329,3 @@ message.save(
             serialized_message,
             status=status.HTTP_200_OK,
         )
-
