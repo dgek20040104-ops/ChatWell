@@ -98,3 +98,11 @@ class JWTAuthMiddleware(
             receive,
             send,
         )
+
+
+def JWTAuthMiddlewareStack(
+    inner,
+):
+    return JWTAuthMiddleware(
+        inner,
+    )
