@@ -1632,6 +1632,20 @@ animation: post-show .35s ease both;
 .profile-verified-badge[hidden] {
     display: none;
 }
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: #1877f2;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    vertical-align: middle;
+}
 </style>
 
 <script>
@@ -2475,6 +2489,38 @@ const avatarUploadMessage =
 if (displayNameElement) {
     displayNameElement.textContent =
         displayName(user);
+
+    const oldBadge =
+        displayNameElement.querySelector(
+            ".verified-badge"
+        );
+
+    if (oldBadge) {
+        oldBadge.remove();
+    }
+
+    if (
+        user.is_verified
+        === true
+    ) {
+        const badge =
+            document.createElement(
+                "span"
+            );
+
+        badge.className =
+            "verified-badge";
+
+        badge.textContent =
+            "✓";
+
+        badge.title =
+            "Подтверждённый профиль";
+
+        displayNameElement.appendChild(
+            badge
+        );
+    }
 }
 
 const verifiedBadge =
@@ -3055,7 +3101,30 @@ async function uploadProfileAvatar(
                         );
 
                     name.textContent =
-                        displayName(user);
+    displayName(user);
+
+if (
+    user.is_verified
+    === true
+) {
+    const badge =
+        document.createElement(
+            "span"
+        );
+
+    badge.className =
+        "verified-badge";
+
+    badge.textContent =
+        "✓";
+
+    badge.title =
+        "Подтверждённый профиль";
+
+    name.appendChild(
+        badge
+    );
+}
 
                     const username =
                         document.createElement(
