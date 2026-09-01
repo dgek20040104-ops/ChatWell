@@ -1,10 +1,13 @@
 import re
 
+
 from django.core.validators import (
     validate_image_file_extension,
 )
 
+
 from rest_framework import serializers
+
 
 from .models import User
 
@@ -13,31 +16,53 @@ PHONE_PATTERN = re.compile(
     r"^\+[0-9]{9,19}$"
 )
 
+
 USERNAME_PATTERN = re.compile(
     r"^[A-Za-z0-9_]{3,30}$"
 )
 
 
-def normalize_phone(value):
+def normalize_phone(
+    value,
+):
     """
     Разрешённый формат номера:
 
         +79991234567
 
-    Номера без + отклоняются.
+    Номера без символа + отклоняются.
     """
 
-    value = str(value or "").strip()
+    value = str(
+        value or ""
+    ).strip()
 
-    value = value.replace(" ", "")
-    value = value.replace("-", "")
-    value = value.replace("(", "")
-    value = value.replace(")", "")
+    value = value.replace(
+        " ",
+        "",
+    )
+
+    value = value.replace(
+        "-",
+        "",
+    )
+
+    value = value.replace(
+        "(",
+        "",
+    )
+
+    value = value.replace(
+        ")",
+        "",
+    )
 
     return value
 
 
-def normalize_username(value):
+def normalize_username(
+    value,
+):
     """
     Поддерживает:
 
@@ -49,7 +74,9 @@ def normalize_username(value):
         alex
     """
 
-    value = str(value or "").strip()
+    value = str(
+        value or ""
+    ).strip()
 
     if value.startswith("@"):
         value = value[1:]
@@ -67,8 +94,13 @@ class RequestCodeSerializer(
         trim_whitespace=True,
     )
 
-    def validate_phone(self, value):
-        value = normalize_phone(value)
+    def validate_phone(
+        self,
+        value,
+    ):
+        value = normalize_phone(
+            value
+        )
 
         if not value.startswith("+"):
             raise serializers.ValidationError(
@@ -79,10 +111,12 @@ class RequestCodeSerializer(
                 )
             )
 
-        if not PHONE_PATTERN.fullmatch(value):
+        if not PHONE_PATTERN.fullmatch(
+            value
+        ):
             raise serializers.ValidationError(
                 (
-                    "Введите корректный номер "
+                    "Введите корректный номер, "
                     "например +79991234567."
                 )
             )
@@ -124,8 +158,13 @@ class VerifyCodeSerializer(
         trim_whitespace=True,
     )
 
-    def validate_phone(self, value):
-        value = normalize_phone(value)
+    def validate_phone(
+        self,
+        value,
+    ):
+        value = normalize_phone(
+            value
+        )
 
         if not value.startswith("+"):
             raise serializers.ValidationError(
@@ -136,18 +175,25 @@ class VerifyCodeSerializer(
                 )
             )
 
-        if not PHONE_PATTERN.fullmatch(value):
+        if not PHONE_PATTERN.fullmatch(
+            value
+        ):
             raise serializers.ValidationError(
                 (
-                    "Введите корректный номер "
+                    "Введите корректный номер, "
                     "например +79991234567."
                 )
             )
 
         return value
 
-    def validate_code(self, value):
-        value = str(value or "").strip()
+    def validate_code(
+        self,
+        value,
+    ):
+        value = str(
+            value or ""
+        ).strip()
 
         if not value.isdigit():
             raise serializers.ValidationError(
@@ -161,16 +207,23 @@ class VerifyCodeSerializer(
 
         return value
 
-    def validate_username(self, value):
+    def validate_username(
+        self,
+        value,
+    ):
         if value is None:
             return ""
 
-        value = normalize_username(value)
+        value = normalize_username(
+            value
+        )
 
         if not value:
             return ""
 
-        if not USERNAME_PATTERN.fullmatch(value):
+        if not USERNAME_PATTERN.fullmatch(
+            value
+        ):
             raise serializers.ValidationError(
                 (
                     "Тег должен содержать от 3 до "
@@ -179,16 +232,18 @@ class VerifyCodeSerializer(
                 )
             )
 
-        # Здесь НЕ проверяем уникальность.
-        # Это будет сделано только для нового
-        # пользователя в VerifyVerificationCodeView.
         return value
 
-    def validate_display_name(self, value):
+    def validate_display_name(
+        self,
+        value,
+    ):
         if value is None:
             return ""
 
-        return str(value).strip()
+        return str(
+            value
+        ).strip()
 
 
 class UserSerializer(
@@ -202,7 +257,17 @@ class UserSerializer(
         ],
     )
 
-    MAX_AVATAR_SIZE = 10 * 1024 * 1024
+    followers_count = (
+        serializers.SerializerMethodField()
+    )
+
+    following_count = (
+        serializers.SerializerMethodField()
+    )
+
+    MAX_AVATAR_SIZE = (
+        10 * 1024 * 1024
+    )
 
     ALLOWED_AVATAR_TYPES = {
         "image/jpeg",
@@ -221,7 +286,10 @@ class UserSerializer(
             "bio",
             "avatar",
             "is_phone_verified",
+            "is_verified",
             "is_private",
+            "followers_count",
+            "following_count",
             "created_at",
             "last_seen",
         )
@@ -230,6 +298,9 @@ class UserSerializer(
             "id",
             "phone",
             "is_phone_verified",
+            "is_verified",
+            "followers_count",
+            "following_count",
             "created_at",
             "last_seen",
         )
@@ -253,7 +324,26 @@ class UserSerializer(
             },
         }
 
-    def validate_avatar(self, value):
+    def get_followers_count(
+        self,
+        obj,
+    ):
+        return obj.follower_relations.filter(
+            is_accepted=True,
+        ).count()
+
+    def get_following_count(
+        self,
+        obj,
+    ):
+        return obj.following_relations.filter(
+            is_accepted=True,
+        ).count()
+
+    def validate_avatar(
+        self,
+        value,
+    ):
         if value is None:
             return value
 
@@ -266,23 +356,32 @@ class UserSerializer(
             value.content_type or ""
         ).lower()
 
-        if content_type not in self.ALLOWED_AVATAR_TYPES:
+        if content_type not in (
+            self.ALLOWED_AVATAR_TYPES
+        ):
             raise serializers.ValidationError(
                 "Разрешены только JPG, PNG и WEBP."
             )
 
         return value
 
-    def validate_username(self, value):
+    def validate_username(
+        self,
+        value,
+    ):
         if value is None:
             return None
 
-        value = normalize_username(value)
+        value = normalize_username(
+            value
+        )
 
         if not value:
             return None
 
-        if not USERNAME_PATTERN.fullmatch(value):
+        if not USERNAME_PATTERN.fullmatch(
+            value
+        ):
             raise serializers.ValidationError(
                 (
                     "Тег должен содержать от 3 до "
@@ -307,17 +406,27 @@ class UserSerializer(
 
         return value
 
-    def validate_display_name(self, value):
+    def validate_display_name(
+        self,
+        value,
+    ):
         if value is None:
             return ""
 
-        return str(value).strip()
+        return str(
+            value
+        ).strip()
 
-    def validate_bio(self, value):
+    def validate_bio(
+        self,
+        value,
+    ):
         if value is None:
             return ""
 
-        return str(value).strip()
+        return str(
+            value
+        ).strip()
 
 
 class PublicUserSerializer(
@@ -353,6 +462,7 @@ class PublicUserSerializer(
             "display_name",
             "bio",
             "avatar",
+            "is_verified",
             "is_private",
             "followers_count",
             "following_count",
