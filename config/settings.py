@@ -493,15 +493,16 @@ SIMPLE_JWT = {
 # SMS.RU
 # ==================================================
 
-SMS_RU_API_ID = env(
-    "SMS_RU_API_ID",
-    default="",
-).strip()
-
 SMS_MODE = os.environ.get(
     "SMS_MODE",
     "console",
 ).strip().lower()
+
+
+SMS_RU_API_ID = env(
+    "SMS_RU_API_ID",
+    default="",
+).strip()
 # ==================================================
 # Безопасность
 # ==================================================
