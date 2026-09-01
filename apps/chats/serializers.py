@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.utils import timezone
+
 
 from rest_framework import serializers
+
 
 from .models import Chat
 from .models import ChatMember
@@ -9,6 +10,7 @@ from .models import Message
 
 
 User = get_user_model()
+
 
 
 class ChatUserSerializer(
@@ -29,9 +31,15 @@ class ChatUserSerializer(
     )
 
     avatar = serializers.SerializerMethodField()
+
     is_online = serializers.SerializerMethodField()
 
-    def get_avatar(self, obj):
+    is_verified = serializers.SerializerMethodField()
+
+    def get_avatar(
+        self,
+        obj,
+    ):
         avatar = getattr(
             obj,
             "avatar",
@@ -47,21 +55,36 @@ class ChatUserSerializer(
             return None
 
         request = self.context.get(
-            "request"
+            "request",
         )
 
         if request is not None:
             return request.build_absolute_uri(
-                url
+                url,
             )
 
         return url
 
-    def get_is_online(self, obj):
+    def get_is_online(
+        self,
+        obj,
+    ):
         return bool(
             getattr(
                 obj,
                 "is_online",
+                False,
+            )
+        )
+
+    def get_is_verified(
+        self,
+        obj,
+    ):
+        return bool(
+            getattr(
+                obj,
+                "is_verified",
                 False,
             )
         )
@@ -173,6 +196,10 @@ class MessageSerializer(
 
         return obj.read_by.count()
 
+class UserSearchSerializer(
+    ChatUserSerializer
+):
+    pass
 
 class CreateFileMessageSerializer(
     serializers.Serializer
