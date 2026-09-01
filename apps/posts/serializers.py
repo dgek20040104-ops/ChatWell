@@ -24,6 +24,10 @@ class AuthorSerializer(
         allow_null=True,
     )
 
+    is_verified = serializers.BooleanField(
+        read_only=True,
+    )
+
     avatar = serializers.SerializerMethodField()
 
     def get_avatar(self, obj):
