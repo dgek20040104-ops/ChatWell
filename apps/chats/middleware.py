@@ -5,25 +5,16 @@ from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
 
 
-from rest_framework_simplejwt.exceptions import (
-    TokenError,
-)
-from rest_framework_simplejwt.tokens import (
-    AccessToken,
-)
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 @database_sync_to_async
 def get_user_from_token(
     token,
 ):
-    from django.contrib.auth import (
-        get_user_model,
-    )
-
-    from django.contrib.auth.models import (
-        AnonymousUser,
-    )
+    from django.contrib.auth import get_user_model
+    from django.contrib.auth.models import AnonymousUser
 
     User = get_user_model()
 
@@ -32,19 +23,22 @@ def get_user_from_token(
 
     try:
         access_token = AccessToken(
-            token
+            str(token),
         )
 
         user_id = access_token.get(
-            "user_id"
+            "user_id",
         )
 
         if not user_id:
             return AnonymousUser()
 
-        return User.objects.get(
-            id=user_id,
-            is_active=True,
+        return (
+            User.objects
+            .get(
+                id=user_id,
+                is_active=True,
+            )
         )
 
     except (
