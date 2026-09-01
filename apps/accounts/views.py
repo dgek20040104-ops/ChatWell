@@ -1,3 +1,4 @@
+import os
 import hashlib
 import json
 import secrets
@@ -45,8 +46,15 @@ def hash_code(code):
 
 
 def generate_code():
-    return f"{secrets.randbelow(1_000_000):06d}"
+    dev_code = os.environ.get(
+        "DEV_SMS_CODE",
+        "",
+    ).strip()
 
+    if dev_code:
+        return dev_code
+
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -57,20 +65,34 @@ def get_tokens_for_user(user):
     }
 
 
-def send_sms_code(phone, code):
-    """
-    Отправка кода подтверждения.
+def send_sms_code(
+    phone,
+    code,
+):
+    mode = getattr(
+        settings,
+        "SMS_MODE",
+        "console",
+    )
 
-    При DEBUG=True код выводится в терминал.
-    При DEBUG=False используется SMS.RU.
-    """
+    mode = str(
+        mode
+    ).strip().lower()
 
-    if settings.DEBUG:
+    if mode == "console":
         print(
-            f"[ChatWell] SMS code for {phone}: {code}"
+            "[ChatWell] DEV SMS: "
+            f"phone={phone} code={code}",
+            flush=True,
         )
 
         return True
+
+    if mode != "smsru":
+        raise RuntimeError(
+            "Неизвестный SMS_MODE. "
+            "Используйте console или smsru."
+        )
 
     api_id = getattr(
         settings,
@@ -78,9 +100,13 @@ def send_sms_code(phone, code):
         "",
     )
 
+    api_id = str(
+        api_id
+    ).strip()
+
     if not api_id:
         raise RuntimeError(
-            "В settings.py не указан SMS_RU_API_ID."
+            "В Render не указан SMS_RU_API_ID."
         )
 
     message = (
@@ -102,13 +128,21 @@ def send_sms_code(phone, code):
         + params
     )
 
-    with urlopen(
-        url,
-        timeout=15,
-    ) as response:
-        response_text = response.read().decode(
-            "utf-8"
-        )
+    try:
+        with urlopen(
+            url,
+            timeout=15,
+        ) as response:
+            response_text = (
+                response.read()
+                .decode(
+                    "utf-8"
+                )
+            )
+    except Exception as error:
+        raise RuntimeError(
+            "Не удалось подключиться к SMS.RU."
+        ) from error
 
     try:
         response_data = json.loads(
@@ -116,17 +150,45 @@ def send_sms_code(phone, code):
         )
     except json.JSONDecodeError as error:
         raise RuntimeError(
-            "SMS-провайдер вернул некорректный ответ."
+            "SMS.RU вернул некорректный ответ."
         ) from error
 
+    print(
+        "[ChatWell] SMS.RU response: "
+        f"{response_data}",
+        flush=True,
+    )
+
     if response_data.get("status") != "OK":
-        error_message = response_data.get(
-            "status_text",
-            "SMS-провайдер отклонил отправку.",
+        raise RuntimeError(
+            str(
+                response_data.get(
+                    "status_text",
+                    "SMS.RU отклонил отправку.",
+                )
+            )
         )
 
+    sms_result = (
+        response_data
+        .get(
+            "sms",
+            {},
+        )
+        .get(
+            phone,
+            {},
+        )
+    )
+
+    if sms_result.get("status") != "OK":
         raise RuntimeError(
-            str(error_message)
+            str(
+                sms_result.get(
+                    "status_text",
+                    "SMS не было отправлено.",
+                )
+            )
         )
 
     return True
