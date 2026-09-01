@@ -134,11 +134,22 @@
                         <div class="profile-title-row">
     <div>
         <h2
-            id="profile-display-name"
-            class="profile-display-name"
-        >
-            Пользователь
-        </h2>
+    id="profile-display-name"
+    class="profile-display-name"
+>
+    <span id="profile-display-name-text">
+        Пользователь
+    </span>
+
+    <span
+        id="profile-verified-badge"
+        class="profile-verified-badge"
+        title="Подтверждённый профиль"
+        hidden
+    >
+        ✓
+    </span>
+</h2>
 
         <p
             id="profile-username"
@@ -1597,6 +1608,30 @@ animation: post-show .35s ease both;
         font-size: 11px;
     }
 }
+.profile-display-name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.profile-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #1877f2;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.profile-verified-badge[hidden] {
+    display: none;
+}
 </style>
 
 <script>
@@ -2435,12 +2470,22 @@ const avatarUploadMessage =
         }
 
         const displayNameElement =
-            byId("profile-display-name");
+    byId("profile-display-name-text");
 
-        if (displayNameElement) {
-            displayNameElement.textContent =
-                displayName(user);
-        }
+if (displayNameElement) {
+    displayNameElement.textContent =
+        displayName(user);
+}
+
+const verifiedBadge =
+    byId("profile-verified-badge");
+
+if (verifiedBadge) {
+    verifiedBadge.hidden =
+        !Boolean(
+            user.is_verified
+        );
+}
 
         const usernameElement =
             byId("profile-username");
