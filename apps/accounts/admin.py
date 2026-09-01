@@ -15,6 +15,7 @@ class ChatWellUserAdmin(UserAdmin):
         "is_phone_verified",
         "is_active",
         "created_at",
+        "is_verified",
     )
 
     list_filter = (
@@ -22,6 +23,7 @@ class ChatWellUserAdmin(UserAdmin):
         "is_active",
         "is_staff",
         "is_private",
+        "is_verified",
     )
 
     search_fields = (
