@@ -285,6 +285,7 @@ class UserSerializer(
             "display_name",
             "bio",
             "avatar",
+            "is_verified",
             "is_phone_verified",
             "is_verified",
             "is_private",
