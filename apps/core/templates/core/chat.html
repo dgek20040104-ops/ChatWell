@@ -2177,13 +2177,42 @@
             message.sender
         ) {
             const sender =
-                document.createElement("div");
+    document.createElement("a");
 
-            sender.className = "message-sender";
-            sender.textContent =
-                getUserName(message.sender);
+sender.className =
+    "message-sender";
 
-            bubble.appendChild(sender);
+sender.href =
+    "/users/"
+    + encodeURIComponent(
+        message.sender.id
+    )
+    + "/";
+
+sender.textContent =
+    getUserName(
+        message.sender
+    );
+
+sender.title =
+    "Открыть профиль";
+
+sender.style.cursor =
+    "pointer";
+
+sender.style.textDecoration =
+    "none";
+
+sender.addEventListener(
+    "click",
+    function (event) {
+        event.stopPropagation();
+    }
+);
+
+bubble.appendChild(
+    sender
+);
         }
 
         const reply =
@@ -2622,9 +2651,59 @@
         }
 
         activeName.textContent =
-            getChatName(chat);
+    getChatName(chat);
 
-        updateChatStatus(chat);
+activeName.onclick =
+    null;
+
+activeName.style.cursor =
+    "";
+
+activeName.title =
+    "";
+
+activeAvatar.onclick =
+    null;
+
+activeAvatar.style.cursor =
+    "";
+
+activeAvatar.title =
+    "";
+
+if (
+    chat.chat_type === "private"
+    && user
+    && user.id
+) {
+    activeName.style.cursor =
+        "pointer";
+
+    activeName.title =
+        "Открыть профиль";
+
+    activeName.onclick =
+        function () {
+            openUserProfile(
+                user
+            );
+        };
+
+    activeAvatar.style.cursor =
+        "pointer";
+
+    activeAvatar.title =
+        "Открыть профиль";
+
+    activeAvatar.onclick =
+        function () {
+            openUserProfile(
+                user
+            );
+        };
+}
+
+updateChatStatus(chat);
 
         infoContent.innerHTML =
             "<strong>" +
