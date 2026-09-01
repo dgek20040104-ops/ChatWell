@@ -56,6 +56,10 @@ class User(
         default=False,
     )
 
+    is_verified = models.BooleanField(
+    default=False,
+)
+    
     is_private = models.BooleanField(
         default=False,
     )
