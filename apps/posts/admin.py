@@ -48,16 +48,31 @@ class PostAdmin(admin.ModelAdmin):
 
 
 @admin.register(Follow)
-class FollowAdmin(admin.ModelAdmin):
+class FollowAdmin(
+    admin.ModelAdmin
+):
     list_display = (
         "follower",
         "following",
+        "is_accepted",
+        "created_at",
+    )
+
+    list_filter = (
+        "is_accepted",
         "created_at",
     )
 
     search_fields = (
         "follower__phone",
+        "follower__username",
         "following__phone",
+        "following__username",
+    )
+
+    list_select_related = (
+        "follower",
+        "following",
     )
 
 @admin.register(PostMedia)
