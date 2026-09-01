@@ -66,21 +66,18 @@ class JWTAuthMiddleware(
         receive,
         send,
     ):
-        raw_query_string = scope.get(
-            "query_string",
-            b"",
-        )
-
         query_string = (
-            raw_query_string
+            scope.get(
+                "query_string",
+                b"",
+            )
             .decode(
                 "utf-8",
-                errors="ignore",
             )
         )
 
         query_params = parse_qs(
-            query_string
+            query_string,
         )
 
         token_values = (
@@ -93,12 +90,12 @@ class JWTAuthMiddleware(
         token = (
             token_values[0]
             if token_values
-            else ""
+            else None
         )
 
         scope["user"] = (
             await get_user_from_token(
-                token
+                token,
             )
         )
 
@@ -107,11 +104,3 @@ class JWTAuthMiddleware(
             receive,
             send,
         )
-
-
-def JWTAuthMiddlewareStack(
-    inner,
-):
-    return JWTAuthMiddleware(
-        inner
-    )
