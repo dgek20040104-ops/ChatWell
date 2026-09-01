@@ -1,12 +1,17 @@
 {% extends "core/base.html" %}
 
-{% block title %}Чаты — ChatWell{% endblock %}
+{% block title %}
+    Чаты — ChatWell
+{% endblock %}
 
 {% block body %}
 
 <header class="cw-header">
     <div class="cw-header-inner">
-        <a class="cw-logo" href="/">
+        <a
+            class="cw-logo"
+            href="/"
+        >
             ChatWell
         </a>
 
@@ -69,7 +74,9 @@
                 </div>
 
                 <div class="search-wrapper">
-                    <span class="search-icon">⌕</span>
+                    <span class="search-icon">
+                        ⌕
+                    </span>
 
                     <input
                         id="chat-search-input"
@@ -122,9 +129,13 @@
                 id="chat-placeholder"
                 class="chat-placeholder"
             >
-                <div class="placeholder-icon">✉</div>
+                <div class="placeholder-icon">
+                    ✉
+                </div>
 
-                <h2>Выберите чат</h2>
+                <h2>
+                    Выберите чат
+                </h2>
 
                 <p>
                     Выберите чат слева или начните
@@ -147,18 +158,21 @@
                         ‹
                     </button>
 
-                    <div
+                    <button
                         id="active-chat-avatar"
-                        class="avatar avatar-large"
-                    ></div>
+                        class="avatar avatar-large avatar-button"
+                        type="button"
+                        aria-label="Открыть профиль"
+                    ></button>
 
                     <div class="conversation-info">
-                        <h2
+                        <button
                             id="active-chat-name"
-                            class="conversation-name"
+                            class="conversation-name conversation-name-button"
+                            type="button"
                         >
                             Чат
-                        </h2>
+                        </button>
 
                         <div
                             id="active-chat-status"
@@ -229,7 +243,18 @@
                         id="file-input"
                         type="file"
                         hidden
-                        accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.txt"
+                        accept="
+                            image/*,
+                            video/*,
+                            .pdf,
+                            .doc,
+                            .docx,
+                            .xls,
+                            .xlsx,
+                            .zip,
+                            .rar,
+                            .txt
+                        "
                     >
 
                     <input
@@ -268,7 +293,9 @@
 >
     <div class="modal-card">
         <div class="modal-header">
-            <h2>Новый личный чат</h2>
+            <h2>
+                Новый личный чат
+            </h2>
 
             <button
                 class="modal-close"
@@ -310,7 +337,9 @@
 >
     <div class="modal-card">
         <div class="modal-header">
-            <h2>Создать группу</h2>
+            <h2>
+                Создать группу
+            </h2>
 
             <button
                 class="modal-close"
@@ -388,7 +417,9 @@
 >
     <div class="modal-card">
         <div class="modal-header">
-            <h2>Создать сообщество</h2>
+            <h2>
+                Создать сообщество
+            </h2>
 
             <button
                 class="modal-close"
@@ -428,6 +459,7 @@
                 type="checkbox"
                 checked
             >
+
             Публичное сообщество
         </label>
 
@@ -476,12 +508,12 @@
 <nav class="cw-mobile-nav">
     <a href="/feed/">
         <span>⌂</span>
-        Лента
+        <span>Лента</span>
     </a>
 
     <a href="/people/">
         <span>⌕</span>
-        Люди
+        <span>Люди</span>
     </a>
 
     <a
@@ -489,34 +521,38 @@
         href="/chat/"
     >
         <span>✉</span>
-        Чаты
+        <span>Чаты</span>
     </a>
 
     <a href="/profile/">
         <span>◉</span>
-        Профиль
+        <span>Профиль</span>
     </a>
 </nav>
 
 <style>
 :root {
-    --primary: #5d50df;
-    --primary-dark: #4c3fc7;
-    --primary-soft: #eeecff;
-    --background: #f4f5fb;
-    --white: #fff;
-    --text: #20212a;
-    --muted: #8990a3;
-    --border: #e6e8f0;
-    --hover: #f1f2f8;
-    --danger: #d84c5b;
-    --success: #31a66c;
+    --chat-primary: #5d50df;
+    --chat-primary-dark: #4c3fc7;
+    --chat-primary-soft: #eeecff;
+    --chat-background: #f4f5fb;
+    --chat-white: #ffffff;
+    --chat-text: #20212a;
+    --chat-muted: #8990a3;
+    --chat-border: #e6e8f0;
+    --chat-hover: #f1f2f8;
+    --chat-danger: #d84c5b;
+    --chat-success: #31a66c;
+}
+
+[hidden] {
+    display: none !important;
 }
 
 .chat-page {
     min-height: calc(100vh - 80px);
     padding: 28px;
-    background: var(--background);
+    background: var(--chat-background);
 }
 
 .chat-layout {
@@ -526,10 +562,10 @@
     min-height: 620px;
     margin: 0 auto;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--chat-border);
     border-radius: 20px;
-    background: var(--white);
-    box-shadow: 0 15px 45px rgba(42,45,75,.08);
+    background: var(--chat-white);
+    box-shadow: 0 15px 45px rgba(42, 45, 75, .08);
 }
 
 .chat-sidebar {
@@ -537,13 +573,13 @@
     flex-direction: column;
     width: 360px;
     min-width: 360px;
-    border-right: 1px solid var(--border);
-    background: var(--white);
+    border-right: 1px solid var(--chat-border);
+    background: var(--chat-white);
 }
 
 .sidebar-top {
     padding: 22px 18px 16px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--chat-border);
 }
 
 .sidebar-title-row,
@@ -562,7 +598,7 @@
 
 .sidebar-title {
     margin: 0 0 5px;
-    color: var(--text);
+    color: var(--chat-text);
     font-size: 25px;
     font-weight: 800;
 }
@@ -570,7 +606,7 @@
 .sidebar-subtitle,
 .modal-description {
     margin: 0;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 12px;
 }
 
@@ -578,7 +614,9 @@
 .header-menu-button,
 .mobile-back-button,
 .attach-button,
-.send-button {
+.send-button,
+.avatar-button,
+.conversation-name-button {
     border: 0;
     cursor: pointer;
 }
@@ -587,8 +625,8 @@
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    background: var(--primary-soft);
-    color: var(--primary);
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
     font-size: 22px;
 }
 
@@ -601,7 +639,7 @@
     position: absolute;
     top: 50%;
     left: 13px;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 20px;
     transform: translateY(-50%);
 }
@@ -612,10 +650,10 @@
     box-sizing: border-box;
     width: 100%;
     outline: 0;
-    border: 1px solid var(--border);
+    border: 1px solid var(--chat-border);
     border-radius: 12px;
     background: #f8f9fc;
-    color: var(--text);
+    color: var(--chat-text);
     font: inherit;
 }
 
@@ -634,9 +672,9 @@
 .search-input:focus,
 .modal-input:focus,
 .message-input:focus {
-    border-color: var(--primary);
-    background: var(--white);
-    box-shadow: 0 0 0 3px var(--primary-soft);
+    border-color: var(--chat-primary);
+    background: var(--chat-white);
+    box-shadow: 0 0 0 3px var(--chat-primary-soft);
 }
 
 .sidebar-actions {
@@ -648,13 +686,19 @@
 .sidebar-action {
     min-height: 44px;
     padding: 5px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--chat-border);
     border-radius: 10px;
-    background: var(--white);
-    color: var(--text);
+    background: var(--chat-white);
+    color: var(--chat-text);
     cursor: pointer;
     font-size: 11px;
     font-weight: 700;
+}
+
+.sidebar-action:hover {
+    border-color: var(--chat-primary);
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
 }
 
 .chats-list,
@@ -669,7 +713,7 @@
 .loading,
 .empty {
     padding: 35px 20px;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 14px;
     line-height: 1.5;
     text-align: center;
@@ -687,7 +731,7 @@
 
 .chat-item:hover,
 .chat-item.active {
-    background: var(--primary-soft);
+    background: var(--chat-primary-soft);
 }
 
 .chat-item-info,
@@ -705,7 +749,7 @@
 }
 
 .chat-item-name {
-    color: var(--text);
+    color: var(--chat-text);
     font-size: 14px;
     font-weight: 750;
 }
@@ -714,7 +758,7 @@
     min-width: 0;
     flex: 1;
     margin: 0;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 12px;
 }
 
@@ -724,13 +768,13 @@
 
 .chat-item-time {
     flex-shrink: 0;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 10px;
 }
 
 .chat-item.has-unread .chat-item-name,
 .chat-item.has-unread .chat-item-preview {
-    color: var(--text);
+    color: var(--chat-text);
     font-weight: 800;
 }
 
@@ -742,8 +786,8 @@
     height: 20px;
     padding: 0 6px;
     border-radius: 10px;
-    background: var(--primary);
-    color: var(--white);
+    background: var(--chat-primary);
+    color: var(--chat-white);
     font-size: 10px;
     font-weight: 800;
 }
@@ -755,8 +799,12 @@
     flex-shrink: 0;
     overflow: hidden;
     border-radius: 50%;
-    background: linear-gradient(135deg,#8979f4,#5744d8);
-    color: var(--white);
+    background: linear-gradient(
+        135deg,
+        #8979f4,
+        #5744d8
+    );
+    color: var(--chat-white);
     font-weight: 750;
 }
 
@@ -778,6 +826,14 @@
     font-size: 19px;
 }
 
+.avatar-button {
+    padding: 0;
+}
+
+.avatar-button:hover {
+    transform: scale(1.05);
+}
+
 .chat-main {
     display: flex;
     flex: 1;
@@ -789,13 +845,13 @@
     align-self: center;
     width: 100%;
     padding: 30px;
-    color: var(--muted);
+    color: var(--chat-muted);
     text-align: center;
 }
 
 .chat-placeholder h2 {
     margin: 0 0 8px;
-    color: var(--text);
+    color: var(--chat-text);
 }
 
 .placeholder-icon {
@@ -805,8 +861,8 @@
     padding-top: 15px;
     box-sizing: border-box;
     border-radius: 24px;
-    background: var(--primary-soft);
-    color: var(--primary);
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
     font-size: 35px;
 }
 
@@ -823,23 +879,38 @@
     gap: 12px;
     min-height: 74px;
     padding: 12px 22px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,.95);
+    border-bottom: 1px solid var(--chat-border);
+    background: rgba(255, 255, 255, .95);
 }
 
-.conversation-name {
+.conversation-name-button {
+    display: block;
+    max-width: 100%;
     margin: 0 0 4px;
-    color: var(--text);
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    color: var(--chat-text);
+    font: inherit;
     font-size: 17px;
+    font-weight: 700;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conversation-name-button:hover {
+    color: var(--chat-primary);
+    text-decoration: underline;
 }
 
 .conversation-status {
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 12px;
 }
 
 .conversation-status.online {
-    color: var(--success);
+    color: var(--chat-success);
 }
 
 .header-menu-button,
@@ -848,8 +919,14 @@
     height: 38px;
     border-radius: 11px;
     background: transparent;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 25px;
+}
+
+.header-menu-button:hover,
+.mobile-back-button:hover {
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
 }
 
 .mobile-back-button {
@@ -859,9 +936,9 @@
 
 .chat-info-panel {
     padding: 13px 22px;
-    border-bottom: 1px solid var(--border);
-    background: var(--white);
-    color: var(--muted);
+    border-bottom: 1px solid var(--chat-border);
+    background: var(--chat-white);
+    color: var(--chat-muted);
     font-size: 12px;
     line-height: 1.5;
 }
@@ -878,7 +955,7 @@
 
 .message-row {
     display: flex;
-    max-width: min(76%,540px);
+    max-width: min(76%, 540px);
 }
 
 .message-row.mine {
@@ -891,17 +968,17 @@
 
 .message-bubble {
     padding: 9px 13px 7px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--chat-border);
     border-radius: 16px;
-    background: var(--white);
-    box-shadow: 0 2px 8px rgba(30,35,60,.04);
+    background: var(--chat-white);
+    box-shadow: 0 2px 8px rgba(30, 35, 60, .04);
 }
 
 .message-row.mine .message-bubble {
-    border-color: var(--primary);
+    border-color: var(--chat-primary);
     border-bottom-right-radius: 4px;
-    background: var(--primary);
-    color: var(--white);
+    background: var(--chat-primary);
+    color: var(--chat-white);
 }
 
 .message-row.other .message-bubble {
@@ -909,10 +986,36 @@
 }
 
 .message-sender {
+    display: block;
+    width: fit-content;
     margin-bottom: 4px;
-    color: var(--primary);
+    color: var(--chat-primary);
     font-size: 11px;
     font-weight: 750;
+    text-decoration: none;
+}
+
+.message-sender:hover {
+    text-decoration: underline;
+}
+
+.message-row.mine .message-sender {
+    color: rgba(255, 255, 255, .9);
+}
+
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    border-radius: 50%;
+    background: #1877f2;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    vertical-align: middle;
 }
 
 .message-text {
@@ -923,13 +1026,13 @@
 
 .message-time {
     margin-top: 5px;
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 9px;
     text-align: right;
 }
 
 .message-row.mine .message-time {
-    color: rgba(255,255,255,.72);
+    color: rgba(255, 255, 255, .72);
 }
 
 .message-status,
@@ -941,17 +1044,17 @@
 .message-reply {
     margin-bottom: 7px;
     padding: 5px 8px;
-    border-left: 3px solid var(--primary);
+    border-left: 3px solid var(--chat-primary);
     border-radius: 5px;
-    background: rgba(93,80,223,.09);
-    color: var(--muted);
+    background: rgba(93, 80, 223, .09);
+    color: var(--chat-muted);
     font-size: 11px;
 }
 
 .message-row.mine .message-reply {
-    border-left-color: var(--white);
-    background: rgba(255,255,255,.14);
-    color: rgba(255,255,255,.8);
+    border-left-color: var(--chat-white);
+    background: rgba(255, 255, 255, .14);
+    color: rgba(255, 255, 255, .8);
 }
 
 .message-image {
@@ -965,7 +1068,7 @@
 
 .message-video {
     display: block;
-    width: min(300px,100%);
+    width: min(300px, 100%);
     max-height: 320px;
     margin-bottom: 7px;
     border-radius: 12px;
@@ -977,7 +1080,7 @@
     max-width: 280px;
     margin-bottom: 7px;
     overflow: hidden;
-    color: var(--primary);
+    color: var(--chat-primary);
     font-size: 13px;
     font-weight: 700;
     text-overflow: ellipsis;
@@ -985,13 +1088,13 @@
 }
 
 .message-row.mine .message-file {
-    color: var(--white);
+    color: var(--chat-white);
 }
 
 .typing-status {
     min-height: 21px;
     padding: 0 24px;
-    color: var(--primary);
+    color: var(--chat-primary);
     font-size: 11px;
     font-style: italic;
 }
@@ -1003,18 +1106,10 @@
     gap: 10px;
     min-height: 35px;
     padding: 7px 18px;
-    border-top: 1px solid var(--border);
-    background: var(--primary-soft);
-    color: var(--text);
+    border-top: 1px solid var(--chat-border);
+    background: var(--chat-primary-soft);
+    color: var(--chat-text);
     font-size: 12px;
-}
-
-.reply-preview[hidden],
-.modal-overlay[hidden],
-.context-menu[hidden],
-.active-chat[hidden],
-.chat-placeholder[hidden] {
-    display: none !important;
 }
 
 #reply-preview-text {
@@ -1026,7 +1121,7 @@
 #cancel-reply-button {
     border: 0;
     background: transparent;
-    color: var(--muted);
+    color: var(--chat-muted);
     cursor: pointer;
     font-size: 20px;
 }
@@ -1036,8 +1131,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px 18px;
-    border-top: 1px solid var(--border);
-    background: var(--white);
+    border-top: 1px solid var(--chat-border);
+    background: var(--chat-white);
 }
 
 .message-input {
@@ -1056,19 +1151,26 @@
 }
 
 .attach-button {
-    background: var(--hover);
-    color: var(--muted);
+    background: var(--chat-hover);
+    color: var(--chat-muted);
 }
 
 .send-button {
-    background: var(--primary);
-    color: var(--white);
+    background: var(--chat-primary);
+    color: var(--chat-white);
+}
+
+.attach-button:disabled,
+.send-button:disabled,
+.message-input:disabled {
+    cursor: not-allowed;
+    opacity: .55;
 }
 
 .message-error {
     min-height: 18px;
     padding: 0 18px 8px;
-    color: var(--danger);
+    color: var(--chat-danger);
     font-size: 11px;
 }
 
@@ -1080,10 +1182,10 @@
     flex-direction: column;
     gap: 3px;
     padding: 6px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--chat-border);
     border-radius: 12px;
-    background: var(--white);
-    box-shadow: 0 12px 35px rgba(30,35,60,.22);
+    background: var(--chat-white);
+    box-shadow: 0 12px 35px rgba(30, 35, 60, .22);
 }
 
 .context-menu button {
@@ -1091,11 +1193,16 @@
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: var(--text);
+    color: var(--chat-text);
     cursor: pointer;
     font: inherit;
     font-size: 13px;
     text-align: left;
+}
+
+.context-menu button:hover {
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
 }
 
 .modal-overlay {
@@ -1106,16 +1213,16 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(24,26,42,.45);
+    background: rgba(24, 26, 42, .45);
 }
 
 .modal-card {
-    width: min(460px,100%);
+    width: min(460px, 100%);
     max-height: calc(100vh - 40px);
     padding: 23px;
     overflow-y: auto;
     border-radius: 20px;
-    background: var(--white);
+    background: var(--chat-white);
 }
 
 .modal-header {
@@ -1127,7 +1234,7 @@
 
 .modal-header h2 {
     margin: 0;
-    color: var(--text);
+    color: var(--chat-text);
     font-size: 21px;
 }
 
@@ -1136,8 +1243,8 @@
     height: 32px;
     border: 0;
     border-radius: 10px;
-    background: var(--hover);
-    color: var(--muted);
+    background: var(--chat-hover);
+    color: var(--chat-muted);
     cursor: pointer;
     font-size: 22px;
 }
@@ -1145,7 +1252,7 @@
 .modal-label {
     display: block;
     margin: 14px 0 7px;
-    color: var(--text);
+    color: var(--chat-text);
     font-size: 12px;
     font-weight: 700;
 }
@@ -1174,7 +1281,7 @@
 }
 
 .user-result:hover {
-    background: var(--hover);
+    background: var(--chat-hover);
 }
 
 .user-result-info {
@@ -1183,13 +1290,13 @@
 }
 
 .user-result-name {
-    color: var(--text);
+    color: var(--chat-text);
     font-size: 13px;
     font-weight: 700;
 }
 
 .user-result-tag {
-    color: var(--muted);
+    color: var(--chat-muted);
     font-size: 11px;
 }
 
@@ -1201,18 +1308,29 @@
 }
 
 .selected-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     padding: 6px 9px;
     border-radius: 9px;
-    background: var(--primary-soft);
-    color: var(--primary);
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
     font-size: 11px;
     font-weight: 700;
+}
+
+.selected-user button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 15px;
 }
 
 .modal-error {
     min-height: 20px;
     margin-top: 10px;
-    color: var(--danger);
+    color: var(--chat-danger);
     font-size: 12px;
 }
 
@@ -1222,8 +1340,8 @@
     margin-top: 10px;
     border: 0;
     border-radius: 12px;
-    background: var(--primary);
-    color: var(--white);
+    background: var(--chat-primary);
+    color: var(--chat-white);
     cursor: pointer;
     font: inherit;
     font-weight: 700;
@@ -1234,7 +1352,7 @@
     gap: 8px;
     align-items: center;
     margin-top: 16px;
-    color: var(--text);
+    color: var(--chat-text);
     font-size: 13px;
 }
 
@@ -1322,8 +1440,8 @@
         display: flex;
         justify-content: space-around;
         padding: 8px 4px;
-        background: var(--white);
-        box-shadow: 0 -4px 20px rgba(30,35,60,.1);
+        background: var(--chat-white);
+        box-shadow: 0 -4px 20px rgba(30, 35, 60, .1);
     }
 
     .cw-mobile-nav a {
@@ -1331,17 +1449,17 @@
         flex-direction: column;
         align-items: center;
         gap: 3px;
-        color: var(--muted);
+        color: var(--chat-muted);
         font-size: 10px;
         text-decoration: none;
     }
 
-    .cw-mobile-nav a span {
+    .cw-mobile-nav a span:first-child {
         font-size: 18px;
     }
 
     .cw-mobile-nav a.active {
-        color: var(--primary);
+        color: var(--chat-primary);
     }
 }
 </style>
@@ -1360,25 +1478,33 @@
         "/api/auth/token/refresh/";
 
     const MAX_FILE_SIZE =
-        50 * 1024 * 1024;
+        100 * 1024 * 1024;
 
     const $ = function (id) {
         return document.getElementById(id);
     };
 
     let accessToken =
-        localStorage.getItem(ACCESS_KEY);
+        localStorage.getItem(
+            ACCESS_KEY
+        );
 
     let refreshToken =
-        localStorage.getItem(REFRESH_KEY);
+        localStorage.getItem(
+            REFRESH_KEY
+        );
 
     if (!accessToken) {
-        window.location.href = "/register/";
+        window.location.href =
+            "/register/";
+
         return;
     }
 
     const layout =
-        document.querySelector(".chat-layout");
+        document.querySelector(
+            ".chat-layout"
+        );
 
     const chatsList =
         $("chats-list");
@@ -1453,53 +1579,87 @@
         $("message-context-menu");
 
     let chats = [];
+
     let selectedChat = null;
+
     let currentUserId = "";
+
+    let currentUser = null;
+
     let chatSocket = null;
+
     let notificationsSocket = null;
 
     let refreshPromise = null;
-    let refreshTimer = null;
+
     let reconnectTimer = null;
+
     let notificationsReconnectTimer = null;
+
     let notificationsReconnectAttempts = 0;
+
+    let refreshTimer = null;
+
     let typingTimer = null;
+
     let typingClearTimer = null;
-    let longPressTimer = null;
+
     let searchTimer = null;
+
     let groupSearchTimer = null;
 
     let selectedMessage = null;
+
     let replyMessage = null;
+
     let editingMessage = null;
+
     let uploadInProgress = false;
+
     let selectedUsers = [];
 
-    function sameId(first, second) {
+    function sameId(
+        first,
+        second
+    ) {
         return String(first) === String(second);
     }
 
-    function isCurrentChat(chatId) {
-        return selectedChat &&
-            sameId(selectedChat.id, chatId);
+    function isCurrentChat(
+        chatId
+    ) {
+        return (
+            selectedChat
+            && sameId(
+                selectedChat.id,
+                chatId
+            )
+        );
     }
 
-    function safeClone(data) {
+    function safeClone(
+        value
+    ) {
         try {
             return JSON.parse(
-                JSON.stringify(data)
+                JSON.stringify(value)
             );
         } catch (error) {
-            return data;
+            return value;
         }
     }
 
-    function errorText(data, fallback) {
+    function errorText(
+        data,
+        fallback
+    ) {
         if (!data) {
             return fallback;
         }
 
-        if (typeof data === "string") {
+        if (
+            typeof data === "string"
+        ) {
             return data;
         }
 
@@ -1515,31 +1675,46 @@
             return data.message;
         }
 
-        if (typeof data === "object") {
-            return Object.entries(data)
-                .map(function (entry) {
-                    const value = entry[1];
+        if (
+            typeof data === "object"
+        ) {
+            const result =
+                Object.entries(data)
+                    .map(function (entry) {
+                        const value =
+                            Array.isArray(
+                                entry[1]
+                            )
+                                ? entry[1].join(", ")
+                                : String(entry[1]);
 
-                    return entry[0] + ": " +
-                        (
-                            Array.isArray(value)
-                                ? value.join(", ")
-                                : String(value)
+                        return (
+                            entry[0]
+                            + ": "
+                            + value
                         );
-                })
-                .join(" ") || fallback;
+                    })
+                    .join(" ");
+
+            return result || fallback;
         }
 
         return fallback;
     }
 
-    async function parseResponse(response) {
-        const type =
+    async function parseResponse(
+        response
+    ) {
+        const contentType =
             response.headers.get(
                 "content-type"
             ) || "";
 
-        if (!type.includes("application/json")) {
+        if (
+            !contentType.includes(
+                "application/json"
+            )
+        ) {
             return {};
         }
 
@@ -1568,22 +1743,26 @@
                         "application/json"
                 },
                 body: JSON.stringify({
-                    refresh: refreshToken
+                    refresh:
+                        refreshToken
                 })
             }
         )
             .then(async function (response) {
                 const data =
-                    await parseResponse(response);
+                    await parseResponse(
+                        response
+                    );
 
                 if (
-                    !response.ok ||
-                    !data.access
+                    !response.ok
+                    || !data.access
                 ) {
                     return false;
                 }
 
-                accessToken = data.access;
+                accessToken =
+                    data.access;
 
                 localStorage.setItem(
                     ACCESS_KEY,
@@ -1613,18 +1792,26 @@
     }
 
     function logout() {
-        localStorage.removeItem(ACCESS_KEY);
-        localStorage.removeItem(REFRESH_KEY);
+        localStorage.removeItem(
+            ACCESS_KEY
+        );
+
+        localStorage.removeItem(
+            REFRESH_KEY
+        );
 
         if (chatSocket) {
             chatSocket.close();
+            chatSocket = null;
         }
 
         if (notificationsSocket) {
             notificationsSocket.close();
+            notificationsSocket = null;
         }
 
-        window.location.href = "/register/";
+        window.location.href =
+            "/register/";
     }
 
     async function apiRequest(
@@ -1632,8 +1819,11 @@
         options,
         retry
     ) {
-        options = options || {};
-        retry = retry !== false;
+        options =
+            options || {};
+
+        retry =
+            retry !== false;
 
         const requestOptions = {
             ...options,
@@ -1658,8 +1848,8 @@
         }
 
         if (
-            response.status === 401 &&
-            retry
+            response.status === 401
+            && retry
         ) {
             const refreshed =
                 await refreshAccessToken();
@@ -1680,7 +1870,9 @@
         }
 
         const data =
-            await parseResponse(response);
+            await parseResponse(
+                response
+            );
 
         if (!response.ok) {
             throw new Error(
@@ -1694,80 +1886,147 @@
         return data;
     }
 
-    function getUserName(user) {
+    function getUserName(
+        user
+    ) {
         if (!user) {
             return "Пользователь";
         }
 
-        return user.display_name ||
-            user.username ||
-            "Пользователь";
+        return (
+            user.display_name
+            || user.username
+            || "Пользователь"
+        );
     }
 
-    function getUserTag(user) {
-        return user && user.username
-            ? "@" + user.username
-            : "";
+    function getUserTag(
+        user
+    ) {
+        if (
+            !user
+            || !user.username
+        ) {
+            return "";
+        }
+
+        return "@" + user.username;
     }
 
-    function getInitials(user) {
-        return getUserName(user)
+    function getInitials(
+        user
+    ) {
+        return getUserName(
+            user
+        )
             .charAt(0)
             .toUpperCase();
     }
 
-  function openUserProfile(
-    user
-) {
-    if (
-        !user
-        || !user.id
+    function openUserProfile(
+        user
     ) {
-        return;
-    }
-
-    window.location.href =
-        "/users/"
-        + encodeURIComponent(
-            user.id
-        )
-        + "/";
-}
-    
-    function getPrivateUser(chat) {
-        return chat &&
-            chat.chat_type === "private"
-            ? chat.other_user
-            : null;
-    }
-
-    function getChatName(chat) {
-        const user =
-            getPrivateUser(chat);
-
-        if (user) {
-            return getUserName(user);
+        if (
+            !user
+            || !user.id
+        ) {
+            return;
         }
 
-        return chat && chat.title
-            ? chat.title
-            : chat && chat.chat_type === "channel"
-                ? "Сообщество"
-                : "Группа";
+        window.location.href =
+            "/users/"
+            + encodeURIComponent(
+                user.id
+            )
+            + "/";
     }
 
-    function getChatSubtitle(chat) {
+    function appendVerifiedBadge(
+        element,
+        user
+    ) {
+        if (
+            !element
+            || !user
+            || user.is_verified !== true
+        ) {
+            return;
+        }
+
+        const badge =
+            document.createElement(
+                "span"
+            );
+
+        badge.className =
+            "verified-badge";
+
+        badge.textContent =
+            "✓";
+
+        badge.title =
+            "Подтверждённый профиль";
+
+        element.appendChild(
+            badge
+        );
+    }
+
+    function getPrivateUser(
+        chat
+    ) {
+        if (
+            !chat
+            || chat.chat_type !== "private"
+        ) {
+            return null;
+        }
+
+        return chat.other_user || null;
+    }
+
+    function getChatName(
+        chat
+    ) {
         const user =
             getPrivateUser(chat);
 
         if (user) {
-            return getUserTag(user);
+            return getUserName(
+                user
+            );
+        }
+
+        if (
+            chat
+            && chat.title
+        ) {
+            return chat.title;
+        }
+
+        return chat
+            && chat.chat_type === "channel"
+            ? "Сообщество"
+            : "Группа";
+    }
+
+    function getChatSubtitle(
+        chat
+    ) {
+        const user =
+            getPrivateUser(chat);
+
+        if (user) {
+            return getUserTag(
+                user
+            );
         }
 
         const count =
             Number(
-                chat &&
-                chat.members_count || 0
+                chat
+                && chat.members_count
+                || 0
             );
 
         return chat.chat_type === "channel"
@@ -1775,7 +2034,9 @@
             : count + " участников";
     }
 
-    function getMessagePreview(message) {
+    function getMessagePreview(
+        message
+    ) {
         if (!message) {
             return "";
         }
@@ -1788,26 +2049,42 @@
             return message.text;
         }
 
-        if (message.message_type === "image") {
+        if (
+            message.message_type === "image"
+        ) {
             return "Изображение";
         }
 
-        if (message.message_type === "video") {
+        if (
+            message.message_type === "video"
+        ) {
             return "Видео";
         }
 
-        return "📎 " +
-            (message.file_name || "Файл");
+        return (
+            "📎 "
+            + (
+                message.file_name
+                || "Файл"
+            )
+        );
     }
 
-    function formatDate(value) {
+    function formatDate(
+        value
+    ) {
         if (!value) {
             return "";
         }
 
-        const date = new Date(value);
+        const date =
+            new Date(value);
 
-        if (Number.isNaN(date.getTime())) {
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
             return "";
         }
 
@@ -1822,22 +2099,44 @@
         );
     }
 
-    function setAvatar(element, user, chat) {
-        element.innerHTML = "";
+    function setAvatar(
+        element,
+        user,
+        chat,
+        large
+    ) {
+        if (!element) {
+            return;
+        }
+
+        element.innerHTML =
+            "";
+
         element.className =
-            "avatar avatar-small";
+            large
+                ? "avatar avatar-large"
+                : "avatar avatar-small";
 
         const url =
-            chat && chat.avatar ||
-            user && user.avatar ||
-            "";
+            (
+                chat
+                && chat.avatar
+            )
+            || (
+                user
+                && user.avatar
+            )
+            || "";
 
         if (!url) {
             element.textContent =
                 getInitials(
-                    user || {
+                    user
+                    || {
                         display_name:
-                            getChatName(chat)
+                            getChatName(
+                                chat
+                            )
                     }
                 );
 
@@ -1845,25 +2144,38 @@
         }
 
         const image =
-            document.createElement("img");
+            document.createElement(
+                "img"
+            );
 
-        image.src = url;
-        image.alt = "Аватар";
-        image.loading = "lazy";
+        image.src =
+            url;
 
-        image.onerror = function () {
-            image.remove();
+        image.alt =
+            "Аватар";
 
-            element.textContent =
-                getInitials(
-                    user || {
-                        display_name:
-                            getChatName(chat)
-                    }
-                );
-        };
+        image.loading =
+            "lazy";
 
-        element.appendChild(image);
+        image.onerror =
+            function () {
+                image.remove();
+
+                element.textContent =
+                    getInitials(
+                        user
+                        || {
+                            display_name:
+                                getChatName(
+                                    chat
+                                )
+                        }
+                    );
+            };
+
+        element.appendChild(
+            image
+        );
     }
 
     function updateDocumentTitle() {
@@ -1872,158 +2184,271 @@
                 result,
                 chat
             ) {
-                return result +
-                    Number(chat.unread_count || 0);
+                return (
+                    result
+                    + Number(
+                        chat.unread_count
+                        || 0
+                    )
+                );
             }, 0);
 
         document.title =
             total > 0
-                ? "(" +
-                    (
+                ? "("
+                    + (
                         total > 99
                             ? "99+"
                             : String(total)
-                    ) +
-                    ") Чаты — ChatWell"
+                    )
+                    + ") Чаты — ChatWell"
                 : "Чаты — ChatWell";
     }
 
     function renderChats() {
+        if (!chatsList) {
+            return;
+        }
+
         const query =
-            searchInput.value.trim().toLowerCase();
+            searchInput.value
+                .trim()
+                .toLowerCase();
 
         const filtered =
-            chats.filter(function (chat) {
+            chats.filter(function (
+                chat
+            ) {
                 const name =
-                    getChatName(chat).toLowerCase();
+                    getChatName(
+                        chat
+                    ).toLowerCase();
 
                 const preview =
                     getMessagePreview(
                         chat.last_message
                     ).toLowerCase();
 
-                return !query ||
-                    name.includes(query) ||
-                    preview.includes(query);
+                return (
+                    !query
+                    || name.includes(
+                        query
+                    )
+                    || preview.includes(
+                        query
+                    )
+                );
             });
 
-        chatsList.innerHTML = "";
+        chatsList.innerHTML =
+            "";
 
         if (!filtered.length) {
             const empty =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            empty.className = "empty";
-            empty.textContent = query
-                ? "Чаты не найдены."
-                : "Чатов пока нет.";
+            empty.className =
+                "empty";
 
-            chatsList.appendChild(empty);
+            empty.textContent =
+                query
+                    ? "Чаты не найдены."
+                    : "Чатов пока нет.";
+
+            chatsList.appendChild(
+                empty
+            );
+
             updateDocumentTitle();
+
             return;
         }
 
-        filtered.forEach(function (chat) {
+        filtered.forEach(function (
+            chat
+        ) {
             const item =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
             const unread =
-                Number(chat.unread_count || 0);
+                Number(
+                    chat.unread_count
+                    || 0
+                );
 
-            item.className = "chat-item";
+            item.className =
+                "chat-item";
+
             item.dataset.chatId =
                 String(chat.id);
-            item.tabIndex = 0;
+
+            item.tabIndex =
+                0;
 
             if (unread > 0) {
-                item.classList.add("has-unread");
+                item.classList.add(
+                    "has-unread"
+                );
             }
 
             if (
-                selectedChat &&
-                sameId(selectedChat.id, chat.id)
+                selectedChat
+                && sameId(
+                    selectedChat.id,
+                    chat.id
+                )
             ) {
-                item.classList.add("active");
+                item.classList.add(
+                    "active"
+                );
             }
 
             const avatar =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
             setAvatar(
                 avatar,
                 getPrivateUser(chat),
-                chat
+                chat,
+                false
             );
 
             const info =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            info.className = "chat-item-info";
+            info.className =
+                "chat-item-info";
 
             const top =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            top.className = "chat-item-top";
+            top.className =
+                "chat-item-top";
 
             const name =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            name.className = "chat-item-name";
-            name.textContent = getChatName(chat);
+            name.className =
+                "chat-item-name";
+
+            name.textContent =
+                getChatName(
+                    chat
+                );
+
+            appendVerifiedBadge(
+                name,
+                getPrivateUser(
+                    chat
+                )
+            );
 
             const time =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            time.className = "chat-item-time";
+            time.className =
+                "chat-item-time";
+
             time.textContent =
                 chat.last_message
                     ? formatDate(
-                        chat.last_message.created_at
+                        chat.last_message
+                            .created_at
                     )
                     : "";
 
             const bottom =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            bottom.className = "chat-item-bottom";
+            bottom.className =
+                "chat-item-bottom";
 
             const preview =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            preview.className = "chat-item-preview";
+            preview.className =
+                "chat-item-preview";
+
             preview.textContent =
                 chat.last_message
                     ? getMessagePreview(
                         chat.last_message
                     )
-                    : getChatSubtitle(chat);
+                    : getChatSubtitle(
+                        chat
+                    );
 
-            top.appendChild(name);
-            top.appendChild(time);
-            bottom.appendChild(preview);
+            top.appendChild(
+                name
+            );
+
+            top.appendChild(
+                time
+            );
+
+            bottom.appendChild(
+                preview
+            );
 
             if (unread > 0) {
                 const badge =
-                    document.createElement("span");
+                    document.createElement(
+                        "span"
+                    );
 
-                badge.className = "unread-badge";
+                badge.className =
+                    "unread-badge";
+
                 badge.textContent =
                     unread > 99
                         ? "99+"
                         : String(unread);
 
-                bottom.appendChild(badge);
+                bottom.appendChild(
+                    badge
+                );
             }
 
-            info.appendChild(top);
-            info.appendChild(bottom);
-            item.appendChild(avatar);
-            item.appendChild(info);
+            info.appendChild(
+                top
+            );
+
+            info.appendChild(
+                bottom
+            );
+
+            item.appendChild(
+                avatar
+            );
+
+            item.appendChild(
+                info
+            );
 
             item.addEventListener(
                 "click",
                 function () {
-                    selectChat(chat);
+                    selectChat(
+                        chat
+                    );
                 }
             );
 
@@ -2031,16 +2456,21 @@
                 "keydown",
                 function (event) {
                     if (
-                        event.key === "Enter" ||
-                        event.key === " "
+                        event.key === "Enter"
+                        || event.key === " "
                     ) {
                         event.preventDefault();
-                        selectChat(chat);
+
+                        selectChat(
+                            chat
+                        );
                     }
                 }
             );
 
-            chatsList.appendChild(item);
+            chatsList.appendChild(
+                item
+            );
         });
 
         updateDocumentTitle();
@@ -2055,19 +2485,30 @@
                 }
             );
 
-        if (data && data.id !== undefined) {
-            currentUserId = String(data.id);
+        currentUser =
+            data;
+
+        if (
+            data
+            && data.id !== undefined
+        ) {
+            currentUserId =
+                String(
+                    data.id
+                );
         }
     }
 
     async function loadChats(
         showLoader
     ) {
-        if (showLoader !== false) {
+        if (
+            showLoader !== false
+        ) {
             chatsList.innerHTML =
-                '<div class="loading">' +
-                "Загружаем чаты..." +
-                "</div>";
+                '<div class="loading">'
+                + "Загружаем чаты..."
+                + "</div>";
         }
 
         const data =
@@ -2078,27 +2519,42 @@
                 }
             );
 
-        const oldUnread = {};
+        const oldUnread =
+            {};
 
-        chats.forEach(function (chat) {
-            oldUnread[String(chat.id)] =
-                Number(chat.unread_count || 0);
+        chats.forEach(function (
+            chat
+        ) {
+            oldUnread[
+                String(chat.id)
+            ] =
+                Number(
+                    chat.unread_count
+                    || 0
+                );
         });
 
-        chats = Array.isArray(data)
-            ? data
-            : [];
+        chats =
+            Array.isArray(data)
+                ? data
+                : [];
 
-        chats.forEach(function (chat) {
-            const id = String(chat.id);
+        chats.forEach(function (
+            chat
+        ) {
+            const id =
+                String(chat.id);
 
             if (
                 isCurrentChat(id)
             ) {
-                chat.unread_count = 0;
+                chat.unread_count =
+                    0;
             } else if (
-                chat.unread_count === undefined &&
-                oldUnread[id] !== undefined
+                chat.unread_count
+                === undefined
+                && oldUnread[id]
+                !== undefined
             ) {
                 chat.unread_count =
                     oldUnread[id];
@@ -2107,7 +2563,9 @@
 
         if (selectedChat) {
             const refreshed =
-                chats.find(function (chat) {
+                chats.find(function (
+                    chat
+                ) {
                     return sameId(
                         chat.id,
                         selectedChat.id
@@ -2115,152 +2573,226 @@
                 });
 
             if (refreshed) {
-                selectedChat = refreshed;
-                renderActiveChat(refreshed);
+                selectedChat =
+                    refreshed;
+
+                renderActiveChat(
+                    refreshed
+                );
             }
         }
 
         renderChats();
     }
 
-    function getSenderId(message) {
+    function getSenderId(
+        message
+    ) {
         if (
-            message &&
-            message.sender &&
-            message.sender.id !== undefined
+            message
+            && message.sender
+            && message.sender.id
+            !== undefined
         ) {
-            return String(message.sender.id);
+            return String(
+                message.sender.id
+            );
         }
 
         if (
-            message &&
-            message.sender_id !== undefined
+            message
+            && message.sender_id
+            !== undefined
         ) {
-            return String(message.sender_id);
+            return String(
+                message.sender_id
+            );
         }
 
         return "";
     }
 
-    function getFileUrl(message) {
-        return message &&
-            typeof message.file === "string"
-            ? message.file
-            : "";
+    function getFileUrl(
+        message
+    ) {
+        if (
+            !message
+            || typeof message.file
+            !== "string"
+        ) {
+            return "";
+        }
+
+        return message.file;
     }
 
-    function getReplyObject(message) {
-        if (!message || !message.reply_to) {
+    function getReplyObject(
+        message
+    ) {
+        if (
+            !message
+            || !message.reply_to
+        ) {
             return null;
         }
 
-        return typeof message.reply_to === "object"
-            ? message.reply_to
-            : {
-                id: message.reply_to
-            };
+        if (
+            typeof message.reply_to
+            === "object"
+        ) {
+            return message.reply_to;
+        }
+
+        return {
+            id: message.reply_to
+        };
     }
 
-    function buildMessageBubble(message) {
+    function buildMessageBubble(
+        message
+    ) {
         const bubble =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
-        bubble.className = "message-bubble";
+        bubble.className =
+            "message-bubble";
 
         const mine =
-            getSenderId(message) === currentUserId;
+            getSenderId(
+                message
+            ) === currentUserId;
 
         if (
-            !mine &&
-            selectedChat &&
-            selectedChat.chat_type !== "private" &&
-            message.sender
+            !mine
+            && selectedChat
+            && selectedChat.chat_type
+                !== "private"
+            && message.sender
         ) {
             const sender =
-    document.createElement("a");
+                document.createElement(
+                    "a"
+                );
 
-sender.className =
-    "message-sender";
+            sender.className =
+                "message-sender";
 
-sender.href =
-    "/users/"
-    + encodeURIComponent(
-        message.sender.id
-    )
-    + "/";
+            if (
+                message.sender.id
+            ) {
+                sender.href =
+                    "/users/"
+                    + encodeURIComponent(
+                        message.sender.id
+                    )
+                    + "/";
+            }
 
-sender.textContent =
-    getUserName(
-        message.sender
-    );
+            sender.textContent =
+                getUserName(
+                    message.sender
+                );
 
-sender.title =
-    "Открыть профиль";
+            appendVerifiedBadge(
+                sender,
+                message.sender
+            );
 
-sender.style.cursor =
-    "pointer";
+            sender.title =
+                "Открыть профиль";
 
-sender.style.textDecoration =
-    "none";
+            sender.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+                }
+            );
 
-sender.addEventListener(
-    "click",
-    function (event) {
-        event.stopPropagation();
-    }
-);
-
-bubble.appendChild(
-    sender
-);
+            bubble.appendChild(
+                sender
+            );
         }
 
         const reply =
-            getReplyObject(message);
+            getReplyObject(
+                message
+            );
 
         if (reply) {
             const replyElement =
-                document.createElement("div");
-
-            replyElement.className = "message-reply";
-            replyElement.textContent =
-                "Ответ: " +
-                (
-                    reply.text ||
-                    reply.file_name ||
-                    "Сообщение"
+                document.createElement(
+                    "div"
                 );
 
-            bubble.appendChild(replyElement);
+            replyElement.className =
+                "message-reply";
+
+            replyElement.textContent =
+                "Ответ: "
+                + (
+                    reply.text
+                    || reply.file_name
+                    || "Сообщение"
+                );
+
+            bubble.appendChild(
+                replyElement
+            );
         }
 
-        if (message.is_deleted) {
+        if (
+            message.is_deleted
+        ) {
             const deleted =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            deleted.className = "message-text";
-            deleted.textContent = "Сообщение удалено";
+            deleted.className =
+                "message-text";
 
-            bubble.appendChild(deleted);
+            deleted.textContent =
+                "Сообщение удалено";
+
+            bubble.appendChild(
+                deleted
+            );
         } else {
-            const url = getFileUrl(message);
+            const url =
+                getFileUrl(
+                    message
+                );
 
             if (
-                url &&
-                message.message_type === "image"
+                url
+                && message.message_type
+                    === "image"
             ) {
                 const image =
-                    document.createElement("img");
+                    document.createElement(
+                        "img"
+                    );
 
-                image.className = "message-image";
-                image.src = url;
+                image.className =
+                    "message-image";
+
+                image.src =
+                    url;
+
                 image.alt =
-                    message.file_name || "Изображение";
-                image.loading = "lazy";
+                    message.file_name
+                    || "Изображение";
+
+                image.loading =
+                    "lazy";
 
                 image.addEventListener(
                     "click",
-                    function () {
+                    function (event) {
+                        event.stopPropagation();
+
                         window.open(
                             url,
                             "_blank",
@@ -2269,118 +2801,211 @@ bubble.appendChild(
                     }
                 );
 
-                bubble.appendChild(image);
+                bubble.appendChild(
+                    image
+                );
             } else if (
-                url &&
-                message.message_type === "video"
+                url
+                && message.message_type
+                    === "video"
             ) {
                 const video =
-                    document.createElement("video");
-
-                video.className = "message-video";
-                video.src = url;
-                video.controls = true;
-                video.preload = "metadata";
-                video.playsInline = true;
-
-                bubble.appendChild(video);
-            } else if (url) {
-                const link =
-                    document.createElement("a");
-
-                link.className = "message-file";
-                link.href = url;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-                link.download =
-                    message.file_name || "";
-                link.textContent =
-                    "📎 " +
-                    (
-                        message.file_name ||
-                        "Скачать файл"
+                    document.createElement(
+                        "video"
                     );
 
-                bubble.appendChild(link);
+                video.className =
+                    "message-video";
+
+                video.src =
+                    url;
+
+                video.controls =
+                    true;
+
+                video.preload =
+                    "metadata";
+
+                video.playsInline =
+                    true;
+
+                video.addEventListener(
+                    "click",
+                    function (event) {
+                        event.stopPropagation();
+                    }
+                );
+
+                bubble.appendChild(
+                    video
+                );
+            } else if (url) {
+                const link =
+                    document.createElement(
+                        "a"
+                    );
+
+                link.className =
+                    "message-file";
+
+                link.href =
+                    url;
+
+                link.target =
+                    "_blank";
+
+                link.rel =
+                    "noopener noreferrer";
+
+                link.download =
+                    message.file_name
+                    || "";
+
+                link.textContent =
+                    "📎 "
+                    + (
+                        message.file_name
+                        || "Скачать файл"
+                    );
+
+                link.addEventListener(
+                    "click",
+                    function (event) {
+                        event.stopPropagation();
+                    }
+                );
+
+                bubble.appendChild(
+                    link
+                );
             }
 
-            if (message.text) {
+            if (
+                message.text
+            ) {
                 const text =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
-                text.className = "message-text";
-                text.textContent = message.text;
+                text.className =
+                    "message-text";
 
-                if (message.is_edited) {
+                text.textContent =
+                    message.text;
+
+                if (
+                    message.is_edited
+                ) {
                     const edited =
-                        document.createElement("span");
+                        document.createElement(
+                            "span"
+                        );
 
-                    edited.className = "message-edited";
-                    edited.textContent = "изменено";
+                    edited.className =
+                        "message-edited";
 
-                    text.appendChild(edited);
+                    edited.textContent =
+                        "изменено";
+
+                    text.appendChild(
+                        edited
+                    );
                 }
 
-                bubble.appendChild(text);
+                bubble.appendChild(
+                    text
+                );
             }
         }
 
         const footer =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
-        footer.className = "message-time";
-        footer.appendChild(
-            document.createTextNode(
-                formatDate(
-                    message.created_at ||
-                    message.updated_at
-                )
-            )
-        );
+        footer.className =
+            "message-time";
 
-        if (mine && !message.is_deleted) {
+        footer.textContent =
+            formatDate(
+                message.created_at
+                || message.updated_at
+            );
+
+        if (
+            mine
+            && !message.is_deleted
+        ) {
             const status =
-                document.createElement("span");
+                document.createElement(
+                    "span"
+                );
 
-            status.className = "message-status";
+            status.className =
+                "message-status";
+
             status.textContent =
-                message.is_delivered ||
-                Number(message.read_count || 0) > 0
+                message.is_delivered
+                || Number(
+                    message.read_count
+                    || 0
+                ) > 0
                     ? "✓✓"
                     : "✓";
 
-            footer.appendChild(status);
+            footer.appendChild(
+                status
+            );
         }
 
-        bubble.appendChild(footer);
+        bubble.appendChild(
+            footer
+        );
 
         return bubble;
     }
 
-    function createMessageRow(message) {
+    function createMessageRow(
+        message
+    ) {
         const row =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         const mine =
-            getSenderId(message) === currentUserId;
+            getSenderId(
+                message
+            ) === currentUserId;
 
         row.className =
-            "message-row " +
-            (mine ? "mine" : "other");
+            "message-row "
+            + (
+                mine
+                    ? "mine"
+                    : "other"
+            );
 
         row.dataset.messageId =
-            String(message.id);
+            String(
+                message.id
+            );
 
-        row.messageData = message;
+        row.messageData =
+            message;
 
         row.appendChild(
-            buildMessageBubble(message)
+            buildMessageBubble(
+                message
+            )
         );
 
         row.addEventListener(
             "contextmenu",
             function (event) {
                 event.preventDefault();
+
                 openContextMenu(
                     message,
                     event.clientX,
@@ -2392,68 +3017,99 @@ bubble.appendChild(
         return row;
     }
 
-    function appendMessage(message) {
-        if (!message || !message.id) {
+    function appendMessage(
+        message
+    ) {
+        if (
+            !message
+            || !message.id
+        ) {
             return;
         }
 
         const selector =
-            '[data-message-id="' +
-            String(message.id) +
-            '"]';
+            '[data-message-id="'
+            + String(
+                message.id
+            )
+            + '"]';
 
-        if (messagesList.querySelector(selector)) {
+        if (
+            messagesList.querySelector(
+                selector
+            )
+        ) {
             return;
         }
 
         const empty =
-            messagesList.querySelector(".empty");
+            messagesList.querySelector(
+                ".empty"
+            );
 
         if (empty) {
             empty.remove();
         }
 
         messagesList.appendChild(
-            createMessageRow(message)
+            createMessageRow(
+                message
+            )
         );
     }
 
-    function updateRenderedMessage(message) {
-        if (!message || !message.id) {
+    function updateRenderedMessage(
+        message
+    ) {
+        if (
+            !message
+            || !message.id
+        ) {
             return;
         }
 
         const row =
             messagesList.querySelector(
-                '[data-message-id="' +
-                String(message.id) +
-                '"]'
+                '[data-message-id="'
+                + String(
+                    message.id
+                )
+                + '"]'
             );
 
         if (row) {
             row.replaceWith(
-                createMessageRow(message)
+                createMessageRow(
+                    message
+                )
             );
         }
     }
 
-    function renderMessages(messages) {
-        messagesList.innerHTML = "";
+    function renderMessages(
+        messages
+    ) {
+        messagesList.innerHTML =
+            "";
 
         if (
-            !Array.isArray(messages) ||
-            !messages.length
+            !Array.isArray(messages)
+            || !messages.length
         ) {
             messagesList.innerHTML =
-                '<div class="empty">' +
-                "Сообщений пока нет." +
-                "</div>";
+                '<div class="empty">'
+                + "Сообщений пока нет."
+                + "</div>";
 
             return;
         }
 
-        messages.forEach(function (message) {
-            appendMessage(message);
+        messages.forEach(function (
+            message
+        ) {
+            appendMessage(
+                message
+            );
         });
 
         scrollToBottom();
@@ -2470,11 +3126,19 @@ bubble.appendChild(
         increaseUnread
     ) {
         const chat =
-            chats.find(function (item) {
-                return sameId(item.id, chatId);
+            chats.find(function (
+                item
+            ) {
+                return sameId(
+                    item.id,
+                    chatId
+                );
             });
 
-        if (!chat || !message) {
+        if (
+            !chat
+            || !message
+        ) {
             return;
         }
 
@@ -2484,77 +3148,118 @@ bubble.appendChild(
                 ? "Сообщение удалено"
                 : message.text || "",
             message_type:
-                message.message_type || "",
+                message.message_type
+                || "",
             file_name:
-                message.file_name || "",
+                message.file_name
+                || "",
             sender_id:
-                getSenderId(message),
+                getSenderId(
+                    message
+                ),
             created_at:
-                message.created_at ||
-                message.updated_at
+                message.created_at
+                || message.updated_at
         };
 
-        if (isCurrentChat(chatId)) {
-            chat.unread_count = 0;
-        } else if (increaseUnread) {
+        if (
+            isCurrentChat(
+                chatId
+            )
+        ) {
             chat.unread_count =
-                Number(chat.unread_count || 0) + 1;
+                0;
+        } else if (
+            increaseUnread
+        ) {
+            chat.unread_count =
+                Number(
+                    chat.unread_count
+                    || 0
+                ) + 1;
         }
 
         chats = [
             chat,
-            ...chats.filter(function (item) {
-                return !sameId(item.id, chatId);
+            ...chats.filter(function (
+                item
+            ) {
+                return !sameId(
+                    item.id,
+                    chatId
+                );
             })
         ];
 
         renderChats();
     }
 
-    async function loadMessages(chat) {
+    async function loadMessages(
+        chat
+    ) {
         messagesList.innerHTML =
-            '<div class="loading">' +
-            "Загружаем сообщения..." +
-            "</div>";
+            '<div class="loading">'
+            + "Загружаем сообщения..."
+            + "</div>";
 
         const data =
             await apiRequest(
-                "/api/chats/" +
-                encodeURIComponent(chat.id) +
-                "/messages/",
+                "/api/chats/"
+                + encodeURIComponent(
+                    chat.id
+                )
+                + "/messages/",
                 {
                     method: "GET"
                 }
             );
 
-        if (isCurrentChat(chat.id)) {
-            renderMessages(data);
-            chat.unread_count = 0;
+        if (
+            isCurrentChat(
+                chat.id
+            )
+        ) {
+            renderMessages(
+                data
+            );
+
+            chat.unread_count =
+                0;
+
             renderChats();
 
-            setTimeout(
+            window.setTimeout(
                 markMessagesAsRead,
                 200
             );
         }
     }
 
-    function sendSocket(data) {
+    function sendSocket(
+        data
+    ) {
         if (
-            !chatSocket ||
-            chatSocket.readyState !== WebSocket.OPEN
+            !chatSocket
+            || chatSocket.readyState
+                !== WebSocket.OPEN
         ) {
             return false;
         }
 
-        chatSocket.send(JSON.stringify(data));
+        chatSocket.send(
+            JSON.stringify(
+                data
+            )
+        );
+
         return true;
     }
 
     function markMessagesAsRead() {
         if (
-            !chatSocket ||
-            chatSocket.readyState !== WebSocket.OPEN
+            !chatSocket
+            || chatSocket.readyState
+                !== WebSocket.OPEN
         ) {
             return;
         }
@@ -2564,7 +3269,9 @@ bubble.appendChild(
                 "[data-message-id]"
             );
 
-        rows.forEach(function (row) {
+        rows.forEach(function (
+            row
+        ) {
             sendSocket({
                 type: "read",
                 message_id:
@@ -2577,25 +3284,39 @@ bubble.appendChild(
         });
     }
 
-    function updateChatStatus(chat) {
+    function updateChatStatus(
+        chat
+    ) {
         const user =
-            getPrivateUser(chat);
+            getPrivateUser(
+                chat
+            );
 
-        activeStatus.classList.remove("online");
+        activeStatus.classList.remove(
+            "online"
+        );
 
         if (
-            chat.chat_type === "private" &&
-            user &&
-            user.is_online
+            chat.chat_type === "private"
+            && user
+            && user.is_online
         ) {
-            activeStatus.textContent = "в сети";
-            activeStatus.classList.add("online");
+            activeStatus.textContent =
+                "в сети";
+
+            activeStatus.classList.add(
+                "online"
+            );
+
             return;
         }
 
-        if (chat.chat_type === "private") {
+        if (
+            chat.chat_type === "private"
+        ) {
             activeStatus.textContent =
-                user && user.last_seen
+                user
+                && user.last_seen
                     ? "был(а) недавно"
                     : "не в сети";
 
@@ -2603,122 +3324,116 @@ bubble.appendChild(
         }
 
         activeStatus.textContent =
-            getChatSubtitle(chat);
+            getChatSubtitle(
+                chat
+            );
     }
 
-    function renderActiveChat(chat) {
+    function renderActiveChat(
+        chat
+    ) {
         const user =
-            getPrivateUser(chat);
+            getPrivateUser(
+                chat
+            );
 
-        activeAvatar.className =
-            "avatar avatar-large";
+        setAvatar(
+            activeAvatar,
+            user,
+            chat,
+            true
+        );
 
-        activeAvatar.innerHTML = "";
-
-        const url =
-            chat.avatar ||
-            user && user.avatar ||
+        activeName.innerHTML =
             "";
 
-        if (url) {
-            const image =
-                document.createElement("img");
+        activeName.textContent =
+            getChatName(
+                chat
+            );
 
-            image.src = url;
-            image.alt = "Аватар";
+        appendVerifiedBadge(
+            activeName,
+            user
+        );
 
-            image.onerror = function () {
-                image.remove();
+        activeName.onclick =
+            null;
 
-                activeAvatar.textContent =
-                    getInitials(
-                        user || {
-                            display_name:
-                                getChatName(chat)
-                        }
+        activeAvatar.onclick =
+            null;
+
+        activeName.disabled =
+            true;
+
+        activeAvatar.disabled =
+            true;
+
+        if (
+            chat.chat_type
+                === "private"
+            && user
+            && user.id
+        ) {
+            activeName.disabled =
+                false;
+
+            activeAvatar.disabled =
+                false;
+
+            activeName.title =
+                "Открыть профиль";
+
+            activeAvatar.title =
+                "Открыть профиль";
+
+            activeName.onclick =
+                function () {
+                    openUserProfile(
+                        user
                     );
-            };
+                };
 
-            activeAvatar.appendChild(image);
-        } else {
-            activeAvatar.textContent =
-                getInitials(
-                    user || {
-                        display_name:
-                            getChatName(chat)
-                    }
-                );
+            activeAvatar.onclick =
+                function () {
+                    openUserProfile(
+                        user
+                    );
+                };
         }
 
-        activeName.textContent =
-    getChatName(chat);
-
-activeName.onclick =
-    null;
-
-activeName.style.cursor =
-    "";
-
-activeName.title =
-    "";
-
-activeAvatar.onclick =
-    null;
-
-activeAvatar.style.cursor =
-    "";
-
-activeAvatar.title =
-    "";
-
-if (
-    chat.chat_type === "private"
-    && user
-    && user.id
-) {
-    activeName.style.cursor =
-        "pointer";
-
-    activeName.title =
-        "Открыть профиль";
-
-    activeName.onclick =
-        function () {
-            openUserProfile(
-                user
-            );
-        };
-
-    activeAvatar.style.cursor =
-        "pointer";
-
-    activeAvatar.title =
-        "Открыть профиль";
-
-    activeAvatar.onclick =
-        function () {
-            openUserProfile(
-                user
-            );
-        };
-}
-
-updateChatStatus(chat);
+        updateChatStatus(
+            chat
+        );
 
         infoContent.innerHTML =
-            "<strong>" +
-            (
-                chat.chat_type === "private"
-                    ? "Личный чат"
-                    : chat.chat_type === "channel"
-                        ? "Сообщество"
-                        : "Группа"
-            ) +
-            "</strong>";
+            "";
 
-        if (chat.description) {
+        const title =
+            document.createElement(
+                "strong"
+            );
+
+        title.textContent =
+            chat.chat_type
+                === "private"
+                ? "Личный чат"
+                : chat.chat_type
+                    === "channel"
+                    ? "Сообщество"
+                    : "Группа";
+
+        infoContent.appendChild(
+            title
+        );
+
+        if (
+            chat.description
+        ) {
             infoContent.appendChild(
-                document.createElement("br")
+                document.createElement(
+                    "br"
+                )
             );
 
             infoContent.appendChild(
@@ -2729,10 +3444,17 @@ updateChatStatus(chat);
         }
     }
 
-    function setSendingAvailability(canSend) {
-        messageInput.disabled = !canSend;
-        sendButton.disabled = !canSend;
-        attachButton.disabled = !canSend;
+    function setSendingAvailability(
+        canSend
+    ) {
+        messageInput.disabled =
+            !canSend;
+
+        sendButton.disabled =
+            !canSend;
+
+        attachButton.disabled =
+            !canSend;
 
         messageInput.placeholder =
             canSend
@@ -2744,11 +3466,17 @@ updateChatStatus(chat);
                 : "Писать могут только администраторы";
     }
 
-    function connectChatSocket(chat) {
-        clearTimeout(reconnectTimer);
+    function connectChatSocket(
+        chat
+    ) {
+        window.clearTimeout(
+            reconnectTimer
+        );
 
         if (chatSocket) {
             chatSocket.close();
+            chatSocket =
+                null;
         }
 
         const protocol =
@@ -2757,290 +3485,418 @@ updateChatStatus(chat);
                 : "ws:";
 
         const url =
-            protocol +
-            "//" +
-            location.host +
-            "/ws/chats/" +
-            encodeURIComponent(chat.id) +
-            "/?token=" +
-            encodeURIComponent(accessToken);
+            protocol
+            + "//"
+            + location.host
+            + "/ws/chats/"
+            + encodeURIComponent(
+                chat.id
+            )
+            + "/?token="
+            + encodeURIComponent(
+                accessToken
+            );
 
         const socket =
-            new WebSocket(url);
-
-        chatSocket = socket;
-
-        socket.onopen = function () {
-            if (chatSocket !== socket) {
-                return;
-            }
-
-            errorElement.textContent = "";
-
-            setTimeout(
-                markMessagesAsRead,
-                200
+            new WebSocket(
+                url
             );
-        };
 
-        socket.onmessage = function (event) {
-            if (chatSocket !== socket) {
-                return;
-            }
+        chatSocket =
+            socket;
 
-            let data;
-
-            try {
-                data = JSON.parse(event.data);
-            } catch (error) {
-                return;
-            }
-
-            if (data.type === "connection") {
-                setSendingAvailability(
-                    data.can_send_messages !== false
-                );
-                return;
-            }
-
-            if (data.type === "presence") {
-                const user =
-                    getPrivateUser(chat);
-
+        socket.onopen =
+            function () {
                 if (
-                    user &&
-                    sameId(user.id, data.user_id)
+                    chatSocket
+                    !== socket
                 ) {
-                    user.is_online =
-                        Boolean(data.is_online);
-
-                    user.last_seen =
-                        data.last_seen || null;
-
-                    updateChatStatus(chat);
-                    renderChats();
+                    return;
                 }
 
-                return;
-            }
+                errorElement.textContent =
+                    "";
 
-            if (
-                data.type === "message" &&
-                data.message
-            ) {
-                const message =
-                    safeClone(data.message);
-
-                const mine =
-                    getSenderId(message) ===
-                    currentUserId;
-
-                appendMessage(message);
-
-                updateLastMessage(
-                    chat.id,
-                    message,
-                    !mine
+                window.setTimeout(
+                    markMessagesAsRead,
+                    200
                 );
+            };
 
-                scrollToBottom();
+        socket.onmessage =
+            function (event) {
+                if (
+                    chatSocket
+                    !== socket
+                ) {
+                    return;
+                }
 
-                if (isCurrentChat(chat.id)) {
-                    chat.unread_count = 0;
+                let data;
 
-                    setTimeout(
+                try {
+                    data =
+                        JSON.parse(
+                            event.data
+                        );
+                } catch (error) {
+                    return;
+                }
+
+                if (
+                    data.type
+                    === "connection"
+                ) {
+                    setSendingAvailability(
+                        data.can_send_messages
+                        !== false
+                    );
+
+                    return;
+                }
+
+                if (
+                    data.type
+                    === "presence"
+                ) {
+                    const user =
+                        getPrivateUser(
+                            chat
+                        );
+
+                    if (
+                        user
+                        && sameId(
+                            user.id,
+                            data.user_id
+                        )
+                    ) {
+                        user.is_online =
+                            Boolean(
+                                data.is_online
+                            );
+
+                        user.last_seen =
+                            data.last_seen
+                            || null;
+
+                        updateChatStatus(
+                            chat
+                        );
+
+                        renderChats();
+                    }
+
+                    return;
+                }
+
+                if (
+                    data.type
+                    === "message"
+                    && data.message
+                ) {
+                    const message =
+                        safeClone(
+                            data.message
+                        );
+
+                    const mine =
+                        getSenderId(
+                            message
+                        )
+                        === currentUserId;
+
+                    appendMessage(
+                        message
+                    );
+
+                    updateLastMessage(
+                        chat.id,
+                        message,
+                        !mine
+                    );
+
+                    scrollToBottom();
+
+                    chat.unread_count =
+                        0;
+
+                    window.setTimeout(
                         markMessagesAsRead,
                         100
                     );
+
+                    return;
                 }
 
-                return;
-            }
-
-            if (
-                data.type === "message_updated" &&
-                data.message
-            ) {
-                updateRenderedMessage(
-                    safeClone(data.message)
-                );
-
-                updateLastMessage(
-                    chat.id,
-                    data.message,
-                    false
-                );
-
-                return;
-            }
-
-            if (
-                data.type === "message_deleted" &&
-                data.message
-            ) {
-                updateRenderedMessage(
-                    safeClone(data.message)
-                );
-
-                updateLastMessage(
-                    chat.id,
-                    data.message,
-                    false
-                );
-
-                return;
-            }
-
-            if (data.type === "message_read") {
-                const row =
-                    messagesList.querySelector(
-                        '[data-message-id="' +
-                        String(data.message_id) +
-                        '"]'
-                    );
-
                 if (
-                    row &&
-                    row.messageData &&
-                    !sameId(
-                        data.user_id,
-                        currentUserId
-                    )
+                    data.type
+                    === "message_updated"
+                    && data.message
                 ) {
-                    row.messageData.is_delivered =
-                        true;
-
-                    row.messageData.read_count =
-                        Math.max(
-                            Number(
-                                row.messageData.read_count ||
-                                0
-                            ),
-                            1
+                    const message =
+                        safeClone(
+                            data.message
                         );
 
                     updateRenderedMessage(
-                        row.messageData
+                        message
                     );
+
+                    updateLastMessage(
+                        chat.id,
+                        message,
+                        false
+                    );
+
+                    return;
                 }
-
-                return;
-            }
-
-            if (data.type === "typing") {
-                clearTimeout(typingClearTimer);
-
-                typingStatus.textContent =
-                    data.is_typing
-                        ? (
-                            data.username
-                                ? "@" +
-                                  data.username +
-                                  " печатает..."
-                                : "Печатает..."
-                        )
-                        : "";
-
-                if (data.is_typing) {
-                    typingClearTimer =
-                        setTimeout(function () {
-                            typingStatus.textContent =
-                                "";
-                        }, 3000);
-                }
-
-                return;
-            }
-
-            if (data.type === "error") {
-                errorElement.textContent =
-                    data.detail || "Ошибка чата.";
-            }
-        };
-
-        socket.onclose = async function (event) {
-            if (chatSocket !== socket) {
-                return;
-            }
-
-            chatSocket = null;
-
-            if (
-                event.code === 4401 ||
-                event.code === 4001
-            ) {
-                const refreshed =
-                    await refreshAccessToken();
 
                 if (
-                    refreshed &&
-                    isCurrentChat(chat.id)
+                    data.type
+                    === "message_deleted"
+                    && data.message
                 ) {
-                    connectChatSocket(chat);
-                } else if (!refreshed) {
-                    logout();
+                    const message =
+                        safeClone(
+                            data.message
+                        );
+
+                    updateRenderedMessage(
+                        message
+                    );
+
+                    updateLastMessage(
+                        chat.id,
+                        message,
+                        false
+                    );
+
+                    return;
                 }
 
-                return;
-            }
+                if (
+                    data.type
+                    === "message_read"
+                ) {
+                    const row =
+                        messagesList.querySelector(
+                            '[data-message-id="'
+                            + String(
+                                data.message_id
+                            )
+                            + '"]'
+                        );
 
-            if (event.code === 4403) {
-                setSendingAvailability(false);
+                    if (
+                        row
+                        && row.messageData
+                        && !sameId(
+                            data.user_id,
+                            currentUserId
+                        )
+                    ) {
+                        row.messageData
+                            .is_delivered =
+                            true;
 
-                errorElement.textContent =
-                    "Вы не являетесь участником этого чата.";
+                        row.messageData
+                            .read_count =
+                            Math.max(
+                                Number(
+                                    row.messageData
+                                        .read_count
+                                    || 0
+                                ),
+                                1
+                            );
 
-                return;
-            }
-
-            if (!isCurrentChat(chat.id)) {
-                return;
-            }
-
-            activeStatus.textContent =
-                "соединение закрыто";
-
-            reconnectTimer =
-                setTimeout(function () {
-                    if (isCurrentChat(chat.id)) {
-                        connectChatSocket(chat);
+                        updateRenderedMessage(
+                            row.messageData
+                        );
                     }
-                }, 3000);
-        };
+
+                    return;
+                }
+
+                if (
+                    data.type
+                    === "typing"
+                ) {
+                    window.clearTimeout(
+                        typingClearTimer
+                    );
+
+                    typingStatus.textContent =
+                        data.is_typing
+                            ? (
+                                data.username
+                                    ? "@"
+                                        + data.username
+                                        + " печатает..."
+                                    : "Печатает..."
+                            )
+                            : "";
+
+                    if (
+                        data.is_typing
+                    ) {
+                        typingClearTimer =
+                            window.setTimeout(
+                                function () {
+                                    typingStatus
+                                        .textContent =
+                                        "";
+                                },
+                                3000
+                            );
+                    }
+
+                    return;
+                }
+
+                if (
+                    data.type
+                    === "error"
+                ) {
+                    errorElement.textContent =
+                        data.detail
+                        || "Ошибка чата.";
+                }
+            };
+
+        socket.onclose =
+            async function (event) {
+                if (
+                    chatSocket
+                    !== socket
+                ) {
+                    return;
+                }
+
+                chatSocket =
+                    null;
+
+                if (
+                    event.code === 4401
+                    || event.code === 4001
+                ) {
+                    const refreshed =
+                        await refreshAccessToken();
+
+                    if (
+                        refreshed
+                        && isCurrentChat(
+                            chat.id
+                        )
+                    ) {
+                        connectChatSocket(
+                            chat
+                        );
+                    } else if (
+                        !refreshed
+                    ) {
+                        logout();
+                    }
+
+                    return;
+                }
+
+                if (
+                    event.code === 4403
+                ) {
+                    setSendingAvailability(
+                        false
+                    );
+
+                    errorElement.textContent =
+                        "Вы не являетесь участником этого чата.";
+
+                    return;
+                }
+
+                if (
+                    !isCurrentChat(
+                        chat.id
+                    )
+                ) {
+                    return;
+                }
+
+                activeStatus.textContent =
+                    "соединение закрыто";
+
+                reconnectTimer =
+                    window.setTimeout(
+                        function () {
+                            if (
+                                isCurrentChat(
+                                    chat.id
+                                )
+                            ) {
+                                connectChatSocket(
+                                    chat
+                                );
+                            }
+                        },
+                        3000
+                    );
+            };
     }
 
-    function increaseUnread(chatId) {
+    function increaseUnread(
+        chatId
+    ) {
         const chat =
-            chats.find(function (item) {
-                return sameId(item.id, chatId);
+            chats.find(function (
+                item
+            ) {
+                return sameId(
+                    item.id,
+                    chatId
+                );
             });
 
         if (!chat) {
-            loadChats(false);
+            loadChats(
+                false
+            );
+
             return;
         }
 
-        if (isCurrentChat(chatId)) {
-            chat.unread_count = 0;
+        if (
+            isCurrentChat(
+                chatId
+            )
+        ) {
+            chat.unread_count =
+                0;
         } else {
             chat.unread_count =
-                Number(chat.unread_count || 0) + 1;
+                Number(
+                    chat.unread_count
+                    || 0
+                ) + 1;
         }
 
         renderChats();
     }
 
     function playNotificationSound() {
-        if (!window.chatwellNotificationAudio) {
+        if (
+            !window.chatwellNotificationAudio
+        ) {
             window.chatwellNotificationAudio =
                 new Audio(
-                    "data:audio/wav;base64," +
-                    "UklGRiQAAABXQVZFZm10IBAAAAABAAEA" +
-                    "QB8AAIA+AAACABAAZGF0YQAAAAA="
+                    "data:audio/wav;base64,"
+                    + "UklGRiQAAABXQVZFZm10IBAAAAABAAEA"
+                    + "QB8AAIA+AAACABAAZGF0YQAAAAA="
                 );
 
-            window.chatwellNotificationAudio.volume =
-                0.35;
+            window.chatwellNotificationAudio
+                .volume =
+                .35;
         }
 
         window.chatwellNotificationAudio
@@ -3052,8 +3908,9 @@ updateChatStatus(chat);
         message
     ) {
         if (
-            !("Notification" in window) ||
-            Notification.permission !== "granted"
+            !("Notification" in window)
+            || Notification.permission
+                !== "granted"
         ) {
             return;
         }
@@ -3061,20 +3918,26 @@ updateChatStatus(chat);
         new Notification(
             "Новое сообщение",
             {
-                body: getMessagePreview(message),
-                tag: "chatwell-message"
+                body:
+                    getMessagePreview(
+                        message
+                    ),
+                tag:
+                    "chatwell-message"
             }
         );
     }
 
     function connectNotificationsSocket() {
         if (
-            notificationsSocket &&
-            (
-                notificationsSocket.readyState ===
-                    WebSocket.OPEN ||
-                notificationsSocket.readyState ===
-                    WebSocket.CONNECTING
+            notificationsSocket
+            && (
+                notificationsSocket
+                    .readyState
+                    === WebSocket.OPEN
+                || notificationsSocket
+                    .readyState
+                    === WebSocket.CONNECTING
             )
         ) {
             return;
@@ -3086,178 +3949,255 @@ updateChatStatus(chat);
                 : "ws:";
 
         const url =
-            protocol +
-            "//" +
-            location.host +
-            "/ws/notifications/?token=" +
-            encodeURIComponent(accessToken);
-
-        const socket =
-            new WebSocket(url);
-
-        notificationsSocket = socket;
-
-        socket.onopen = function () {
-            notificationsReconnectAttempts = 0;
-        };
-
-        socket.onmessage = function (event) {
-            if (notificationsSocket !== socket) {
-                return;
-            }
-
-            let data;
-
-            try {
-                data = JSON.parse(event.data);
-            } catch (error) {
-                return;
-            }
-
-            if (data.type !== "new_message") {
-                return;
-            }
-
-            const chatId =
-                data.chat_id;
-
-            const message =
-                safeClone(data.message || {});
-
-            if (
-                !chatId ||
-                !message.id
-            ) {
-                return;
-            }
-
-            /*
-             * Текущее активное окно уже получает
-             * сообщение через ChatConsumer.
-             */
-            if (isCurrentChat(chatId)) {
-                return;
-            }
-
-            increaseUnread(chatId);
-            updateLastMessage(
-                chatId,
-                message,
-                false
+            protocol
+            + "//"
+            + location.host
+            + "/ws/notifications/?token="
+            + encodeURIComponent(
+                accessToken
             );
 
-            showBrowserNotification(message);
-            playNotificationSound();
-        };
+        const socket =
+            new WebSocket(
+                url
+            );
 
-        socket.onclose = async function (event) {
-            if (notificationsSocket !== socket) {
-                return;
-            }
+        notificationsSocket =
+            socket;
 
-            notificationsSocket = null;
+        socket.onopen =
+            function () {
+                notificationsReconnectAttempts =
+                    0;
+            };
 
-            if (
-                event.code === 4401 ||
-                event.code === 4001
-            ) {
-                const refreshed =
-                    await refreshAccessToken();
-
-                if (refreshed) {
-                    connectNotificationsSocket();
-                } else {
-                    logout();
+        socket.onmessage =
+            function (event) {
+                if (
+                    notificationsSocket
+                    !== socket
+                ) {
+                    return;
                 }
 
-                return;
-            }
+                let data;
 
-            if (notificationsReconnectTimer) {
-                return;
-            }
+                try {
+                    data =
+                        JSON.parse(
+                            event.data
+                        );
+                } catch (error) {
+                    return;
+                }
 
-            notificationsReconnectAttempts += 1;
+                if (
+                    data.type
+                    !== "new_message"
+                ) {
+                    return;
+                }
 
-            const delay =
-                Math.min(
-                    1000 *
-                    Math.pow(
-                        2,
-                        notificationsReconnectAttempts - 1
-                    ),
-                    30000
+                const chatId =
+                    data.chat_id;
+
+                const message =
+                    safeClone(
+                        data.message
+                        || {}
+                    );
+
+                if (
+                    !chatId
+                    || !message.id
+                ) {
+                    return;
+                }
+
+                if (
+                    isCurrentChat(
+                        chatId
+                    )
+                ) {
+                    return;
+                }
+
+                increaseUnread(
+                    chatId
                 );
 
-            notificationsReconnectTimer =
-                setTimeout(function () {
-                    notificationsReconnectTimer = null;
-                    connectNotificationsSocket();
-                }, delay);
-        };
+                updateLastMessage(
+                    chatId,
+                    message,
+                    false
+                );
+
+                showBrowserNotification(
+                    message
+                );
+
+                playNotificationSound();
+            };
+
+        socket.onclose =
+            async function (event) {
+                if (
+                    notificationsSocket
+                    !== socket
+                ) {
+                    return;
+                }
+
+                notificationsSocket =
+                    null;
+
+                if (
+                    event.code === 4401
+                    || event.code === 4001
+                ) {
+                    const refreshed =
+                        await refreshAccessToken();
+
+                    if (
+                        refreshed
+                    ) {
+                        connectNotificationsSocket();
+                    } else {
+                        logout();
+                    }
+
+                    return;
+                }
+
+                if (
+                    notificationsReconnectTimer
+                ) {
+                    return;
+                }
+
+                notificationsReconnectAttempts +=
+                    1;
+
+                const delay =
+                    Math.min(
+                        1000
+                        * Math.pow(
+                            2,
+                            notificationsReconnectAttempts
+                            - 1
+                        ),
+                        30000
+                    );
+
+                notificationsReconnectTimer =
+                    window.setTimeout(
+                        function () {
+                            notificationsReconnectTimer =
+                                null;
+
+                            connectNotificationsSocket();
+                        },
+                        delay
+                    );
+            };
     }
 
-    function setReplyMessage(message) {
+    function setReplyMessage(
+        message
+    ) {
         if (
-            !message ||
-            message.is_deleted
+            !message
+            || message.is_deleted
         ) {
             return;
         }
 
-        editingMessage = null;
-        replyMessage = message;
-        replyPreview.hidden = false;
+        editingMessage =
+            null;
+
+        replyMessage =
+            message;
+
+        replyPreview.hidden =
+            false;
 
         replyPreviewText.textContent =
-            "Ответ: " +
-            getMessagePreview(message);
+            "Ответ: "
+            + getMessagePreview(
+                message
+            );
 
-        messageInput.placeholder =
-            "Написать ответ...";
+        setSendingAvailability(
+            true
+        );
 
         messageInput.focus();
     }
 
     function cancelReply() {
-        replyMessage = null;
-        replyPreview.hidden = true;
+        replyMessage =
+            null;
 
-        if (!editingMessage) {
+        replyPreview.hidden =
+            true;
+
+        if (
+            !editingMessage
+        ) {
             messageInput.placeholder =
                 "Написать сообщение...";
         }
     }
 
-    function startEditing(message) {
+    function startEditing(
+        message
+    ) {
         if (
-            !message ||
-            message.is_deleted ||
-            getSenderId(message) !== currentUserId
+            !message
+            || message.is_deleted
+            || getSenderId(
+                message
+            ) !== currentUserId
         ) {
             return;
         }
 
-        replyMessage = null;
-        replyPreview.hidden = true;
-        editingMessage = message;
+        replyMessage =
+            null;
+
+        replyPreview.hidden =
+            true;
+
+        editingMessage =
+            message;
 
         messageInput.value =
-            message.text || "";
+            message.text
+            || "";
 
-        messageInput.placeholder =
-            "Редактировать сообщение...";
+        sendButton.textContent =
+            "✓";
 
-        sendButton.textContent = "✓";
+        setSendingAvailability(
+            true
+        );
+
         messageInput.focus();
     }
 
     function cancelEditing() {
-        editingMessage = null;
-        messageInput.value = "";
-        sendButton.textContent = "➤";
-        messageInput.placeholder =
-            "Написать сообщение...";
+        editingMessage =
+            null;
+
+        messageInput.value =
+            "";
+
+        sendButton.textContent =
+            "➤";
+
+        setSendingAvailability(
+            true
+        );
     }
 
     function openContextMenu(
@@ -3266,20 +4206,29 @@ updateChatStatus(chat);
         y
     ) {
         if (
-            !message ||
-            message.is_deleted
+            !message
+            || message.is_deleted
         ) {
             return;
         }
 
-        selectedMessage = message;
+        selectedMessage =
+            message;
 
-        contextMenu.querySelector(
-            '[data-action="edit"]'
-        ).hidden =
-            getSenderId(message) !== currentUserId;
+        const editButton =
+            contextMenu.querySelector(
+                '[data-action="edit"]'
+            );
 
-        contextMenu.hidden = false;
+        if (editButton) {
+            editButton.hidden =
+                getSenderId(
+                    message
+                ) !== currentUserId;
+        }
+
+        contextMenu.hidden =
+            false;
 
         contextMenu.style.left =
             Math.max(
@@ -3301,13 +4250,25 @@ updateChatStatus(chat);
     }
 
     function closeContextMenu() {
-        contextMenu.hidden = true;
-        selectedMessage = null;
+        contextMenu.hidden =
+            true;
+
+        selectedMessage =
+            null;
     }
 
-    async function editMessage(message) {
+    async function editMessage(
+        message
+    ) {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
         const text =
-            messageInput.value.trim();
+            messageInput.value
+                .trim();
 
         if (!text) {
             errorElement.textContent =
@@ -3317,19 +4278,20 @@ updateChatStatus(chat);
         }
 
         try {
-            sendButton.disabled = true;
+            sendButton.disabled =
+                true;
 
             const data =
                 await apiRequest(
-                    "/api/chats/" +
-                    encodeURIComponent(
+                    "/api/chats/"
+                    + encodeURIComponent(
                         selectedChat.id
-                    ) +
-                    "/messages/" +
-                    encodeURIComponent(
+                    )
+                    + "/messages/"
+                    + encodeURIComponent(
                         message.id
-                    ) +
-                    "/edit/",
+                    )
+                    + "/edit/",
                     {
                         method: "PATCH",
                         headers: {
@@ -3342,7 +4304,10 @@ updateChatStatus(chat);
                     }
                 );
 
-            updateRenderedMessage(data);
+            updateRenderedMessage(
+                data
+            );
+
             updateLastMessage(
                 selectedChat.id,
                 data,
@@ -3350,16 +4315,27 @@ updateChatStatus(chat);
             );
 
             cancelEditing();
-            errorElement.textContent = "";
+
+            errorElement.textContent =
+                "";
         } catch (error) {
             errorElement.textContent =
                 error.message;
         } finally {
-            sendButton.disabled = false;
+            sendButton.disabled =
+                messageInput.disabled;
         }
     }
 
-    async function deleteMessage(message) {
+    async function deleteMessage(
+        message
+    ) {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
         if (
             !window.confirm(
                 "Удалить сообщение?"
@@ -3371,21 +4347,24 @@ updateChatStatus(chat);
         try {
             const data =
                 await apiRequest(
-                    "/api/chats/" +
-                    encodeURIComponent(
+                    "/api/chats/"
+                    + encodeURIComponent(
                         selectedChat.id
-                    ) +
-                    "/messages/" +
-                    encodeURIComponent(
+                    )
+                    + "/messages/"
+                    + encodeURIComponent(
                         message.id
-                    ) +
-                    "/delete/",
+                    )
+                    + "/delete/",
                     {
                         method: "DELETE"
                     }
                 );
 
-            updateRenderedMessage(data);
+            updateRenderedMessage(
+                data
+            );
+
             updateLastMessage(
                 selectedChat.id,
                 data,
@@ -3397,61 +4376,105 @@ updateChatStatus(chat);
         }
     }
 
-    async function selectChat(chat) {
-        clearTimeout(reconnectTimer);
+    async function selectChat(
+        chat
+    ) {
+        window.clearTimeout(
+            reconnectTimer
+        );
 
-        selectedChat = chat;
-        selectedChat.unread_count = 0;
+        selectedChat =
+            chat;
 
-        layout.classList.add("chat-open");
-        placeholder.hidden = true;
-        activeChatElement.hidden = false;
-        infoPanel.hidden = true;
-        typingStatus.textContent = "";
+        selectedChat.unread_count =
+            0;
+
+        layout.classList.add(
+            "chat-open"
+        );
+
+        placeholder.hidden =
+            true;
+
+        activeChatElement.hidden =
+            false;
+
+        infoPanel.hidden =
+            true;
+
+        typingStatus.textContent =
+            "";
 
         cancelReply();
+
         cancelEditing();
 
-        renderActiveChat(chat);
+        renderActiveChat(
+            chat
+        );
+
         renderChats();
 
-        setSendingAvailability(true);
-        connectChatSocket(chat);
+        setSendingAvailability(
+            true
+        );
+
+        connectChatSocket(
+            chat
+        );
 
         try {
-            await loadMessages(chat);
+            await loadMessages(
+                chat
+            );
         } catch (error) {
             messagesList.innerHTML =
-                '<div class="empty">' +
-                error.message +
-                "</div>";
+                '<div class="empty">'
+                + error.message
+                + "</div>";
         }
 
         messageInput.focus();
     }
 
     function closeChat() {
-        clearTimeout(reconnectTimer);
+        window.clearTimeout(
+            reconnectTimer
+        );
 
         if (chatSocket) {
             chatSocket.close();
-            chatSocket = null;
+            chatSocket =
+                null;
         }
 
-        selectedChat = null;
-        layout.classList.remove("chat-open");
+        selectedChat =
+            null;
 
-        activeChatElement.hidden = true;
-        placeholder.hidden = false;
-        typingStatus.textContent = "";
+        layout.classList.remove(
+            "chat-open"
+        );
+
+        activeChatElement.hidden =
+            true;
+
+        placeholder.hidden =
+            false;
+
+        typingStatus.textContent =
+            "";
 
         cancelReply();
+
         cancelEditing();
+
         renderChats();
     }
 
     function stopTyping() {
-        clearTimeout(typingTimer);
+        window.clearTimeout(
+            typingTimer
+        );
 
         sendSocket({
             type: "typing",
@@ -3463,9 +4486,10 @@ updateChatStatus(chat);
         "input",
         function () {
             if (
-                editingMessage ||
-                !chatSocket ||
-                chatSocket.readyState !== WebSocket.OPEN
+                editingMessage
+                || !chatSocket
+                || chatSocket.readyState
+                    !== WebSocket.OPEN
             ) {
                 return;
             }
@@ -3475,10 +4499,12 @@ updateChatStatus(chat);
                 is_typing: true
             });
 
-            clearTimeout(typingTimer);
+            window.clearTimeout(
+                typingTimer
+            );
 
             typingTimer =
-                setTimeout(
+                window.setTimeout(
                     stopTyping,
                     1200
                 );
@@ -3490,17 +4516,25 @@ updateChatStatus(chat);
         function (event) {
             event.preventDefault();
 
-            if (!selectedChat) {
+            if (
+                !selectedChat
+            ) {
                 return;
             }
 
-            if (editingMessage) {
-                editMessage(editingMessage);
+            if (
+                editingMessage
+            ) {
+                editMessage(
+                    editingMessage
+                );
+
                 return;
             }
 
             const text =
-                messageInput.value.trim();
+                messageInput.value
+                    .trim();
 
             if (!text) {
                 return;
@@ -3512,22 +4546,29 @@ updateChatStatus(chat);
             };
 
             if (
-                replyMessage &&
-                replyMessage.id
+                replyMessage
+                && replyMessage.id
             ) {
                 payload.reply_to =
                     replyMessage.id;
             }
 
-            if (!sendSocket(payload)) {
+            if (
+                !sendSocket(
+                    payload
+                )
+            ) {
                 errorElement.textContent =
                     "Соединение с чатом не установлено.";
 
                 return;
             }
 
-            messageInput.value = "";
+            messageInput.value =
+                "";
+
             cancelReply();
+
             stopTyping();
         }
     );
@@ -3535,7 +4576,10 @@ updateChatStatus(chat);
     attachButton.addEventListener(
         "click",
         function () {
-            if (!selectedChat) {
+            if (
+                !selectedChat
+                || messageInput.disabled
+            ) {
                 return;
             }
 
@@ -3547,44 +4591,61 @@ updateChatStatus(chat);
         "change",
         async function () {
             const file =
-                fileInput.files &&
-                fileInput.files[0];
+                fileInput.files
+                && fileInput.files[0];
 
             if (
-                !file ||
-                !selectedChat ||
-                uploadInProgress
+                !file
+                || !selectedChat
+                || uploadInProgress
             ) {
                 return;
             }
 
-            if (file.size > MAX_FILE_SIZE) {
+            if (
+                file.size
+                > MAX_FILE_SIZE
+            ) {
                 errorElement.textContent =
-                    "Размер файла не может превышать 50 МБ.";
+                    "Размер файла не может превышать 100 МБ.";
 
-                fileInput.value = "";
+                fileInput.value =
+                    "";
+
                 return;
             }
 
-            uploadInProgress = true;
-            attachButton.disabled = true;
-            sendButton.disabled = true;
+            uploadInProgress =
+                true;
+
+            attachButton.disabled =
+                true;
+
+            sendButton.disabled =
+                true;
 
             const formData =
                 new FormData();
 
-            formData.append("file", file);
+            formData.append(
+                "file",
+                file
+            );
 
             const text =
-                messageInput.value.trim();
+                messageInput.value
+                    .trim();
 
             if (text) {
-                formData.append("text", text);
+                formData.append(
+                    "text",
+                    text
+                );
             }
 
             if (
-                replyMessage &&
-                replyMessage.id
+                replyMessage
+                && replyMessage.id
             ) {
                 formData.append(
                     "reply_to",
@@ -3595,36 +4656,49 @@ updateChatStatus(chat);
             try {
                 const data =
                     await apiRequest(
-                        "/api/chats/" +
-                        encodeURIComponent(
+                        "/api/chats/"
+                        + encodeURIComponent(
                             selectedChat.id
-                        ) +
-                        "/messages/upload/",
+                        )
+                        + "/messages/upload/",
                         {
                             method: "POST",
                             body: formData
                         }
                     );
 
-                appendMessage(data);
+                appendMessage(
+                    data
+                );
+
                 updateLastMessage(
                     selectedChat.id,
                     data,
                     false
                 );
 
-                messageInput.value = "";
+                messageInput.value =
+                    "";
+
                 cancelReply();
+
                 scrollToBottom();
-                errorElement.textContent = "";
+
+                errorElement.textContent =
+                    "";
             } catch (error) {
                 errorElement.textContent =
                     error.message;
             } finally {
-                uploadInProgress = false;
-                fileInput.value = "";
+                uploadInProgress =
+                    false;
+
+                fileInput.value =
+                    "";
+
                 attachButton.disabled =
                     messageInput.disabled;
+
                 sendButton.disabled =
                     messageInput.disabled;
             }
@@ -3635,9 +4709,14 @@ updateChatStatus(chat);
         "click",
         function (event) {
             const button =
-                event.target.closest("button");
+                event.target.closest(
+                    "button"
+                );
 
-            if (!button || !selectedMessage) {
+            if (
+                !button
+                || !selectedMessage
+            ) {
                 return;
             }
 
@@ -3649,16 +4728,28 @@ updateChatStatus(chat);
 
             closeContextMenu();
 
-            if (action === "reply") {
-                setReplyMessage(message);
+            if (
+                action === "reply"
+            ) {
+                setReplyMessage(
+                    message
+                );
             }
 
-            if (action === "edit") {
-                startEditing(message);
+            if (
+                action === "edit"
+            ) {
+                startEditing(
+                    message
+                );
             }
 
-            if (action === "delete") {
-                deleteMessage(message);
+            if (
+                action === "delete"
+            ) {
+                deleteMessage(
+                    message
+                );
             }
         }
     );
@@ -3672,8 +4763,10 @@ updateChatStatus(chat);
         "click",
         function (event) {
             if (
-                !contextMenu.hidden &&
-                !contextMenu.contains(event.target)
+                !contextMenu.hidden
+                && !contextMenu.contains(
+                    event.target
+                )
             ) {
                 closeContextMenu();
             }
@@ -3701,7 +4794,8 @@ updateChatStatus(chat);
     refreshButton.addEventListener(
         "click",
         async function () {
-            refreshButton.disabled = true;
+            refreshButton.disabled =
+                true;
 
             try {
                 await loadChats();
@@ -3709,31 +4803,46 @@ updateChatStatus(chat);
                 errorElement.textContent =
                     error.message;
             } finally {
-                refreshButton.disabled = false;
+                refreshButton.disabled =
+                    false;
             }
         }
     );
 
     document.querySelectorAll(
         "[data-close-modal]"
-    ).forEach(function (button) {
+    ).forEach(function (
+        button
+    ) {
         button.addEventListener(
             "click",
             function () {
-                $(button.dataset.closeModal)
-                    .hidden = true;
+                const modal =
+                    $(
+                        button.dataset.closeModal
+                    );
+
+                if (modal) {
+                    modal.hidden =
+                        true;
+                }
             }
         );
     });
 
     document.querySelectorAll(
         ".modal-overlay"
-    ).forEach(function (modal) {
+    ).forEach(function (
+        modal
+    ) {
         modal.addEventListener(
             "click",
             function (event) {
-                if (event.target === modal) {
-                    modal.hidden = true;
+                if (
+                    event.target === modal
+                ) {
+                    modal.hidden =
+                        true;
                 }
             }
         );
@@ -3743,9 +4852,14 @@ updateChatStatus(chat);
         .addEventListener(
             "click",
             function () {
-                $("private-chat-modal").hidden =
+                const modal =
+                    $("private-chat-modal");
+
+                modal.hidden =
                     false;
-                $("private-user-search").focus();
+
+                $("private-user-search")
+                    .focus();
             }
         );
 
@@ -3753,7 +4867,8 @@ updateChatStatus(chat);
         .addEventListener(
             "click",
             function () {
-                $("group-modal").hidden = false;
+                $("group-modal").hidden =
+                    false;
             }
         );
 
@@ -3761,7 +4876,8 @@ updateChatStatus(chat);
         .addEventListener(
             "click",
             function () {
-                $("channel-modal").hidden = false;
+                $("channel-modal").hidden =
+                    false;
             }
         );
 
@@ -3773,87 +4889,144 @@ updateChatStatus(chat);
         const query =
             input.value
                 .trim()
-                .replace(/^@/, "");
+                .replace(
+                    /^@/,
+                    ""
+                );
 
-        results.innerHTML = "";
-        errorBox.textContent = "";
+        results.innerHTML =
+            "";
 
-        if (query.length < 2) {
+        errorBox.textContent =
+            "";
+
+        if (
+            query.length < 2
+        ) {
             return;
         }
 
         try {
             const data =
                 await apiRequest(
-                    "/api/chats/users/search/?q=" +
-                    encodeURIComponent(query),
+                    "/api/chats/users/search/?q="
+                    + encodeURIComponent(
+                        query
+                    ),
                     {
                         method: "GET"
                     }
                 );
 
-            if (!Array.isArray(data) || !data.length) {
+            if (
+                !Array.isArray(data)
+                || !data.length
+            ) {
                 results.textContent =
                     "Пользователи не найдены.";
 
                 return;
             }
 
-            data.forEach(function (user) {
+            data.forEach(function (
+                user
+            ) {
                 const item =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
-                item.className = "user-result";
+                item.className =
+                    "user-result";
 
                 const avatar =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
-                setAvatar(avatar, user, null);
+                setAvatar(
+                    avatar,
+                    user,
+                    null,
+                    false
+                );
 
                 const info =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
                 info.className =
                     "user-result-info";
 
                 const name =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
                 name.className =
                     "user-result-name";
 
                 name.textContent =
-                    getUserName(user);
+                    getUserName(
+                        user
+                    );
+
+                appendVerifiedBadge(
+                    name,
+                    user
+                );
 
                 const tag =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
                 tag.className =
                     "user-result-tag";
 
                 tag.textContent =
-                    getUserTag(user);
+                    getUserTag(
+                        user
+                    );
 
-                info.appendChild(name);
-                info.appendChild(tag);
-                item.appendChild(avatar);
-                item.appendChild(info);
+                info.appendChild(
+                    name
+                );
+
+                info.appendChild(
+                    tag
+                );
+
+                item.appendChild(
+                    avatar
+                );
+
+                item.appendChild(
+                    info
+                );
 
                 item.addEventListener(
                     "click",
                     function () {
                         if (
-                            results.id ===
-                            "private-user-results"
+                            results.id
+                            === "private-user-results"
                         ) {
-                            createPrivateChat(user);
+                            createPrivateChat(
+                                user
+                            );
                         } else {
-                            addGroupUser(user);
+                            addGroupUser(
+                                user
+                            );
                         }
                     }
                 );
 
-                results.appendChild(item);
+                results.appendChild(
+                    item
+                );
             });
         } catch (error) {
             errorBox.textContent =
@@ -3865,16 +5038,21 @@ updateChatStatus(chat);
         .addEventListener(
             "input",
             function () {
-                clearTimeout(searchTimer);
+                window.clearTimeout(
+                    searchTimer
+                );
 
                 searchTimer =
-                    setTimeout(function () {
-                        searchUsers(
-                            $("private-user-search"),
-                            $("private-user-results"),
-                            $("private-chat-error")
-                        );
-                    }, 300);
+                    window.setTimeout(
+                        function () {
+                            searchUsers(
+                                $("private-user-search"),
+                                $("private-user-results"),
+                                $("private-chat-error")
+                            );
+                        },
+                        300
+                    );
             }
         );
 
@@ -3882,20 +5060,27 @@ updateChatStatus(chat);
         .addEventListener(
             "input",
             function () {
-                clearTimeout(groupSearchTimer);
+                window.clearTimeout(
+                    groupSearchTimer
+                );
 
                 groupSearchTimer =
-                    setTimeout(function () {
-                        searchUsers(
-                            $("group-user-search"),
-                            $("group-user-results"),
-                            $("group-error")
-                        );
-                    }, 300);
+                    window.setTimeout(
+                        function () {
+                            searchUsers(
+                                $("group-user-search"),
+                                $("group-user-results"),
+                                $("group-error")
+                            );
+                        },
+                        300
+                    );
             }
         );
 
-    async function createPrivateChat(user) {
+    async function createPrivateChat(
+        user
+    ) {
         const error =
             $("private-chat-error");
 
@@ -3916,17 +5101,26 @@ updateChatStatus(chat);
                     }
                 );
 
-            $("private-chat-modal").hidden = true;
+            $("private-chat-modal")
+                .hidden =
+                true;
 
             await loadChats();
 
             const chat =
-                chats.find(function (item) {
-                    return sameId(item.id, data.id);
+                chats.find(function (
+                    item
+                ) {
+                    return sameId(
+                        item.id,
+                        data.id
+                    );
                 });
 
             if (chat) {
-                selectChat(chat);
+                selectChat(
+                    chat
+                );
             }
         } catch (requestError) {
             error.textContent =
@@ -3934,17 +5128,33 @@ updateChatStatus(chat);
         }
     }
 
-    function addGroupUser(user) {
-        if (
-            !selectedUsers.some(function (item) {
-                return sameId(item.id, user.id);
-            })
-        ) {
-            selectedUsers.push(user);
+    function addGroupUser(
+        user
+    ) {
+        const exists =
+            selectedUsers.some(
+                function (item) {
+                    return sameId(
+                        item.id,
+                        user.id
+                    );
+                }
+            );
+
+        if (!exists) {
+            selectedUsers.push(
+                user
+            );
         }
 
-        $("group-user-search").value = "";
-        $("group-user-results").innerHTML = "";
+        $("group-user-search")
+            .value =
+            "";
+
+        $("group-user-results")
+            .innerHTML =
+            "";
+
         renderSelectedUsers();
     }
 
@@ -3952,43 +5162,65 @@ updateChatStatus(chat);
         const container =
             $("selected-group-users");
 
-        container.innerHTML = "";
+        container.innerHTML =
+            "";
 
-        selectedUsers.forEach(function (user) {
-            const item =
-                document.createElement("span");
+        selectedUsers.forEach(
+            function (user) {
+                const item =
+                    document.createElement(
+                        "span"
+                    );
 
-            item.className = "selected-user";
-            item.textContent =
-                getUserTag(user) ||
-                getUserName(user);
+                item.className =
+                    "selected-user";
 
-            const remove =
-                document.createElement("button");
+                item.appendChild(
+                    document.createTextNode(
+                        getUserTag(user)
+                        || getUserName(user)
+                    )
+                );
 
-            remove.type = "button";
-            remove.textContent = "×";
+                const remove =
+                    document.createElement(
+                        "button"
+                    );
 
-            remove.addEventListener(
-                "click",
-                function () {
-                    selectedUsers =
-                        selectedUsers.filter(
-                            function (selected) {
-                                return !sameId(
-                                    selected.id,
-                                    user.id
-                                );
-                            }
-                        );
+                remove.type =
+                    "button";
 
-                    renderSelectedUsers();
-                }
-            );
+                remove.textContent =
+                    "×";
 
-            item.appendChild(remove);
-            container.appendChild(item);
-        });
+                remove.addEventListener(
+                    "click",
+                    function () {
+                        selectedUsers =
+                            selectedUsers.filter(
+                                function (
+                                    selected
+                                ) {
+                                    return !sameId(
+                                        selected.id,
+                                        user.id
+                                    );
+                                }
+                            );
+
+                        renderSelectedUsers();
+                    }
+                );
+
+                item.appendChild(
+                    remove
+                );
+
+                container.appendChild(
+                    item
+                );
+            }
+        );
     }
 
     async function createGroup() {
@@ -3997,11 +5229,13 @@ updateChatStatus(chat);
 
         const title =
             $("group-title-input")
-                .value.trim();
+                .value
+                .trim();
 
         const description =
             $("group-description-input")
-                .value.trim();
+                .value
+                .trim();
 
         if (!title) {
             error.textContent =
@@ -4013,7 +5247,8 @@ updateChatStatus(chat);
         const button =
             $("submit-group-button");
 
-        button.disabled = true;
+        button.disabled =
+            true;
 
         try {
             const data =
@@ -4027,10 +5262,13 @@ updateChatStatus(chat);
                         },
                         body: JSON.stringify({
                             title: title,
-                            description: description,
+                            description:
+                                description,
                             usernames:
                                 selectedUsers.map(
-                                    function (user) {
+                                    function (
+                                        user
+                                    ) {
                                         return user.username;
                                     }
                                 )
@@ -4038,25 +5276,46 @@ updateChatStatus(chat);
                     }
                 );
 
-            $("group-modal").hidden = true;
-            selectedUsers = [];
+            $("group-modal")
+                .hidden =
+                true;
+
+            selectedUsers =
+                [];
+
             renderSelectedUsers();
+
+            $("group-title-input")
+                .value =
+                "";
+
+            $("group-description-input")
+                .value =
+                "";
 
             await loadChats();
 
             const chat =
-                chats.find(function (item) {
-                    return sameId(item.id, data.id);
+                chats.find(function (
+                    item
+                ) {
+                    return sameId(
+                        item.id,
+                        data.id
+                    );
                 });
 
             if (chat) {
-                selectChat(chat);
+                selectChat(
+                    chat
+                );
             }
         } catch (requestError) {
             error.textContent =
                 requestError.message;
         } finally {
-            button.disabled = false;
+            button.disabled =
+                false;
         }
     }
 
@@ -4066,11 +5325,13 @@ updateChatStatus(chat);
 
         const title =
             $("channel-title-input")
-                .value.trim();
+                .value
+                .trim();
 
         const description =
             $("channel-description-input")
-                .value.trim();
+                .value
+                .trim();
 
         if (!title) {
             error.textContent =
@@ -4082,7 +5343,8 @@ updateChatStatus(chat);
         const button =
             $("submit-channel-button");
 
-        button.disabled = true;
+        button.disabled =
+            true;
 
         try {
             const data =
@@ -4096,7 +5358,8 @@ updateChatStatus(chat);
                         },
                         body: JSON.stringify({
                             title: title,
-                            description: description,
+                            description:
+                                description,
                             is_public:
                                 $("channel-public-input")
                                     .checked
@@ -4104,23 +5367,41 @@ updateChatStatus(chat);
                     }
                 );
 
-            $("channel-modal").hidden = true;
+            $("channel-modal")
+                .hidden =
+                true;
+
+            $("channel-title-input")
+                .value =
+                "";
+
+            $("channel-description-input")
+                .value =
+                "";
 
             await loadChats();
 
             const chat =
-                chats.find(function (item) {
-                    return sameId(item.id, data.id);
+                chats.find(function (
+                    item
+                ) {
+                    return sameId(
+                        item.id,
+                        data.id
+                    );
                 });
 
             if (chat) {
-                selectChat(chat);
+                selectChat(
+                    chat
+                );
             }
         } catch (requestError) {
             error.textContent =
                 requestError.message;
         } finally {
-            button.disabled = false;
+            button.disabled =
+                false;
         }
     }
 
@@ -4139,7 +5420,9 @@ updateChatStatus(chat);
     document.addEventListener(
         "keydown",
         function (event) {
-            if (event.key !== "Escape") {
+            if (
+                event.key !== "Escape"
+            ) {
                 return;
             }
 
@@ -4147,11 +5430,16 @@ updateChatStatus(chat);
 
             document.querySelectorAll(
                 ".modal-overlay"
-            ).forEach(function (modal) {
-                modal.hidden = true;
+            ).forEach(function (
+                modal
+            ) {
+                modal.hidden =
+                    true;
             });
 
-            if (editingMessage) {
+            if (
+                editingMessage
+            ) {
                 cancelEditing();
             } else {
                 cancelReply();
@@ -4163,10 +5451,10 @@ updateChatStatus(chat);
         "visibilitychange",
         function () {
             if (
-                !document.hidden &&
-                selectedChat
+                !document.hidden
+                && selectedChat
             ) {
-                setTimeout(
+                window.setTimeout(
                     markMessagesAsRead,
                     200
                 );
@@ -4177,9 +5465,15 @@ updateChatStatus(chat);
     window.addEventListener(
         "beforeunload",
         function () {
-            clearTimeout(refreshTimer);
-            clearTimeout(reconnectTimer);
-            clearTimeout(
+            window.clearTimeout(
+                refreshTimer
+            );
+
+            window.clearTimeout(
+                reconnectTimer
+            );
+
+            window.clearTimeout(
                 notificationsReconnectTimer
             );
 
@@ -4196,11 +5490,13 @@ updateChatStatus(chat);
     async function initialize() {
         try {
             await loadCurrentUser();
+
             await loadChats();
 
             if (
-                "Notification" in window &&
-                Notification.permission === "default"
+                "Notification" in window
+                && Notification.permission
+                    === "default"
             ) {
                 Notification.requestPermission()
                     .catch(function () {});
@@ -4209,14 +5505,18 @@ updateChatStatus(chat);
             connectNotificationsSocket();
 
             refreshTimer =
-                setInterval(
+                window.setInterval(
                     async function () {
-                        if (document.hidden) {
+                        if (
+                            document.hidden
+                        ) {
                             return;
                         }
 
                         try {
-                            await loadChats(false);
+                            await loadChats(
+                                false
+                            );
                         } catch (error) {
                             console.error(
                                 "Ошибка обновления чатов:",
@@ -4228,8 +5528,8 @@ updateChatStatus(chat);
                 );
         } catch (error) {
             errorElement.textContent =
-                error.message ||
-                "Не удалось загрузить чаты.";
+                error.message
+                || "Не удалось загрузить чаты.";
         }
     }
 
