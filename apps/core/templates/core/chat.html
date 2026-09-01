@@ -1716,6 +1716,24 @@
             .toUpperCase();
     }
 
+  function openUserProfile(
+    user
+) {
+    if (
+        !user
+        || !user.id
+    ) {
+        return;
+    }
+
+    window.location.href =
+        "/users/"
+        + encodeURIComponent(
+            user.id
+        )
+        + "/";
+}
+    
     function getPrivateUser(chat) {
         return chat &&
             chat.chat_type === "private"
