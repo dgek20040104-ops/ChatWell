@@ -1276,23 +1276,23 @@ class DeleteMessageView(APIView):
             )
 
         message.is_deleted = True
-        message.text = ""
-        message.file = None
-        message.file_name = ""
-        message.file_size = None
-        message.mime_type = ""
+message.text = ""
+message.file = None
+message.file_name = ""
+message.file_size = None
+message.mime_type = ""
 
-        message.save(
-            update_fields=[
-                "is_deleted",
-                "text",
-                "file",
-                "file_name",
-                "file_size",
-                "mime_type",
-                "updated_at",
-            ]
-        )
+message.save(
+    update_fields=[
+        "is_deleted",
+        "text",
+        "file",
+        "file_name",
+        "file_size",
+        "mime_type",
+        "updated_at",
+    ]
+)
 
         serialized_message = {
             "id": str(message.id),
