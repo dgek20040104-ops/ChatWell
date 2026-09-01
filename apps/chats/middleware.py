@@ -14,10 +14,13 @@ from rest_framework_simplejwt.tokens import (
 
 
 @database_sync_to_async
-def get_user_from_token(token):
+def get_user_from_token(
+    token,
+):
     from django.contrib.auth import (
         get_user_model,
     )
+
     from django.contrib.auth.models import (
         AnonymousUser,
     )
@@ -28,7 +31,9 @@ def get_user_from_token(token):
         return AnonymousUser()
 
     try:
-        access_token = AccessToken(token)
+        access_token = AccessToken(
+            token
+        )
 
         user_id = access_token.get(
             "user_id"
@@ -51,21 +56,32 @@ def get_user_from_token(token):
     ):
         return AnonymousUser()
 
+    except Exception:
+        # Любой некорректный, просроченный
+        # или повреждённый JWT не должен
+        # ломать ASGI-приложение.
+        return AnonymousUser()
 
-class JWTAuthMiddleware(BaseMiddleware):
+
+class JWTAuthMiddleware(
+    BaseMiddleware
+):
     async def __call__(
         self,
         scope,
         receive,
         send,
     ):
+        raw_query_string = scope.get(
+            "query_string",
+            b"",
+        )
+
         query_string = (
-            scope.get(
-                "query_string",
-                b"",
-            )
+            raw_query_string
             .decode(
-                "utf-8"
+                "utf-8",
+                errors="ignore",
             )
         )
 
@@ -73,9 +89,11 @@ class JWTAuthMiddleware(BaseMiddleware):
             query_string
         )
 
-        token_values = query_params.get(
-            "token",
-            [],
+        token_values = (
+            query_params.get(
+                "token",
+                [],
+            )
         )
 
         token = (
@@ -101,5 +119,5 @@ def JWTAuthMiddlewareStack(
     inner,
 ):
     return JWTAuthMiddleware(
-        inner,
+        inner
     )
