@@ -1214,10 +1214,179 @@
     background: #111;
 }
 
-.message-audio {
-    display: block;
-    width: min(320px, 100%);
+/* ================================
+   ChatWell voice message
+   ================================ */
+
+.voice-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(330px, 100%);
+    min-height: 66px;
     margin-bottom: 7px;
+    padding: 8px 11px 8px 8px;
+    box-sizing: border-box;
+    border-radius: 18px;
+    background: #f0f2f8;
+    color: var(--chat-text);
+}
+
+.message-row.mine .voice-player {
+    background: rgba(255, 255, 255, .16);
+    color: var(--chat-white);
+}
+
+.voice-play-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 43px;
+    width: 43px;
+    height: 43px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--chat-primary);
+    color: var(--chat-white);
+    cursor: pointer;
+    transition:
+        transform .15s ease,
+        background .15s ease,
+        box-shadow .15s ease;
+}
+
+.message-row.mine .voice-play-button {
+    background: rgba(255, 255, 255, .95);
+    color: var(--chat-primary);
+}
+
+.voice-play-button:hover {
+    transform: scale(1.06);
+    box-shadow: 0 5px 15px rgba(93, 80, 223, .25);
+}
+
+.voice-play-button:active {
+    transform: scale(.95);
+}
+
+.voice-play-button:focus-visible {
+    outline: 3px solid rgba(93, 80, 223, .28);
+    outline-offset: 2px;
+}
+
+.voice-play-icon {
+    display: block;
+    margin-left: 2px;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.voice-play-button.is-playing .voice-play-icon {
+    margin-left: 0;
+    font-size: 15px;
+}
+
+.voice-player-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.voice-waveform {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    height: 34px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.voice-wave-bar {
+    width: 3px;
+    min-height: 5px;
+    border-radius: 4px;
+    background: #a3a9b9;
+    opacity: .9;
+    transition:
+        background .12s ease,
+        opacity .12s ease,
+        transform .12s ease;
+}
+
+.voice-wave-bar.is-played {
+    background: var(--chat-primary);
+    opacity: 1;
+}
+
+.message-row.mine .voice-wave-bar {
+    background: rgba(255, 255, 255, .48);
+}
+
+.message-row.mine .voice-wave-bar.is-played {
+    background: var(--chat-white);
+    opacity: 1;
+}
+
+.voice-waveform:hover .voice-wave-bar {
+    transform: scaleY(1.08);
+}
+
+.voice-player-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 1px;
+}
+
+.voice-duration {
+    color: var(--chat-muted);
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.message-row.mine .voice-duration {
+    color: rgba(255, 255, 255, .75);
+}
+
+.voice-file-name {
+    overflow: hidden;
+    color: var(--chat-muted);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-row.mine .voice-file-name {
+    color: rgba(255, 255, 255, .7);
+}
+
+/*
+ * Аудио остаётся в DOM и работает,
+ * но стандартные браузерные контролы скрыты.
+ */
+.voice-audio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 650px) {
+    .voice-player {
+        width: min(300px, 100%);
+    }
+
+    .voice-play-button {
+        flex-basis: 41px;
+        width: 41px;
+        height: 41px;
+    }
 }
     
 .message-file {
@@ -2560,6 +2729,342 @@
             return "";
         }
 
+        function formatVoiceTime(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) {
+        return "0:00";
+    }
+
+    const totalSeconds = Math.floor(seconds);
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    return minutes + ":"
+        + String(remainingSeconds).padStart(2, "0");
+}
+
+
+function createVoicePlayer(message, url, mine) {
+    const player = document.createElement("div");
+
+    player.className = "voice-player";
+
+    if (mine) {
+        player.classList.add("voice-player-mine");
+    } else {
+        player.classList.add("voice-player-other");
+    }
+
+    const playButton = document.createElement("button");
+    playButton.type = "button";
+    playButton.className = "voice-play-button";
+    playButton.setAttribute(
+        "aria-label",
+        "Воспроизвести голосовое сообщение"
+    );
+
+    const playIcon = document.createElement("span");
+    playIcon.className = "voice-play-icon";
+    playIcon.textContent = "▶";
+
+    playButton.appendChild(playIcon);
+
+    const content = document.createElement("div");
+    content.className = "voice-player-content";
+
+    const waveform = document.createElement("div");
+    waveform.className = "voice-waveform";
+    waveform.setAttribute(
+        "role",
+        "slider"
+    );
+    waveform.setAttribute(
+        "aria-label",
+        "Позиция воспроизведения"
+    );
+    waveform.setAttribute(
+        "tabindex",
+        "0"
+    );
+
+    const heights = [
+        9, 17, 25, 14, 29, 20, 12, 27,
+        18, 31, 15, 23, 11, 26, 19, 30,
+        14, 22, 9, 18, 28, 16, 25, 12,
+        30, 20, 10, 24, 17, 29, 14, 22,
+        11, 27, 19, 31, 15, 24, 10, 20
+    ];
+
+    const bars = [];
+
+    heights.forEach(function (height) {
+        const bar = document.createElement("span");
+        bar.className = "voice-wave-bar";
+        bar.style.height = height + "px";
+
+        waveform.appendChild(bar);
+        bars.push(bar);
+    });
+
+    const bottom = document.createElement("div");
+    bottom.className = "voice-player-bottom";
+
+    const duration = document.createElement("span");
+    duration.className = "voice-duration";
+    duration.textContent = "0:00";
+
+    const fileName = document.createElement("span");
+    fileName.className = "voice-file-name";
+    fileName.textContent = message.file_name || "Голосовое сообщение";
+
+    bottom.appendChild(duration);
+    bottom.appendChild(fileName);
+
+    content.appendChild(waveform);
+    content.appendChild(bottom);
+
+    const audio = document.createElement("audio");
+    audio.className = "voice-audio";
+    audio.src = url;
+    audio.preload = "metadata";
+    audio.setAttribute("aria-hidden", "true");
+
+    player.appendChild(playButton);
+    player.appendChild(content);
+    player.appendChild(audio);
+
+    function updatePlayButton() {
+        const isPlaying = !audio.paused && !audio.ended;
+
+        playButton.classList.toggle(
+            "is-playing",
+            isPlaying
+        );
+
+        playIcon.textContent = isPlaying
+            ? "Ⅱ"
+            : "▶";
+
+        playButton.setAttribute(
+            "aria-label",
+            isPlaying
+                ? "Приостановить голосовое сообщение"
+                : "Воспроизвести голосовое сообщение"
+        );
+    }
+
+    function updateWaveform() {
+        const progress = audio.duration > 0
+            ? audio.currentTime / audio.duration
+            : 0;
+
+        const playedCount = Math.floor(
+            progress * bars.length
+        );
+
+        bars.forEach(function (bar, index) {
+            bar.classList.toggle(
+                "is-played",
+                index < playedCount
+            );
+        });
+
+        const currentTime = formatVoiceTime(
+            audio.currentTime
+        );
+
+        const totalTime = formatVoiceTime(
+            audio.duration
+        );
+
+        duration.textContent = audio.duration
+            ? currentTime + " / " + totalTime
+            : currentTime;
+
+        waveform.setAttribute(
+            "aria-valuemin",
+            "0"
+        );
+
+        waveform.setAttribute(
+            "aria-valuemax",
+            String(audio.duration || 0)
+        );
+
+        waveform.setAttribute(
+            "aria-valuenow",
+            String(audio.currentTime || 0)
+        );
+    }
+
+    function resetPlayer() {
+        audio.currentTime = 0;
+        updateWaveform();
+        updatePlayButton();
+    }
+
+    playButton.addEventListener(
+        "click",
+        async function (event) {
+            event.stopPropagation();
+
+            document.querySelectorAll(
+                ".voice-audio"
+            ).forEach(function (otherAudio) {
+                if (
+                    otherAudio !== audio
+                    && !otherAudio.paused
+                ) {
+                    otherAudio.pause();
+                }
+            });
+
+            if (audio.paused) {
+                try {
+                    await audio.play();
+                } catch (error) {
+                    console.error(
+                        "Ошибка воспроизведения голосового сообщения:",
+                        error
+                    );
+                }
+            } else {
+                audio.pause();
+            }
+        }
+    );
+
+    function setAudioPosition(event) {
+        if (
+            !Number.isFinite(audio.duration)
+            || audio.duration <= 0
+        ) {
+            return;
+        }
+
+        const rect = waveform.getBoundingClientRect();
+
+        if (!rect.width) {
+            return;
+        }
+
+        const position = Math.min(
+            Math.max(
+                event.clientX - rect.left,
+                0
+            ),
+            rect.width
+        );
+
+        audio.currentTime =
+            (position / rect.width) * audio.duration;
+
+        updateWaveform();
+    }
+
+    waveform.addEventListener(
+        "click",
+        function (event) {
+            event.stopPropagation();
+            setAudioPosition(event);
+        }
+    );
+
+    waveform.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key !== "ArrowLeft"
+                && event.key !== "ArrowRight"
+                && event.key !== "Home"
+                && event.key !== "End"
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (
+                !Number.isFinite(audio.duration)
+                || audio.duration <= 0
+            ) {
+                return;
+            }
+
+            if (event.key === "Home") {
+                audio.currentTime = 0;
+            }
+
+            if (event.key === "End") {
+                audio.currentTime = audio.duration;
+            }
+
+            if (event.key === "ArrowLeft") {
+                audio.currentTime = Math.max(
+                    0,
+                    audio.currentTime - 5
+                );
+            }
+
+            if (event.key === "ArrowRight") {
+                audio.currentTime = Math.min(
+                    audio.duration,
+                    audio.currentTime + 5
+                );
+            }
+
+            updateWaveform();
+        }
+    );
+
+    audio.addEventListener(
+        "loadedmetadata",
+        function () {
+            duration.textContent =
+                "0:00 / "
+                + formatVoiceTime(audio.duration);
+
+            updateWaveform();
+        }
+    );
+
+    audio.addEventListener(
+        "timeupdate",
+        updateWaveform
+    );
+
+    audio.addEventListener(
+        "play",
+        updatePlayButton
+    );
+
+    audio.addEventListener(
+        "pause",
+        updatePlayButton
+    );
+
+    audio.addEventListener(
+        "ended",
+        resetPlayer
+    );
+
+    audio.addEventListener(
+        "error",
+        function () {
+            duration.textContent = "Ошибка аудио";
+            playButton.disabled = true;
+        }
+    );
+
+    player.addEventListener(
+        "click",
+        function (event) {
+            event.stopPropagation();
+        }
+    );
+
+    return player;
+}
+        
         if (
             typeof message.file_url === "string"
             && message.file_url
@@ -2730,26 +3235,19 @@
 
                 bubble.appendChild(video);
             } else if (
-                url
-                && message.message_type === "audio"
-            ) {
-                const audio =
-                    document.createElement("audio");
+    url
+    && message.message_type === "audio"
+) {
+    const voicePlayer = createVoicePlayer(
+        message,
+        url,
+        mine
+    );
 
-                audio.className = "message-audio";
-                audio.src = url;
-                audio.controls = true;
-                audio.preload = "metadata";
-
-                audio.addEventListener(
-                    "click",
-                    function (event) {
-                        event.stopPropagation();
-                    }
-                );
-
-                bubble.appendChild(audio);
-            } else if (url) {
+    bubble.appendChild(
+        voicePlayer
+    );
+} else if (url) {
                 const link =
                     document.createElement("a");
 
@@ -4451,17 +4949,15 @@
         }
 
         if (action === "media") {
-            filterMessages(function (message) {
-                return (
-                    message.message_type === "image"
-                    || message.message_type === "video"
-                    || message.message_type === "audio"
-                    || Boolean(message.file)
-                );
-            });
+    filterMessages(function (message) {
+        return message.message_type === "image"
+            || message.message_type === "video"
+            || message.message_type === "audio"
+            || Boolean(message.file);
+    });
 
-            return;
-        }
+    return;
+}
 
         if (action === "links") {
             filterMessages(function (message) {
