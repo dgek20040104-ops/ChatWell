@@ -1,30 +1,24 @@
 from urllib.parse import parse_qs
 
-
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
-
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 
 
 @database_sync_to_async
-def get_user_from_token(
-    token,
-):
+def get_user_from_token(token):
     from django.contrib.auth import get_user_model
     from django.contrib.auth.models import AnonymousUser
 
     User = get_user_model()
 
-    if not token:
+    if not token or not isinstance(token, str):
         return AnonymousUser()
 
     try:
-        access_token = AccessToken(
-            str(token),
-        )
+        access_token = AccessToken(token)
 
         user_id = access_token.get(
             "user_id",
@@ -33,12 +27,9 @@ def get_user_from_token(
         if not user_id:
             return AnonymousUser()
 
-        return (
-            User.objects
-            .get(
-                id=user_id,
-                is_active=True,
-            )
+        return User.objects.get(
+            id=user_id,
+            is_active=True,
         )
 
     except (
@@ -51,9 +42,7 @@ def get_user_from_token(
         return AnonymousUser()
 
 
-class JWTAuthMiddleware(
-    BaseMiddleware
-):
+class JWTAuthMiddleware(BaseMiddleware):
     async def __call__(
         self,
         scope,
@@ -74,11 +63,9 @@ class JWTAuthMiddleware(
             query_string,
         )
 
-        token_values = (
-            query_params.get(
-                "token",
-                [],
-            )
+        token_values = query_params.get(
+            "token",
+            [],
         )
 
         token = (
@@ -87,10 +74,8 @@ class JWTAuthMiddleware(
             else None
         )
 
-        scope["user"] = (
-            await get_user_from_token(
-                token,
-            )
+        scope["user"] = await get_user_from_token(
+            token,
         )
 
         return await super().__call__(
@@ -100,9 +85,5 @@ class JWTAuthMiddleware(
         )
 
 
-def JWTAuthMiddlewareStack(
-    inner,
-):
-    return JWTAuthMiddleware(
-        inner,
-    )
+def JWTAuthMiddlewareStack(inner):
+    return JWTAuthMiddleware(inner)
