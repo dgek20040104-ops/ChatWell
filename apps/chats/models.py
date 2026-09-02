@@ -167,13 +167,15 @@ class Message(models.Model):
     TEXT = "text"
     IMAGE = "image"
     VIDEO = "video"
+    AUDIO = "audio"
     FILE = "file"
     SHARED_POST = "shared_post"
 
-    MESSAGE_TYPES = (
+        MESSAGE_TYPES = (
         (TEXT, "Текст"),
         (IMAGE, "Изображение"),
         (VIDEO, "Видео"),
+        (AUDIO, "Аудио"),
         (FILE, "Файл"),
         (SHARED_POST, "Публикация"),
     )
