@@ -227,17 +227,18 @@
                         type="file"
                         hidden
                         accept="
-                            image/*,
-                            video/*,
-                            .pdf,
-                            .doc,
-                            .docx,
-                            .xls,
-                            .xlsx,
-                            .zip,
-                            .rar,
-                            .txt
-                        "
+    image/*,
+    video/*,
+    audio/*,
+    .pdf,
+    .doc,
+    .docx,
+    .xls,
+    .xlsx,
+    .zip,
+    .rar,
+    .txt
+"
                     >
 
                     <input
@@ -1202,6 +1203,12 @@
     background: #111;
 }
 
+.message-audio {
+    display: block;
+    width: min(320px, 100%);
+    margin-bottom: 7px;
+}
+    
 .message-file {
     display: block;
     max-width: 280px;
@@ -1614,6 +1621,7 @@
         color: var(--chat-primary);
     }
 }
+
 </style>
 
 <script>
@@ -1955,6 +1963,13 @@
             return "Видео";
         }
 
+        if (
+    message.message_type === "audio"
+) {
+    return "Голосовое сообщение";
+}
+
+        
         return "📎 " + (message.file_name || "Файл");
     }
 
@@ -2221,10 +2236,26 @@
     }
 
     function getFileUrl(message) {
-        return message && typeof message.file === "string"
-            ? message.file
-            : "";
+    if (!message) {
+        return "";
     }
+
+    if (
+        typeof message.file_url === "string"
+        && message.file_url
+    ) {
+        return message.file_url;
+    }
+
+    if (
+        typeof message.file === "string"
+        && message.file
+    ) {
+        return message.file;
+    }
+
+    return "";
+}
 
     function getReplyObject(message) {
         if (!message || !message.reply_to) {
@@ -2299,20 +2330,74 @@
                 });
 
                 bubble.appendChild(image);
-            } else if (url && message.message_type === "video") {
-                const video = document.createElement("video");
-                video.className = "message-video";
-                video.src = url;
-                video.controls = true;
-                video.preload = "metadata";
-                video.playsInline = true;
+            } else if (
+    url
+    && message.message_type
+        === "video"
+) {
+    const video =
+        document.createElement(
+            "video"
+        );
 
-                video.addEventListener("click", function (event) {
-                    event.stopPropagation();
-                });
+    video.className =
+        "message-video";
 
-                bubble.appendChild(video);
-            } else if (url) {
+    video.src =
+        url;
+
+    video.controls =
+        true;
+
+    video.preload =
+        "metadata";
+
+    video.playsInline =
+        true;
+
+    video.addEventListener(
+        "click",
+        function (event) {
+            event.stopPropagation();
+        }
+    );
+
+    bubble.appendChild(
+        video
+    );
+} else if (
+    url
+    && message.message_type
+        === "audio"
+) {
+    const audio =
+        document.createElement(
+            "audio"
+        );
+
+    audio.className =
+        "message-audio";
+
+    audio.src =
+        url;
+
+    audio.controls =
+        true;
+
+    audio.preload =
+        "metadata";
+
+    audio.addEventListener(
+        "click",
+        function (event) {
+            event.stopPropagation();
+        }
+    );
+
+    bubble.appendChild(
+        audio
+    );
+} else if (url) {
                 const link = document.createElement("a");
                 link.className = "message-file";
                 link.href = url;
