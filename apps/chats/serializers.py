@@ -12,7 +12,6 @@ from .models import Message
 User = get_user_model()
 
 
-
 class ChatUserSerializer(
     serializers.Serializer
 ):
@@ -94,6 +93,7 @@ class ChatUserSerializer(
             )
         )
 
+
 class UserSearchSerializer(
     ChatUserSerializer
 ):
@@ -108,7 +108,9 @@ class MessageSerializer(
     )
 
     reply_to = serializers.SerializerMethodField()
+
     file = serializers.SerializerMethodField()
+
     read_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -153,7 +155,10 @@ class MessageSerializer(
             "updated_at",
         )
 
-    def get_file(self, obj):
+    def get_file(
+        self,
+        obj,
+    ):
         if not obj.file:
             return None
 
@@ -163,17 +168,20 @@ class MessageSerializer(
             return None
 
         request = self.context.get(
-            "request"
+            "request",
         )
 
         if request is not None:
             return request.build_absolute_uri(
-                url
+                url,
             )
 
         return url
 
-    def get_reply_to(self, obj):
+    def get_reply_to(
+        self,
+        obj,
+    ):
         reply = obj.reply_to
 
         if reply is None:
@@ -182,24 +190,36 @@ class MessageSerializer(
         return {
             "id": str(reply.id),
             "sender_id": str(
-                reply.sender_id
+                reply.sender_id,
             ),
             "text": (
                 "Сообщение удалено"
                 if reply.is_deleted
                 else reply.text
             ),
+            "file_name": (
+                ""
+                if reply.is_deleted
+                else reply.file_name
+            ),
+            "message_type": (
+                ""
+                if reply.is_deleted
+                else reply.message_type
+            ),
         }
 
-    def get_read_count(self, obj):
+    def get_read_count(
+        self,
+        obj,
+    ):
         if not hasattr(
             obj,
-            "read_by"
+            "read_by",
         ):
             return 0
 
         return obj.read_by.count()
-
 
 
 class CreateFileMessageSerializer(
@@ -207,6 +227,7 @@ class CreateFileMessageSerializer(
 ):
     file = serializers.FileField(
         required=True,
+        allow_empty_file=False,
     )
 
     text = serializers.CharField(
@@ -237,6 +258,17 @@ class CreateFileMessageSerializer(
         ".webm",
         ".mov",
         ".avi",
+        ".mkv",
+    }
+
+    AUDIO_EXTENSIONS = {
+        ".mp3",
+        ".wav",
+        ".ogg",
+        ".m4a",
+        ".aac",
+        ".opus",
+        ".webm",
     }
 
     FILE_EXTENSIONS = {
@@ -262,12 +294,29 @@ class CreateFileMessageSerializer(
         "video/webm",
         "video/quicktime",
         "video/x-msvideo",
+        "video/x-matroska",
+    }
+
+    AUDIO_MIME_TYPES = {
+        "audio/mpeg",
+        "audio/mp3",
+        "audio/wav",
+        "audio/x-wav",
+        "audio/wave",
+        "audio/ogg",
+        "audio/opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/x-m4a",
+        "audio/aac",
+        "audio/x-aac",
     }
 
     FILE_MIME_TYPES = {
         "application/pdf",
         "application/msword",
         "application/zip",
+        "application/x-zip-compressed",
         "application/x-rar-compressed",
         "application/vnd.rar",
         "application/vnd.ms-excel",
@@ -282,17 +331,24 @@ class CreateFileMessageSerializer(
         "text/plain",
     }
 
-    def validate_file(self, value):
+    def validate_file(
+        self,
+        value,
+    ):
         if value.size > self.MAX_FILE_SIZE:
             raise serializers.ValidationError(
-                "Размер файла не может превышать 100 МБ."
+                "Размер файла не может превышать 100 МБ.",
             )
 
-        file_name = value.name.lower()
+        file_name = (
+            str(value.name or "")
+            .lower()
+            .strip()
+        )
 
         if "." not in file_name:
             raise serializers.ValidationError(
-                "У файла отсутствует расширение."
+                "У файла отсутствует расширение.",
             )
 
         extension = (
@@ -306,56 +362,109 @@ class CreateFileMessageSerializer(
         allowed_extensions = (
             self.IMAGE_EXTENSIONS
             | self.VIDEO_EXTENSIONS
+            | self.AUDIO_EXTENSIONS
             | self.FILE_EXTENSIONS
         )
 
         if extension not in allowed_extensions:
             raise serializers.ValidationError(
-                "Этот тип файла не поддерживается."
+                "Этот тип файла не поддерживается.",
             )
 
         content_type = (
-            value.content_type or ""
-        ).lower()
+            str(
+                getattr(
+                    value,
+                    "content_type",
+                    "",
+                )
+                or ""
+            )
+            .lower()
+            .strip()
+        )
+
+        # Некоторые браузеры и прокси передают
+        # application/octet-stream вместо реального MIME.
+        generic_mime_types = {
+            "",
+            "application/octet-stream",
+            "binary/octet-stream",
+        }
+
+        if content_type in generic_mime_types:
+            return value
 
         allowed_mime_types = (
             self.IMAGE_MIME_TYPES
             | self.VIDEO_MIME_TYPES
+            | self.AUDIO_MIME_TYPES
             | self.FILE_MIME_TYPES
         )
 
         if content_type not in allowed_mime_types:
             raise serializers.ValidationError(
-                "Недопустимый MIME-тип файла."
+                "Недопустимый MIME-тип файла.",
             )
 
-        extension_group_is_correct = (
-            (
-                extension in self.IMAGE_EXTENSIONS
-                and content_type
-                in self.IMAGE_MIME_TYPES
-            )
-            or (
-                extension in self.VIDEO_EXTENSIONS
-                and content_type
-                in self.VIDEO_MIME_TYPES
-            )
-            or (
-                extension in self.FILE_EXTENSIONS
-                and content_type
-                in self.FILE_MIME_TYPES
-            )
+        is_image = (
+            extension in self.IMAGE_EXTENSIONS
+            and content_type
+            in self.IMAGE_MIME_TYPES
         )
 
-        if not extension_group_is_correct:
+        is_video = (
+            extension in self.VIDEO_EXTENSIONS
+            and content_type
+            in self.VIDEO_MIME_TYPES
+        )
+
+        is_audio = (
+            extension in self.AUDIO_EXTENSIONS
+            and content_type
+            in self.AUDIO_MIME_TYPES
+        )
+
+        is_regular_file = (
+            extension in self.FILE_EXTENSIONS
+            and content_type
+            in self.FILE_MIME_TYPES
+        )
+
+        # Расширение .webm может быть:
+        # video/webm или audio/webm.
+        if extension == ".webm":
+            is_video = (
+                content_type
+                in self.VIDEO_MIME_TYPES
+            )
+
+            is_audio = (
+                content_type
+                in self.AUDIO_MIME_TYPES
+            )
+
+        if not (
+            is_image
+            or is_video
+            or is_audio
+            or is_regular_file
+        ):
             raise serializers.ValidationError(
-                "Расширение файла не соответствует его типу."
+                "Расширение файла не соответствует "
+                "его MIME-типу.",
             )
 
         return value
 
-    def validate_text(self, value):
-        return (value or "").strip()
+    def validate_text(
+        self,
+        value,
+    ):
+        return (
+            value
+            or ""
+        ).strip()
 
 
 class CreateMessageSerializer(
@@ -374,18 +483,24 @@ class CreateMessageSerializer(
             "reply_to",
         )
 
-    def validate_text(self, value):
-        value = (value or "").strip()
+    def validate_text(
+        self,
+        value,
+    ):
+        value = (
+            value
+            or ""
+        ).strip()
 
         if not value:
             raise serializers.ValidationError(
-                "Сообщение не может быть пустым."
+                "Сообщение не может быть пустым.",
             )
 
         if len(value) > 5000:
             raise serializers.ValidationError(
                 "Сообщение не может быть длиннее "
-                "5000 символов."
+                "5000 символов.",
             )
 
         return value
@@ -416,10 +531,15 @@ class ChatSerializer(
     serializers.ModelSerializer
 ):
     avatar = serializers.SerializerMethodField()
+
     other_user = serializers.SerializerMethodField()
+
     last_message = serializers.SerializerMethodField()
+
     members_count = serializers.SerializerMethodField()
+
     my_role = serializers.SerializerMethodField()
+
     unread_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -443,9 +563,12 @@ class ChatSerializer(
 
         read_only_fields = fields
 
-    def get_unread_count(self, obj):
+    def get_unread_count(
+        self,
+        obj,
+    ):
         request = self.context.get(
-            "request"
+            "request",
         )
 
         if (
@@ -482,7 +605,10 @@ class ChatSerializer(
 
         return messages.count()
 
-    def get_avatar(self, obj):
+    def get_avatar(
+        self,
+        obj,
+    ):
         avatar = getattr(
             obj,
             "avatar",
@@ -498,22 +624,25 @@ class ChatSerializer(
             return None
 
         request = self.context.get(
-            "request"
+            "request",
         )
 
         if request is not None:
             return request.build_absolute_uri(
-                url
+                url,
             )
 
         return url
 
-    def get_other_user(self, obj):
+    def get_other_user(
+        self,
+        obj,
+    ):
         if obj.chat_type != Chat.PRIVATE:
             return None
 
         request = self.context.get(
-            "request"
+            "request",
         )
 
         if request is None:
@@ -538,7 +667,10 @@ class ChatSerializer(
             context=self.context,
         ).data
 
-    def get_last_message(self, obj):
+    def get_last_message(
+        self,
+        obj,
+    ):
         message = (
             obj.messages
             .filter(
@@ -557,7 +689,9 @@ class ChatSerializer(
             return None
 
         return {
-            "id": str(message.id),
+            "id": str(
+                message.id,
+            ),
             "text": message.text,
             "message_type": (
                 message.message_type
@@ -566,19 +700,25 @@ class ChatSerializer(
                 message.file_name
             ),
             "sender_id": str(
-                message.sender_id
+                message.sender_id,
             ),
             "created_at": (
                 message.created_at
             ),
         }
 
-    def get_members_count(self, obj):
+    def get_members_count(
+        self,
+        obj,
+    ):
         return obj.members.count()
 
-    def get_my_role(self, obj):
+    def get_my_role(
+        self,
+        obj,
+    ):
         request = self.context.get(
-            "request"
+            "request",
         )
 
         if request is None:
@@ -605,24 +745,29 @@ class CreatePrivateChatSerializer(
         max_length=50,
     )
 
-    def validate_username(self, value):
+    def validate_username(
+        self,
+        value,
+    ):
         request = self.context.get(
-            "request"
+            "request",
         )
 
         username = (
-            value.strip()
+            value
+            .strip()
             .lstrip("@")
         )
 
         if not username:
             raise serializers.ValidationError(
-                "Введите тег пользователя."
+                "Введите тег пользователя.",
             )
 
         if request is not None:
             current_username = (
-                request.user.username or ""
+                request.user.username
+                or ""
             )
 
             if (
@@ -630,7 +775,7 @@ class CreatePrivateChatSerializer(
                 == username.lower()
             ):
                 raise serializers.ValidationError(
-                    "Нельзя создать чат с самим собой."
+                    "Нельзя создать чат с самим собой.",
                 )
 
         if not User.objects.filter(
@@ -638,7 +783,7 @@ class CreatePrivateChatSerializer(
             is_active=True,
         ).exists():
             raise serializers.ValidationError(
-                "Пользователь не найден."
+                "Пользователь не найден.",
             )
 
         return username
@@ -665,17 +810,23 @@ class CreateGroupSerializer(
         allow_empty=True,
     )
 
-    def validate_title(self, value):
+    def validate_title(
+        self,
+        value,
+    ):
         value = value.strip()
 
         if not value:
             raise serializers.ValidationError(
-                "Введите название группы."
+                "Введите название группы.",
             )
 
         return value
 
-    def validate_usernames(self, value):
+    def validate_usernames(
+        self,
+        value,
+    ):
         result = []
         seen = set()
 
@@ -685,6 +836,7 @@ class CreateGroupSerializer(
                 .strip()
                 .lstrip("@")
             )
+
             key = username.lower()
 
             if username and key not in seen:
@@ -712,12 +864,15 @@ class CreateChannelSerializer(
         default=True,
     )
 
-    def validate_title(self, value):
+    def validate_title(
+        self,
+        value,
+    ):
         value = value.strip()
 
         if not value:
             raise serializers.ValidationError(
-                "Введите название сообщества."
+                "Введите название сообщества.",
             )
 
         return value
@@ -730,7 +885,10 @@ class AddMemberSerializer(
         max_length=50,
     )
 
-    def validate_username(self, value):
+    def validate_username(
+        self,
+        value,
+    ):
         value = (
             value
             .strip()
@@ -739,7 +897,7 @@ class AddMemberSerializer(
 
         if not value:
             raise serializers.ValidationError(
-                "Введите тег пользователя."
+                "Введите тег пользователя.",
             )
 
         user = (
@@ -753,7 +911,7 @@ class AddMemberSerializer(
 
         if user is None:
             raise serializers.ValidationError(
-                "Пользователь не найден."
+                "Пользователь не найден.",
             )
 
         self.user_object = user
