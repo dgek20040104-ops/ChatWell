@@ -1210,9 +1210,7 @@ class EditMessageView(APIView):
         )
 
 
-class DeleteMessageView(
-    APIView
-):
+class DeleteMessageView(APIView):
     permission_classes = [
         IsAuthenticated,
     ]
@@ -1258,21 +1256,15 @@ class DeleteMessageView(
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        membership = get_membership(
-            chat,
-            request.user,
-        )
-
-        can_delete = (
-    message.sender_id == request.user.id
-)
-
-        if not can_delete:
+        # Удалять можно только собственные сообщения.
+        # Администраторы и владельцы больше не могут
+        # удалять сообщения других пользователей.
+        if message.sender_id != request.user.id:
             return Response(
                 {
                     "detail": (
-                        "У вас нет права удалять "
-                        "это сообщение."
+                        "Можно удалять только "
+                        "свои сообщения."
                     ),
                 },
                 status=status.HTTP_403_FORBIDDEN,
@@ -1281,9 +1273,7 @@ class DeleteMessageView(
         if message.is_deleted:
             return Response(
                 {
-                    "detail": (
-                        "Сообщение уже удалено."
-                    ),
+                    "detail": "Сообщение уже удалено.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -1307,14 +1297,12 @@ class DeleteMessageView(
             ],
         )
 
-        serialized_message = (
-            MessageSerializer(
-                message,
-                context={
-                    "request": request,
-                },
-            ).data
-        )
+        serialized_message = MessageSerializer(
+            message,
+            context={
+                "request": request,
+            },
+        ).data
 
         broadcast_message_deleted(
             chat,
