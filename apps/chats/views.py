@@ -33,6 +33,64 @@ from .serializers import UserSearchSerializer
 User = get_user_model()
 
 
+AUDIO_EXTENSIONS = {
+    "mp3",
+    "wav",
+    "ogg",
+    "m4a",
+    "aac",
+    "opus",
+    "webm",
+}
+
+
+def get_file_extension(filename):
+    """
+    Возвращает расширение файла без точки.
+    """
+    filename = str(filename or "").lower().strip()
+
+    if "." not in filename:
+        return ""
+
+    return filename.rsplit(".", 1)[-1]
+
+
+def detect_message_type(uploaded_file):
+    """
+    Определяет тип загруженного файла.
+
+    Сначала используется MIME-тип.
+    Если MIME-тип отсутствует или некорректен,
+    используется расширение файла.
+    """
+    content_type = (
+        getattr(uploaded_file, "content_type", "")
+        or ""
+    ).lower().strip()
+
+    filename = (
+        getattr(uploaded_file, "name", "")
+        or ""
+    )
+
+    extension = get_file_extension(filename)
+
+    if content_type.startswith("image/"):
+        return Message.IMAGE
+
+    if content_type.startswith("video/"):
+        return Message.VIDEO
+
+    if content_type.startswith("audio/"):
+        return Message.AUDIO
+
+    if extension in AUDIO_EXTENSIONS:
+        return Message.AUDIO
+
+    return Message.FILE
+
+
 def get_chat_for_user(chat_id, user):
     return (
         Chat.objects
@@ -72,6 +130,29 @@ def serialize_chat(chat, request):
             "request": request,
         },
     ).data
+
+
+def serialize_message(message, request):
+    return MessageSerializer(
+        message,
+        context={
+            "request": request,
+        },
+    ).data
+
+
+def reload_message(message_id):
+    return (
+        Message.objects
+        .select_related(
+            "chat",
+            "sender",
+            "reply_to",
+        )
+        .get(
+            id=message_id,
+        )
+    )
 
 
 def broadcast_message(chat, message_data):
@@ -148,6 +229,44 @@ def broadcast_message_deleted(chat, message_data):
             "message": message_data,
         },
     )
+
+
+def get_reply_for_chat(reply_to_id, chat):
+    if reply_to_id is None:
+        return None, None
+
+    reply_to = (
+        Message.objects
+        .filter(
+            id=reply_to_id,
+            chat=chat,
+        )
+        .first()
+    )
+
+    if reply_to is None:
+        return None, Response(
+            {
+                "detail": (
+                    "Сообщение для ответа "
+                    "не найдено."
+                ),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if reply_to.is_deleted:
+        return None, Response(
+            {
+                "detail": (
+                    "Нельзя ответить на "
+                    "удалённое сообщение."
+                ),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return reply_to, None
 
 
 class UserSearchView(APIView):
@@ -545,43 +664,15 @@ class ChatMessagesView(APIView):
             raise_exception=True,
         )
 
-        reply_to_id = serializer.validated_data.get(
-            "reply_to",
+        reply_to, reply_error = get_reply_for_chat(
+            serializer.validated_data.get(
+                "reply_to",
+            ),
+            chat,
         )
 
-        reply_to = None
-
-        if reply_to_id is not None:
-            reply_to = (
-                Message.objects
-                .filter(
-                    id=reply_to_id,
-                    chat=chat,
-                )
-                .first()
-            )
-
-            if reply_to is None:
-                return Response(
-                    {
-                        "detail": (
-                            "Сообщение для ответа "
-                            "не найдено."
-                        ),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if reply_to.is_deleted:
-                return Response(
-                    {
-                        "detail": (
-                            "Нельзя ответить на "
-                            "удалённое сообщение."
-                        ),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        if reply_error:
+            return reply_error
 
         with transaction.atomic():
             message = Message.objects.create(
@@ -600,24 +691,12 @@ class ChatMessagesView(APIView):
                 updated_at=timezone.now(),
             )
 
-        message = (
-            Message.objects
-            .select_related(
-                "chat",
-                "sender",
-                "reply_to",
-            )
-            .get(
-                id=message.id,
-            )
-        )
+        message = reload_message(message.id)
 
-        serialized_message = MessageSerializer(
+        serialized_message = serialize_message(
             message,
-            context={
-                "request": request,
-            },
-        ).data
+            request,
+        )
 
         broadcast_message(
             chat,
@@ -704,56 +783,30 @@ class UploadMessageView(APIView):
             "",
         )
 
-        reply_to_id = serializer.validated_data.get(
-            "reply_to",
+        reply_to, reply_error = get_reply_for_chat(
+            serializer.validated_data.get(
+                "reply_to",
+            ),
+            chat,
         )
 
-        reply_to = None
-
-        if reply_to_id is not None:
-            reply_to = (
-                Message.objects
-                .filter(
-                    id=reply_to_id,
-                    chat=chat,
-                )
-                .first()
-            )
-
-            if reply_to is None:
-                return Response(
-                    {
-                        "detail": (
-                            "Сообщение для ответа "
-                            "не найдено."
-                        ),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if reply_to.is_deleted:
-                return Response(
-                    {
-                        "detail": (
-                            "Нельзя ответить на "
-                            "удалённое сообщение."
-                        ),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        if reply_error:
+            return reply_error
 
         content_type = (
-            uploaded_file.content_type or ""
-        ).lower()
+            getattr(uploaded_file, "content_type", "")
+            or ""
+        ).lower().strip()
 
-        if content_type.startswith("image/"):
-            message_type = Message.IMAGE
+        message_type = detect_message_type(
+            uploaded_file
+        )
 
-        elif content_type.startswith("video/"):
-            message_type = Message.VIDEO
-
-        else:
-            message_type = Message.FILE
+        if (
+            message_type == Message.AUDIO
+            and not content_type.startswith("audio/")
+        ):
+            content_type = "audio/webm"
 
         with transaction.atomic():
             message = Message.objects.create(
@@ -774,24 +827,12 @@ class UploadMessageView(APIView):
                 updated_at=timezone.now(),
             )
 
-        message = (
-            Message.objects
-            .select_related(
-                "chat",
-                "sender",
-                "reply_to",
-            )
-            .get(
-                id=message.id,
-            )
-        )
+        message = reload_message(message.id)
 
-        serialized_message = MessageSerializer(
+        serialized_message = serialize_message(
             message,
-            context={
-                "request": request,
-            },
-        ).data
+            request,
+        )
 
         broadcast_message(
             chat,
@@ -1189,15 +1230,13 @@ class EditMessageView(APIView):
                 "text",
                 "is_edited",
                 "updated_at",
-            ]
+            ],
         )
 
-        serialized_message = MessageSerializer(
+        serialized_message = serialize_message(
             message,
-            context={
-                "request": request,
-            },
-        ).data
+            request,
+        )
 
         broadcast_message_updated(
             chat,
@@ -1215,12 +1254,7 @@ class DeleteMessageView(APIView):
         IsAuthenticated,
     ]
 
-    def delete(
-        self,
-        request,
-        chat_id,
-        message_id,
-    ):
+    def delete(self, request, chat_id, message_id):
         chat = get_chat_for_user(
             chat_id,
             request.user,
@@ -1256,9 +1290,6 @@ class DeleteMessageView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Удалять можно только собственные сообщения.
-        # Администраторы и владельцы больше не могут
-        # удалять сообщения других пользователей.
         if message.sender_id != request.user.id:
             return Response(
                 {
@@ -1297,12 +1328,10 @@ class DeleteMessageView(APIView):
             ],
         )
 
-        serialized_message = MessageSerializer(
+        serialized_message = serialize_message(
             message,
-            context={
-                "request": request,
-            },
-        ).data
+            request,
+        )
 
         broadcast_message_deleted(
             chat,
