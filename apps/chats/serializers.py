@@ -36,6 +36,11 @@ class ChatUserSerializer(
 
     is_verified = serializers.SerializerMethodField()
 
+    last_seen = serializers.DateTimeField(
+        read_only=True,
+        allow_null=True,
+    )
+
     def get_avatar(
         self,
         obj,
@@ -88,7 +93,6 @@ class ChatUserSerializer(
                 False,
             )
         )
-
 
 class UserSearchSerializer(
     ChatUserSerializer
@@ -196,10 +200,7 @@ class MessageSerializer(
 
         return obj.read_by.count()
 
-class UserSearchSerializer(
-    ChatUserSerializer
-):
-    pass
+
 
 class CreateFileMessageSerializer(
     serializers.Serializer
