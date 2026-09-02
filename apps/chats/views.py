@@ -1264,12 +1264,8 @@ class DeleteMessageView(
         )
 
         can_delete = (
-            message.sender_id
-            == request.user.id
-            or is_manager(
-                membership,
-            )
-        )
+    message.sender_id == request.user.id
+)
 
         if not can_delete:
             return Response(
