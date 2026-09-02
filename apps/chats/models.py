@@ -164,6 +164,12 @@ class ChatMember(models.Model):
 
 
 class Message(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
     TEXT = "text"
     IMAGE = "image"
     VIDEO = "video"
@@ -193,6 +199,7 @@ class Message(models.Model):
     )
 
     text = models.TextField(
+        max_length=5000,
         blank=True,
         default="",
     )
@@ -203,11 +210,6 @@ class Message(models.Model):
         default=TEXT,
     )
 
-    text = models.TextField(
-        max_length=5000,
-        blank=True,
-    )
-
     file = models.FileField(
         upload_to="chats/files/%Y/%m/%d/",
         null=True,
@@ -215,30 +217,31 @@ class Message(models.Model):
         validators=[
             FileExtensionValidator(
                 allowed_extensions=[
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "gif",
-    "mp4",
-    "webm",
-    "mov",
-    "avi",
-    "mp3",
-    "wav",
-    "ogg",
-    "m4a",
-    "aac",
-    "opus",
-    "pdf",
-    "doc",
-    "docx",
-    "xls",
-    "xlsx",
-    "zip",
-    "rar",
-    "txt",
-],
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp",
+                    "gif",
+                    "mp4",
+                    "webm",
+                    "mov",
+                    "avi",
+                    "mkv",
+                    "mp3",
+                    "wav",
+                    "ogg",
+                    "m4a",
+                    "aac",
+                    "opus",
+                    "pdf",
+                    "doc",
+                    "docx",
+                    "xls",
+                    "xlsx",
+                    "zip",
+                    "rar",
+                    "txt",
+                ],
             ),
         ],
     )
@@ -246,6 +249,7 @@ class Message(models.Model):
     file_name = models.CharField(
         max_length=255,
         blank=True,
+        default="",
     )
 
     file_size = models.PositiveBigIntegerField(
@@ -256,6 +260,7 @@ class Message(models.Model):
     mime_type = models.CharField(
         max_length=100,
         blank=True,
+        default="",
     )
 
     shared_post = models.ForeignKey(
@@ -335,12 +340,9 @@ class Message(models.Model):
     def clean(self):
         super().clean()
 
-        # Удалённое сообщение может не иметь текста и файла.
         if self.is_deleted:
             return
 
-        # Текстовое сообщение не должно содержать файл
-        # и не может быть пустым.
         if self.message_type == self.TEXT:
             if self.file:
                 raise ValidationError(
@@ -348,36 +350,35 @@ class Message(models.Model):
                     "содержать файл."
                 )
 
-            if not self.text.strip():
+            if not (self.text or "").strip():
                 raise ValidationError(
                     "Текст сообщения не может быть пустым."
                 )
 
-        # Для изображения, видео и файла обязательно
-        # наличие загруженного файла.
         if self.message_type in {
-    self.IMAGE,
-    self.VIDEO,
-    self.AUDIO,
-    self.FILE,
-}:
+            self.IMAGE,
+            self.VIDEO,
+            self.AUDIO,
+            self.FILE,
+        }:
             if not self.file:
                 raise ValidationError(
                     "Для сообщения необходимо выбрать файл."
                 )
 
-        # Для публикации обязательно наличие публикации.
         if self.message_type == self.SHARED_POST:
             if not self.shared_post_id:
                 raise ValidationError(
                     "Необходимо указать публикацию."
                 )
 
-        # Ограничение размера файла — 100 МБ.
         if self.file:
             try:
                 file_size = self.file.size
-            except (AttributeError, ValueError):
+            except (
+                AttributeError,
+                ValueError,
+            ):
                 file_size = None
 
             if (
@@ -389,11 +390,14 @@ class Message(models.Model):
                 )
 
     def save(self, *args, **kwargs):
+        if not self.pk:
+            self.pk = uuid.uuid4()
+
         if self.file:
             if not self.file_name:
                 self.file_name = self.file.name
 
-            if not self.file_size:
+            if self.file_size is None:
                 self.file_size = self.file.size
 
             if not self.mime_type:
@@ -401,9 +405,10 @@ class Message(models.Model):
                     self.file,
                     "content_type",
                     "",
-                )
+                ) or ""
 
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
