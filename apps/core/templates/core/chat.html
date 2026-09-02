@@ -222,6 +222,17 @@
                         ＋
                     </button>
 
+                    <button
+    id="voice-button"
+    class="voice-button"
+    type="button"
+    title="Записать голосовое сообщение"
+    aria-label="Записать голосовое сообщение"
+>
+    🎙
+</button>
+
+                    
                     <input
                         id="file-input"
                         type="file"
@@ -1277,11 +1288,101 @@
 }
 
 .attach-button,
+.voice-button,
 .send-button {
     width: 41px;
     height: 41px;
+    border: 0;
     border-radius: 12px;
+    cursor: pointer;
     font-size: 20px;
+}
+
+.attach-button {
+    background: var(--chat-hover);
+    color: var(--chat-muted);
+}
+
+.voice-button {
+    background: #fff0f2;
+    color: var(--chat-danger);
+}
+
+.voice-button:hover {
+    background: #ffe1e6;
+}
+
+.voice-button.recording {
+    background: var(--chat-danger);
+    color: var(--chat-white);
+    animation: voicePulse 1s infinite;
+}
+
+.voice-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+@keyframes voicePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(216, 76, 91, .45);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(216, 76, 91, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(216, 76, 91, 0);
+    }
+}.attach-button,
+.voice-button,
+.send-button {
+    width: 41px;
+    height: 41px;
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.attach-button {
+    background: var(--chat-hover);
+    color: var(--chat-muted);
+}
+
+.voice-button {
+    background: #fff0f2;
+    color: var(--chat-danger);
+}
+
+.voice-button:hover {
+    background: #ffe1e6;
+}
+
+.voice-button.recording {
+    background: var(--chat-danger);
+    color: var(--chat-white);
+    animation: voicePulse 1s infinite;
+}
+
+.voice-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+@keyframes voicePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(216, 76, 91, .45);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(216, 76, 91, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(216, 76, 91, 0);
+    }
 }
 
 .attach-button {
@@ -1663,6 +1764,7 @@
     const messageInput = $("message-input");
     const sendButton = $("send-message-button");
     const attachButton = $("attach-button");
+    const voiceButton = $("voice-button");
     const fileInput = $("file-input");
     const errorElement = $("message-error");
     const backButton = $("mobile-back-button");
@@ -1676,32 +1778,44 @@
     let selectedChat = null;
     let currentUser = null;
     let currentUserId = "";
+
     let chatSocket = null;
     let notificationsSocket = null;
+
     let refreshPromise = null;
     let reconnectTimer = null;
     let notificationsReconnectTimer = null;
     let notificationsReconnectAttempts = 0;
     let refreshTimer = null;
+
     let typingTimer = null;
     let typingClearTimer = null;
     let searchTimer = null;
     let groupSearchTimer = null;
+
     let selectedMessage = null;
     let replyMessage = null;
     let editingMessage = null;
+
     let uploadInProgress = false;
     let selectedUsers = [];
     let chatMembers = [];
     let chatInfoRequestId = 0;
     let messageFilter = null;
 
+    let mediaRecorder = null;
+    let recordingStream = null;
+    let recordedAudioChunks = [];
+
     function sameId(first, second) {
         return String(first) === String(second);
     }
 
     function isCurrentChat(chatId) {
-        return selectedChat && sameId(selectedChat.id, chatId);
+        return Boolean(
+            selectedChat
+            && sameId(selectedChat.id, chatId)
+        );
     }
 
     function safeClone(value) {
@@ -1738,16 +1852,18 @@
 
                     return entry[0] + ": " + value;
                 })
-                .join(" ") || fallback;
+                .join(" ")
+                || fallback;
         }
 
         return fallback;
     }
 
     async function parseResponse(response) {
-        const type = response.headers.get("content-type") || "";
+        const contentType =
+            response.headers.get("content-type") || "";
 
-        if (!type.includes("application/json")) {
+        if (!contentType.includes("application/json")) {
             return {};
         }
 
@@ -1787,11 +1903,19 @@
                 }
 
                 accessToken = data.access;
-                localStorage.setItem(ACCESS_KEY, accessToken);
+
+                localStorage.setItem(
+                    ACCESS_KEY,
+                    accessToken
+                );
 
                 if (data.refresh) {
                     refreshToken = data.refresh;
-                    localStorage.setItem(REFRESH_KEY, refreshToken);
+
+                    localStorage.setItem(
+                        REFRESH_KEY,
+                        refreshToken
+                    );
                 }
 
                 return true;
@@ -1806,7 +1930,47 @@
         return refreshPromise;
     }
 
+    function stopRecordingTracks() {
+        if (!recordingStream) {
+            return;
+        }
+
+        recordingStream
+            .getTracks()
+            .forEach(function (track) {
+                track.stop();
+            });
+
+        recordingStream = null;
+    }
+
+    function resetVoiceButton() {
+        if (!voiceButton) {
+            return;
+        }
+
+        voiceButton.classList.remove("recording");
+        voiceButton.textContent = "🎙";
+        voiceButton.title =
+            "Записать голосовое сообщение";
+    }
+
     function logout() {
+        stopRecordingTracks();
+
+        if (mediaRecorder) {
+            try {
+                mediaRecorder.stop();
+            } catch (error) {
+                console.warn(
+                    "Не удалось остановить запись:",
+                    error
+                );
+            }
+
+            mediaRecorder = null;
+        }
+
         localStorage.removeItem(ACCESS_KEY);
         localStorage.removeItem(REFRESH_KEY);
 
@@ -1838,27 +2002,44 @@
         let response;
 
         try {
-            response = await fetch(url, requestOptions);
+            response = await fetch(
+                url,
+                requestOptions
+            );
         } catch (error) {
-            throw new Error("Нет соединения с сервером.");
+            throw new Error(
+                "Нет соединения с сервером."
+            );
         }
 
         if (response.status === 401 && retry) {
-            const refreshed = await refreshAccessToken();
+            const refreshed =
+                await refreshAccessToken();
 
             if (refreshed) {
-                return apiRequest(url, options, false);
+                return apiRequest(
+                    url,
+                    options,
+                    false
+                );
             }
 
             logout();
-            throw new Error("Сессия истекла.");
+
+            throw new Error(
+                "Сессия истекла."
+            );
         }
 
-        const data = await parseResponse(response);
+        const data =
+            await parseResponse(response);
 
         if (!response.ok) {
             throw new Error(
-                errorText(data, "Ошибка выполнения запроса.")
+                errorText(
+                    data,
+                    "Ошибка выполнения запроса."
+                )
             );
         }
 
@@ -1876,13 +2057,17 @@
     }
 
     function getUserTag(user) {
-        return user && user.username
-            ? "@" + user.username
-            : "";
+        if (!user || !user.username) {
+            return "";
+        }
+
+        return "@" + user.username;
     }
 
     function getInitials(user) {
-        return getUserName(user).charAt(0).toUpperCase();
+        return getUserName(user)
+            .charAt(0)
+            .toUpperCase();
     }
 
     function openUserProfile(user) {
@@ -1891,25 +2076,39 @@
         }
 
         window.location.href =
-            "/users/" + encodeURIComponent(user.id) + "/";
+            "/users/"
+            + encodeURIComponent(user.id)
+            + "/";
     }
 
     function appendVerifiedBadge(element, user) {
-        if (!element || !user || user.is_verified !== true) {
+        if (
+            !element
+            || !user
+            || user.is_verified !== true
+        ) {
             return;
         }
 
-        const badge = document.createElement("span");
+        const badge =
+            document.createElement("span");
+
         badge.className = "verified-badge";
         badge.textContent = "✓";
         badge.title = "Подтверждённый профиль";
+
         element.appendChild(badge);
     }
 
     function getPrivateUser(chat) {
-        return chat && chat.chat_type === "private"
-            ? chat.other_user || null
-            : null;
+        if (
+            !chat
+            || chat.chat_type !== "private"
+        ) {
+            return null;
+        }
+
+        return chat.other_user || null;
     }
 
     function getChatName(chat) {
@@ -1923,7 +2122,8 @@
             return chat.title;
         }
 
-        return chat && chat.chat_type === "channel"
+        return chat
+            && chat.chat_type === "channel"
             ? "Сообщество"
             : "Группа";
     }
@@ -1935,7 +2135,12 @@
             return getUserTag(user);
         }
 
-        const count = Number(chat && chat.members_count || 0);
+        const count =
+            Number(
+                chat
+                && chat.members_count
+                || 0
+            );
 
         return chat.chat_type === "channel"
             ? count + " подписчиков"
@@ -1963,14 +2168,15 @@
             return "Видео";
         }
 
-        if (
-    message.message_type === "audio"
-) {
-    return "Голосовое сообщение";
-}
+        if (message.message_type === "audio") {
+            return "Голосовое сообщение";
+        }
 
-        
-        return "📎 " + (message.file_name || "Файл");
+        return "📎 "
+            + (
+                message.file_name
+                || "Файл"
+            );
     }
 
     function formatDate(value) {
@@ -2001,26 +2207,38 @@
         }
 
         element.innerHTML = "";
+
         element.className = large
             ? "avatar avatar-large"
             : "avatar avatar-small";
 
         const url =
-            (chat && chat.avatar)
-            || (user && user.avatar)
+            (
+                chat
+                && chat.avatar
+            )
+            || (
+                user
+                && user.avatar
+            )
             || "";
 
         if (!url) {
-            element.textContent = getInitials(
-                user || {
-                    display_name: getChatName(chat)
-                }
-            );
+            element.textContent =
+                getInitials(
+                    user
+                    || {
+                        display_name:
+                            getChatName(chat)
+                    }
+                );
 
             return;
         }
 
-        const image = document.createElement("img");
+        const image =
+            document.createElement("img");
+
         image.src = url;
         image.alt = "Аватар";
         image.loading = "lazy";
@@ -2028,61 +2246,99 @@
         image.onerror = function () {
             image.remove();
 
-            element.textContent = getInitials(
-                user || {
-                    display_name: getChatName(chat)
-                }
-            );
+            element.textContent =
+                getInitials(
+                    user
+                    || {
+                        display_name:
+                            getChatName(chat)
+                    }
+                );
         };
 
         element.appendChild(image);
     }
 
     function updateDocumentTitle() {
-        const total = chats.reduce(function (result, chat) {
-            return result + Number(chat.unread_count || 0);
-        }, 0);
+        const total = chats.reduce(
+            function (result, chat) {
+                return result
+                    + Number(
+                        chat.unread_count || 0
+                    );
+            },
+            0
+        );
 
-        document.title = total > 0
-            ? "(" + (total > 99 ? "99+" : total) + ") Чаты — ChatWell"
-            : "Чаты — ChatWell";
+        document.title =
+            total > 0
+                ? "("
+                    + (
+                        total > 99
+                            ? "99+"
+                            : total
+                    )
+                    + ") Чаты — ChatWell"
+                : "Чаты — ChatWell";
     }
 
     function renderChats() {
-        const query = searchInput.value.trim().toLowerCase();
+        if (!chatsList) {
+            return;
+        }
 
-        const filtered = chats.filter(function (chat) {
-            const name = getChatName(chat).toLowerCase();
-            const preview = getMessagePreview(
-                chat.last_message
-            ).toLowerCase();
+        const query =
+            searchInput.value
+                .trim()
+                .toLowerCase();
 
-            return !query
-                || name.includes(query)
-                || preview.includes(query);
-        });
+        const filtered =
+            chats.filter(function (chat) {
+                const name =
+                    getChatName(chat)
+                        .toLowerCase();
+
+                const preview =
+                    getMessagePreview(
+                        chat.last_message
+                    )
+                        .toLowerCase();
+
+                return !query
+                    || name.includes(query)
+                    || preview.includes(query);
+            });
 
         chatsList.innerHTML = "";
 
         if (!filtered.length) {
-            const empty = document.createElement("div");
+            const empty =
+                document.createElement("div");
+
             empty.className = "empty";
-            empty.textContent = query
-                ? "Чаты не найдены."
-                : "Чатов пока нет.";
+
+            empty.textContent =
+                query
+                    ? "Чаты не найдены."
+                    : "Чатов пока нет.";
 
             chatsList.appendChild(empty);
             updateDocumentTitle();
+
             return;
         }
 
         filtered.forEach(function (chat) {
-            const item = document.createElement("div");
+            const item =
+                document.createElement("div");
+
             item.className = "chat-item";
             item.tabIndex = 0;
-            item.dataset.chatId = String(chat.id);
+            item.dataset.chatId =
+                String(chat.id);
 
-            const unread = Number(chat.unread_count || 0);
+            const unread =
+                Number(chat.unread_count || 0);
 
             if (unread > 0) {
                 item.classList.add("has-unread");
@@ -2092,7 +2348,8 @@
                 item.classList.add("active");
             }
 
-            const avatar = document.createElement("div");
+            const avatar =
+                document.createElement("div");
 
             setAvatar(
                 avatar,
@@ -2101,59 +2358,100 @@
                 false
             );
 
-            const info = document.createElement("div");
+            const info =
+                document.createElement("div");
+
             info.className = "chat-item-info";
 
-            const top = document.createElement("div");
+            const top =
+                document.createElement("div");
+
             top.className = "chat-item-top";
 
-            const name = document.createElement("div");
+            const name =
+                document.createElement("div");
+
             name.className = "chat-item-name";
             name.textContent = getChatName(chat);
 
-            appendVerifiedBadge(name, getPrivateUser(chat));
+            appendVerifiedBadge(
+                name,
+                getPrivateUser(chat)
+            );
 
-            const time = document.createElement("div");
+            const time =
+                document.createElement("div");
+
             time.className = "chat-item-time";
-            time.textContent = chat.last_message
-                ? formatDate(chat.last_message.created_at)
-                : "";
 
-            const bottom = document.createElement("div");
+            time.textContent =
+                chat.last_message
+                    ? formatDate(
+                        chat.last_message.created_at
+                    )
+                    : "";
+
+            const bottom =
+                document.createElement("div");
+
             bottom.className = "chat-item-bottom";
 
-            const preview = document.createElement("div");
+            const preview =
+                document.createElement("div");
+
             preview.className = "chat-item-preview";
-            preview.textContent = chat.last_message
-                ? getMessagePreview(chat.last_message)
-                : getChatSubtitle(chat);
+
+            preview.textContent =
+                chat.last_message
+                    ? getMessagePreview(
+                        chat.last_message
+                    )
+                    : getChatSubtitle(chat);
 
             top.appendChild(name);
             top.appendChild(time);
+
             bottom.appendChild(preview);
 
             if (unread > 0) {
-                const badge = document.createElement("span");
+                const badge =
+                    document.createElement("span");
+
                 badge.className = "unread-badge";
-                badge.textContent = unread > 99 ? "99+" : String(unread);
+
+                badge.textContent =
+                    unread > 99
+                        ? "99+"
+                        : String(unread);
+
                 bottom.appendChild(badge);
             }
 
             info.appendChild(top);
             info.appendChild(bottom);
+
             item.appendChild(avatar);
             item.appendChild(info);
 
-            item.addEventListener("click", function () {
-                selectChat(chat);
-            });
-
-            item.addEventListener("keydown", function (event) {
-                if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
+            item.addEventListener(
+                "click",
+                function () {
                     selectChat(chat);
                 }
-            });
+            );
+
+            item.addEventListener(
+                "keydown",
+                function (event) {
+                    if (
+                        event.key === "Enter"
+                        || event.key === " "
+                    ) {
+                        event.preventDefault();
+                        selectChat(chat);
+                    }
+                }
+            );
 
             chatsList.appendChild(item);
         });
@@ -2162,26 +2460,38 @@
     }
 
     async function loadCurrentUser() {
-        currentUser = await apiRequest(
-            "/api/auth/me/",
-            { method: "GET" }
-        );
+        currentUser =
+            await apiRequest(
+                "/api/auth/me/",
+                {
+                    method: "GET"
+                }
+            );
 
-        if (currentUser && currentUser.id !== undefined) {
-            currentUserId = String(currentUser.id);
+        if (
+            currentUser
+            && currentUser.id !== undefined
+        ) {
+            currentUserId =
+                String(currentUser.id);
         }
     }
 
     async function loadChats(showLoader) {
         if (showLoader !== false) {
             chatsList.innerHTML =
-                '<div class="loading">Загружаем чаты...</div>';
+                '<div class="loading">'
+                + "Загружаем чаты..."
+                + "</div>";
         }
 
-        const data = await apiRequest(
-            "/api/chats/",
-            { method: "GET" }
-        );
+        const data =
+            await apiRequest(
+                "/api/chats/",
+                {
+                    method: "GET"
+                }
+            );
 
         const oldUnread = {};
 
@@ -2190,7 +2500,10 @@
                 Number(chat.unread_count || 0);
         });
 
-        chats = Array.isArray(data) ? data : [];
+        chats =
+            Array.isArray(data)
+                ? data
+                : [];
 
         chats.forEach(function (chat) {
             const id = String(chat.id);
@@ -2206,9 +2519,13 @@
         });
 
         if (selectedChat) {
-            const refreshed = chats.find(function (chat) {
-                return sameId(chat.id, selectedChat.id);
-            });
+            const refreshed =
+                chats.find(function (chat) {
+                    return sameId(
+                        chat.id,
+                        selectedChat.id
+                    );
+                });
 
             if (refreshed) {
                 selectedChat = refreshed;
@@ -2228,7 +2545,10 @@
             return String(message.sender.id);
         }
 
-        if (message && message.sender_id !== undefined) {
+        if (
+            message
+            && message.sender_id !== undefined
+        ) {
             return String(message.sender_id);
         }
 
@@ -2236,45 +2556,57 @@
     }
 
     function getFileUrl(message) {
-    if (!message) {
+        if (!message) {
+            return "";
+        }
+
+        if (
+            typeof message.file_url === "string"
+            && message.file_url
+        ) {
+            return message.file_url;
+        }
+
+        if (
+            typeof message.file === "string"
+            && message.file
+        ) {
+            return message.file;
+        }
+
         return "";
     }
 
-    if (
-        typeof message.file_url === "string"
-        && message.file_url
-    ) {
-        return message.file_url;
-    }
-
-    if (
-        typeof message.file === "string"
-        && message.file
-    ) {
-        return message.file;
-    }
-
-    return "";
-}
-
     function getReplyObject(message) {
-        if (!message || !message.reply_to) {
+        if (
+            !message
+            || !message.reply_to
+        ) {
             return null;
         }
 
-        return typeof message.reply_to === "object"
-            ? message.reply_to
-            : { id: message.reply_to };
+        if (
+            typeof message.reply_to === "object"
+        ) {
+            return message.reply_to;
+        }
+
+        return {
+            id: message.reply_to
+        };
     }
 
     function buildMessageBubble(message) {
-        const bubble = document.createElement("div");
+        const bubble =
+            document.createElement("div");
+
         bubble.className = "message-bubble";
 
-        const mine = sameId(
-            getSenderId(message),
-            currentUserId
-        );
+        const mine =
+            sameId(
+                getSenderId(message),
+                currentUserId
+            );
 
         if (
             !mine
@@ -2282,147 +2614,186 @@
             && selectedChat.chat_type !== "private"
             && message.sender
         ) {
-            const sender = document.createElement("a");
+            const sender =
+                document.createElement("a");
+
             sender.className = "message-sender";
 
             if (message.sender.id) {
                 sender.href =
                     "/users/"
-                    + encodeURIComponent(message.sender.id)
+                    + encodeURIComponent(
+                        message.sender.id
+                    )
                     + "/";
             }
 
-            sender.textContent = getUserName(message.sender);
-            appendVerifiedBadge(sender, message.sender);
+            sender.textContent =
+                getUserName(message.sender);
+
+            appendVerifiedBadge(
+                sender,
+                message.sender
+            );
+
+            sender.addEventListener(
+                "click",
+                function (event) {
+                    event.stopPropagation();
+                }
+            );
+
             bubble.appendChild(sender);
         }
 
-        const reply = getReplyObject(message);
+        const reply =
+            getReplyObject(message);
 
         if (reply) {
-            const replyElement = document.createElement("div");
-            replyElement.className = "message-reply";
+            const replyElement =
+                document.createElement("div");
+
+            replyElement.className =
+                "message-reply";
+
             replyElement.textContent =
                 "Ответ: "
-                + (reply.text || reply.file_name || "Сообщение");
+                + (
+                    reply.text
+                    || reply.file_name
+                    || "Сообщение"
+                );
 
             bubble.appendChild(replyElement);
         }
 
         if (message.is_deleted) {
-            const deleted = document.createElement("div");
+            const deleted =
+                document.createElement("div");
+
             deleted.className = "message-text";
-            deleted.textContent = "Сообщение удалено";
+            deleted.textContent =
+                "Сообщение удалено";
+
             bubble.appendChild(deleted);
         } else {
-            const url = getFileUrl(message);
+            const url =
+                getFileUrl(message);
 
-            if (url && message.message_type === "image") {
-                const image = document.createElement("img");
+            if (
+                url
+                && message.message_type === "image"
+            ) {
+                const image =
+                    document.createElement("img");
+
                 image.className = "message-image";
                 image.src = url;
-                image.alt = message.file_name || "Изображение";
+                image.alt =
+                    message.file_name
+                    || "Изображение";
                 image.loading = "lazy";
 
-                image.addEventListener("click", function (event) {
-                    event.stopPropagation();
-                    window.open(url, "_blank");
-                });
+                image.addEventListener(
+                    "click",
+                    function (event) {
+                        event.stopPropagation();
+
+                        window.open(
+                            url,
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
+                    }
+                );
 
                 bubble.appendChild(image);
             } else if (
-    url
-    && message.message_type
-        === "video"
-) {
-    const video =
-        document.createElement(
-            "video"
-        );
+                url
+                && message.message_type === "video"
+            ) {
+                const video =
+                    document.createElement("video");
 
-    video.className =
-        "message-video";
+                video.className = "message-video";
+                video.src = url;
+                video.controls = true;
+                video.preload = "metadata";
+                video.playsInline = true;
 
-    video.src =
-        url;
+                video.addEventListener(
+                    "click",
+                    function (event) {
+                        event.stopPropagation();
+                    }
+                );
 
-    video.controls =
-        true;
+                bubble.appendChild(video);
+            } else if (
+                url
+                && message.message_type === "audio"
+            ) {
+                const audio =
+                    document.createElement("audio");
 
-    video.preload =
-        "metadata";
+                audio.className = "message-audio";
+                audio.src = url;
+                audio.controls = true;
+                audio.preload = "metadata";
 
-    video.playsInline =
-        true;
+                audio.addEventListener(
+                    "click",
+                    function (event) {
+                        event.stopPropagation();
+                    }
+                );
 
-    video.addEventListener(
-        "click",
-        function (event) {
-            event.stopPropagation();
-        }
-    );
+                bubble.appendChild(audio);
+            } else if (url) {
+                const link =
+                    document.createElement("a");
 
-    bubble.appendChild(
-        video
-    );
-} else if (
-    url
-    && message.message_type
-        === "audio"
-) {
-    const audio =
-        document.createElement(
-            "audio"
-        );
-
-    audio.className =
-        "message-audio";
-
-    audio.src =
-        url;
-
-    audio.controls =
-        true;
-
-    audio.preload =
-        "metadata";
-
-    audio.addEventListener(
-        "click",
-        function (event) {
-            event.stopPropagation();
-        }
-    );
-
-    bubble.appendChild(
-        audio
-    );
-} else if (url) {
-                const link = document.createElement("a");
                 link.className = "message-file";
                 link.href = url;
                 link.target = "_blank";
                 link.rel = "noopener noreferrer";
-                link.download = message.file_name || "";
-                link.textContent =
-                    "📎 " + (message.file_name || "Скачать файл");
+                link.download =
+                    message.file_name || "";
 
-                link.addEventListener("click", function (event) {
-                    event.stopPropagation();
-                });
+                link.textContent =
+                    "📎 "
+                    + (
+                        message.file_name
+                        || "Скачать файл"
+                    );
+
+                link.addEventListener(
+                    "click",
+                    function (event) {
+                        event.stopPropagation();
+                    }
+                );
 
                 bubble.appendChild(link);
             }
 
             if (message.text) {
-                const text = document.createElement("div");
+                const text =
+                    document.createElement("div");
+
                 text.className = "message-text";
                 text.textContent = message.text;
 
                 if (message.is_edited) {
-                    const edited = document.createElement("span");
-                    edited.className = "message-edited";
-                    edited.textContent = "изменено";
+                    const edited =
+                        document.createElement("span");
+
+                    edited.className =
+                        "message-edited";
+
+                    edited.textContent =
+                        "изменено";
+
                     text.appendChild(edited);
                 }
 
@@ -2430,18 +2801,31 @@
             }
         }
 
-        const footer = document.createElement("div");
-        footer.className = "message-time";
-        footer.textContent = formatDate(
-            message.created_at || message.updated_at
-        );
+        const footer =
+            document.createElement("div");
 
-        if (mine && !message.is_deleted) {
-            const status = document.createElement("span");
+        footer.className = "message-time";
+
+        footer.textContent =
+            formatDate(
+                message.created_at
+                || message.updated_at
+            );
+
+        if (
+            mine
+            && !message.is_deleted
+        ) {
+            const status =
+                document.createElement("span");
+
             status.className = "message-status";
+
             status.textContent =
                 message.is_delivered
-                || Number(message.read_count || 0) > 0
+                || Number(
+                    message.read_count || 0
+                ) > 0
                     ? "✓✓"
                     : "✓";
 
@@ -2454,35 +2838,53 @@
     }
 
     function createMessageRow(message) {
-        const row = document.createElement("div");
-        const mine = sameId(
-            getSenderId(message),
-            currentUserId
-        );
+        const row =
+            document.createElement("div");
 
-        row.className = "message-row " + (
-            mine ? "mine" : "other"
-        );
-
-        row.dataset.messageId = String(message.id);
-        row.messageData = message;
-        row.appendChild(buildMessageBubble(message));
-
-        row.addEventListener("contextmenu", function (event) {
-            event.preventDefault();
-
-            openContextMenu(
-                message,
-                event.clientX,
-                event.clientY
+        const mine =
+            sameId(
+                getSenderId(message),
+                currentUserId
             );
-        });
+
+        row.className =
+            "message-row "
+            + (
+                mine
+                    ? "mine"
+                    : "other"
+            );
+
+        row.dataset.messageId =
+            String(message.id);
+
+        row.messageData = message;
+
+        row.appendChild(
+            buildMessageBubble(message)
+        );
+
+        row.addEventListener(
+            "contextmenu",
+            function (event) {
+                event.preventDefault();
+
+                openContextMenu(
+                    message,
+                    event.clientX,
+                    event.clientY
+                );
+            }
+        );
 
         return row;
     }
 
     function appendMessage(message) {
-        if (!message || !message.id) {
+        if (
+            !message
+            || !message.id
+        ) {
             return;
         }
 
@@ -2494,41 +2896,62 @@
         }
 
         const selector =
-            '[data-message-id="' + String(message.id) + '"]';
+            '[data-message-id="'
+            + String(message.id)
+            + '"]';
 
-        if (messagesList.querySelector(selector)) {
+        if (
+            messagesList.querySelector(selector)
+        ) {
             return;
         }
 
-        const empty = messagesList.querySelector(".empty");
+        const empty =
+            messagesList.querySelector(".empty");
 
         if (empty) {
             empty.remove();
         }
 
-        messagesList.appendChild(createMessageRow(message));
+        messagesList.appendChild(
+            createMessageRow(message)
+        );
     }
 
     function updateRenderedMessage(message) {
-        if (!message || !message.id) {
+        if (
+            !message
+            || !message.id
+        ) {
             return;
         }
 
-        const row = messagesList.querySelector(
-            '[data-message-id="' + String(message.id) + '"]'
-        );
+        const row =
+            messagesList.querySelector(
+                '[data-message-id="'
+                + String(message.id)
+                + '"]'
+            );
 
         if (row) {
-            row.replaceWith(createMessageRow(message));
+            row.replaceWith(
+                createMessageRow(message)
+            );
         }
     }
 
     function renderMessages(messages) {
         messagesList.innerHTML = "";
 
-        if (!Array.isArray(messages) || !messages.length) {
+        if (
+            !Array.isArray(messages)
+            || !messages.length
+        ) {
             messagesList.innerHTML =
-                '<div class="empty">Сообщений пока нет.</div>';
+                '<div class="empty">'
+                + "Сообщений пока нет."
+                + "</div>";
+
             return;
         }
 
@@ -2540,13 +2963,22 @@
     }
 
     function scrollToBottom() {
-        messagesList.scrollTop = messagesList.scrollHeight;
+        messagesList.scrollTop =
+            messagesList.scrollHeight;
     }
 
-    function updateLastMessage(chatId, message, increaseUnread) {
-        const chat = chats.find(function (item) {
-            return sameId(item.id, chatId);
-        });
+    function updateLastMessage(
+        chatId,
+        message,
+        increaseUnread
+    ) {
+        const chat =
+            chats.find(function (item) {
+                return sameId(
+                    item.id,
+                    chatId
+                );
+            });
 
         if (!chat || !message) {
             return;
@@ -2557,10 +2989,15 @@
             text: message.is_deleted
                 ? "Сообщение удалено"
                 : message.text || "",
-            message_type: message.message_type || "",
-            file_name: message.file_name || "",
-            sender_id: getSenderId(message),
-            created_at: message.created_at || message.updated_at
+            message_type:
+                message.message_type || "",
+            file_name:
+                message.file_name || "",
+            sender_id:
+                getSenderId(message),
+            created_at:
+                message.created_at
+                || message.updated_at
         };
 
         if (isCurrentChat(chatId)) {
@@ -2573,7 +3010,10 @@
         chats = [
             chat,
             ...chats.filter(function (item) {
-                return !sameId(item.id, chatId);
+                return !sameId(
+                    item.id,
+                    chatId
+                );
             })
         ];
 
@@ -2584,21 +3024,30 @@
         messageFilter = null;
 
         messagesList.innerHTML =
-            '<div class="loading">Загружаем сообщения...</div>';
+            '<div class="loading">'
+            + "Загружаем сообщения..."
+            + "</div>";
 
-        const data = await apiRequest(
-            "/api/chats/"
-            + encodeURIComponent(chat.id)
-            + "/messages/",
-            { method: "GET" }
-        );
+        const data =
+            await apiRequest(
+                "/api/chats/"
+                + encodeURIComponent(chat.id)
+                + "/messages/",
+                {
+                    method: "GET"
+                }
+            );
 
         if (isCurrentChat(chat.id)) {
             renderMessages(data);
+
             chat.unread_count = 0;
             renderChats();
 
-            window.setTimeout(markMessagesAsRead, 200);
+            window.setTimeout(
+                markMessagesAsRead,
+                200
+            );
         }
     }
 
@@ -2610,7 +3059,10 @@
             return false;
         }
 
-        chatSocket.send(JSON.stringify(data));
+        chatSocket.send(
+            JSON.stringify(data)
+        );
+
         return true;
     }
 
@@ -2622,22 +3074,28 @@
             return;
         }
 
-        const rows = messagesList.querySelectorAll(
-            "[data-message-id]"
-        );
+        const rows =
+            messagesList.querySelectorAll(
+                "[data-message-id]"
+            );
 
         rows.forEach(function (row) {
             sendSocket({
                 type: "read",
-                message_id: row.dataset.messageId
+                message_id:
+                    row.dataset.messageId
             });
         });
 
-        sendSocket({ type: "read" });
+        sendSocket({
+            type: "read"
+        });
     }
 
     function updateChatStatus(chat) {
-        const user = getPrivateUser(chat);
+        const user =
+            getPrivateUser(chat);
+
         activeStatus.classList.remove("online");
 
         if (
@@ -2645,42 +3103,67 @@
             && user
             && user.is_online
         ) {
-            activeStatus.textContent = "в сети";
+            activeStatus.textContent =
+                "в сети";
+
             activeStatus.classList.add("online");
+
             return;
         }
 
         if (chat.chat_type === "private") {
-            activeStatus.textContent = user && user.last_seen
-                ? "был(а) недавно"
-                : "не в сети";
+            activeStatus.textContent =
+                user && user.last_seen
+                    ? "был(а) недавно"
+                    : "не в сети";
 
             return;
         }
 
-        activeStatus.textContent = getChatSubtitle(chat);
+        activeStatus.textContent =
+            getChatSubtitle(chat);
     }
 
     function renderActiveChat(chat) {
-        const user = getPrivateUser(chat);
+        const user =
+            getPrivateUser(chat);
 
-        setAvatar(activeAvatar, user, chat, true);
+        setAvatar(
+            activeAvatar,
+            user,
+            chat,
+            true
+        );
 
         activeName.innerHTML = "";
-        activeName.textContent = getChatName(chat);
-        appendVerifiedBadge(activeName, user);
+        activeName.textContent =
+            getChatName(chat);
 
-        activeName.onclick = function () {
-            if (chat.chat_type === "private" && user) {
-                openUserProfile(user);
-            } else {
-                toggleInfoPanel();
-            }
-        };
+        appendVerifiedBadge(
+            activeName,
+            user
+        );
 
-        activeAvatar.onclick = activeName.onclick;
-        activeName.title = "Открыть информацию";
-        activeAvatar.title = "Открыть информацию";
+        activeName.onclick =
+            function () {
+                if (
+                    chat.chat_type === "private"
+                    && user
+                ) {
+                    openUserProfile(user);
+                } else {
+                    toggleInfoPanel();
+                }
+            };
+
+        activeAvatar.onclick =
+            activeName.onclick;
+
+        activeName.title =
+            "Открыть информацию";
+
+        activeAvatar.title =
+            "Открыть информацию";
 
         updateChatStatus(chat);
 
@@ -2693,13 +3176,19 @@
         sendButton.disabled = !canSend;
         attachButton.disabled = !canSend;
 
-        messageInput.placeholder = canSend
-            ? editingMessage
-                ? "Редактировать сообщение..."
-                : replyMessage
-                    ? "Написать ответ..."
-                    : "Написать сообщение..."
-            : "Писать могут только администраторы";
+        if (voiceButton) {
+            voiceButton.disabled =
+                !canSend || uploadInProgress;
+        }
+
+        messageInput.placeholder =
+            canSend
+                ? editingMessage
+                    ? "Редактировать сообщение..."
+                    : replyMessage
+                        ? "Написать ответ..."
+                        : "Написать сообщение..."
+                : "Писать могут только администраторы";
     }
 
     function connectChatSocket(chat) {
@@ -2710,9 +3199,10 @@
             chatSocket = null;
         }
 
-        const protocol = location.protocol === "https:"
-            ? "wss:"
-            : "ws:";
+        const protocol =
+            location.protocol === "https:"
+                ? "wss:"
+                : "ws:";
 
         const url =
             protocol
@@ -2723,189 +3213,276 @@
             + "/?token="
             + encodeURIComponent(accessToken);
 
-        const socket = new WebSocket(url);
+        const socket =
+            new WebSocket(url);
+
         chatSocket = socket;
 
-        socket.onopen = function () {
-            if (chatSocket !== socket) {
-                return;
-            }
-
-            errorElement.textContent = "";
-            window.setTimeout(markMessagesAsRead, 200);
-        };
-
-        socket.onmessage = function (event) {
-            if (chatSocket !== socket) {
-                return;
-            }
-
-            let data;
-
-            try {
-                data = JSON.parse(event.data);
-            } catch (error) {
-                return;
-            }
-
-            if (data.type === "connection") {
-                setSendingAvailability(
-                    data.can_send_messages !== false
-                );
-                return;
-            }
-
-            if (data.type === "presence") {
-                const user = getPrivateUser(chat);
-
-                if (
-                    user
-                    && sameId(user.id, data.user_id)
-                ) {
-                    user.is_online = Boolean(data.is_online);
-                    user.last_seen = data.last_seen || null;
-                    updateChatStatus(chat);
-                    renderChats();
+        socket.onopen =
+            function () {
+                if (chatSocket !== socket) {
+                    return;
                 }
 
-                return;
-            }
+                errorElement.textContent = "";
 
-            if (data.type === "message" && data.message) {
-                const message = safeClone(data.message);
-                const mine = sameId(
-                    getSenderId(message),
-                    currentUserId
+                window.setTimeout(
+                    markMessagesAsRead,
+                    200
                 );
+            };
 
-                appendMessage(message);
-                updateLastMessage(chat.id, message, !mine);
-
-                if (!messageFilter) {
-                    scrollToBottom();
+        socket.onmessage =
+            function (event) {
+                if (chatSocket !== socket) {
+                    return;
                 }
 
-                chat.unread_count = 0;
-                window.setTimeout(markMessagesAsRead, 100);
-                return;
-            }
+                let data;
 
-            if (
-                data.type === "message_updated"
-                && data.message
-            ) {
-                const message = safeClone(data.message);
-                updateRenderedMessage(message);
-                updateLastMessage(chat.id, message, false);
-                return;
-            }
+                try {
+                    data = JSON.parse(event.data);
+                } catch (error) {
+                    return;
+                }
 
-            if (
-                data.type === "message_deleted"
-                && data.message
-            ) {
-                const message = safeClone(data.message);
-                updateRenderedMessage(message);
-                updateLastMessage(chat.id, message, false);
-                return;
-            }
-
-            if (data.type === "message_read") {
-                const row = messagesList.querySelector(
-                    '[data-message-id="'
-                    + String(data.message_id)
-                    + '"]'
-                );
-
-                if (
-                    row
-                    && row.messageData
-                    && !sameId(data.user_id, currentUserId)
-                ) {
-                    row.messageData.is_delivered = true;
-                    row.messageData.read_count = Math.max(
-                        Number(row.messageData.read_count || 0),
-                        1
+                if (data.type === "connection") {
+                    setSendingAvailability(
+                        data.can_send_messages !== false
                     );
 
-                    updateRenderedMessage(row.messageData);
+                    return;
                 }
 
-                return;
-            }
+                if (data.type === "presence") {
+                    const user =
+                        getPrivateUser(chat);
 
-            if (data.type === "typing") {
-                window.clearTimeout(typingClearTimer);
+                    if (
+                        user
+                        && sameId(
+                            user.id,
+                            data.user_id
+                        )
+                    ) {
+                        user.is_online =
+                            Boolean(data.is_online);
 
-                typingStatus.textContent = data.is_typing
-                    ? data.username
-                        ? "@" + data.username + " печатает..."
-                        : "Печатает..."
-                    : "";
+                        user.last_seen =
+                            data.last_seen || null;
 
-                if (data.is_typing) {
-                    typingClearTimer = window.setTimeout(
+                        updateChatStatus(chat);
+                        renderChats();
+                    }
+
+                    return;
+                }
+
+                if (
+                    data.type === "message"
+                    && data.message
+                ) {
+                    const message =
+                        safeClone(data.message);
+
+                    const mine =
+                        sameId(
+                            getSenderId(message),
+                            currentUserId
+                        );
+
+                    appendMessage(message);
+
+                    updateLastMessage(
+                        chat.id,
+                        message,
+                        !mine
+                    );
+
+                    if (!messageFilter) {
+                        scrollToBottom();
+                    }
+
+                    chat.unread_count = 0;
+
+                    window.setTimeout(
+                        markMessagesAsRead,
+                        100
+                    );
+
+                    return;
+                }
+
+                if (
+                    data.type === "message_updated"
+                    && data.message
+                ) {
+                    const message =
+                        safeClone(data.message);
+
+                    updateRenderedMessage(message);
+
+                    updateLastMessage(
+                        chat.id,
+                        message,
+                        false
+                    );
+
+                    return;
+                }
+
+                if (
+                    data.type === "message_deleted"
+                    && data.message
+                ) {
+                    const message =
+                        safeClone(data.message);
+
+                    updateRenderedMessage(message);
+
+                    updateLastMessage(
+                        chat.id,
+                        message,
+                        false
+                    );
+
+                    return;
+                }
+
+                if (data.type === "message_read") {
+                    const row =
+                        messagesList.querySelector(
+                            '[data-message-id="'
+                            + String(
+                                data.message_id
+                            )
+                            + '"]'
+                        );
+
+                    if (
+                        row
+                        && row.messageData
+                        && !sameId(
+                            data.user_id,
+                            currentUserId
+                        )
+                    ) {
+                        row.messageData.is_delivered =
+                            true;
+
+                        row.messageData.read_count =
+                            Math.max(
+                                Number(
+                                    row.messageData.read_count
+                                    || 0
+                                ),
+                                1
+                            );
+
+                        updateRenderedMessage(
+                            row.messageData
+                        );
+                    }
+
+                    return;
+                }
+
+                if (data.type === "typing") {
+                    window.clearTimeout(
+                        typingClearTimer
+                    );
+
+                    typingStatus.textContent =
+                        data.is_typing
+                            ? data.username
+                                ? "@"
+                                    + data.username
+                                    + " печатает..."
+                                : "Печатает..."
+                            : "";
+
+                    if (data.is_typing) {
+                        typingClearTimer =
+                            window.setTimeout(
+                                function () {
+                                    typingStatus.textContent =
+                                        "";
+                                },
+                                3000
+                            );
+                    }
+
+                    return;
+                }
+
+                if (data.type === "error") {
+                    errorElement.textContent =
+                        data.detail
+                        || "Ошибка чата.";
+                }
+            };
+
+        socket.onclose =
+            async function (event) {
+                if (chatSocket !== socket) {
+                    return;
+                }
+
+                chatSocket = null;
+
+                if (
+                    event.code === 4401
+                    || event.code === 4001
+                ) {
+                    const refreshed =
+                        await refreshAccessToken();
+
+                    if (
+                        refreshed
+                        && isCurrentChat(chat.id)
+                    ) {
+                        connectChatSocket(chat);
+                    } else if (!refreshed) {
+                        logout();
+                    }
+
+                    return;
+                }
+
+                if (event.code === 4403) {
+                    setSendingAvailability(false);
+
+                    errorElement.textContent =
+                        "Вы не являетесь участником этого чата.";
+
+                    return;
+                }
+
+                if (!isCurrentChat(chat.id)) {
+                    return;
+                }
+
+                activeStatus.textContent =
+                    "соединение закрыто";
+
+                reconnectTimer =
+                    window.setTimeout(
                         function () {
-                            typingStatus.textContent = "";
+                            if (isCurrentChat(chat.id)) {
+                                connectChatSocket(chat);
+                            }
                         },
                         3000
                     );
-                }
-
-                return;
-            }
-
-            if (data.type === "error") {
-                errorElement.textContent =
-                    data.detail || "Ошибка чата.";
-            }
-        };
-
-        socket.onclose = async function (event) {
-            if (chatSocket !== socket) {
-                return;
-            }
-
-            chatSocket = null;
-
-            if (event.code === 4401 || event.code === 4001) {
-                const refreshed = await refreshAccessToken();
-
-                if (refreshed && isCurrentChat(chat.id)) {
-                    connectChatSocket(chat);
-                } else if (!refreshed) {
-                    logout();
-                }
-
-                return;
-            }
-
-            if (event.code === 4403) {
-                setSendingAvailability(false);
-                errorElement.textContent =
-                    "Вы не являетесь участником этого чата.";
-                return;
-            }
-
-            if (!isCurrentChat(chat.id)) {
-                return;
-            }
-
-            activeStatus.textContent = "соединение закрыто";
-
-            reconnectTimer = window.setTimeout(function () {
-                if (isCurrentChat(chat.id)) {
-                    connectChatSocket(chat);
-                }
-            }, 3000);
-        };
+            };
     }
 
     function connectNotificationsSocket() {
         if (
             notificationsSocket
             && (
-                notificationsSocket.readyState === WebSocket.OPEN
+                notificationsSocket.readyState
+                    === WebSocket.OPEN
                 || notificationsSocket.readyState
                     === WebSocket.CONNECTING
             )
@@ -2913,9 +3490,10 @@
             return;
         }
 
-        const protocol = location.protocol === "https:"
-            ? "wss:"
-            : "ws:";
+        const protocol =
+            location.protocol === "https:"
+                ? "wss:"
+                : "ws:";
 
         const url =
             protocol
@@ -2924,119 +3502,151 @@
             + "/ws/notifications/?token="
             + encodeURIComponent(accessToken);
 
-        const socket = new WebSocket(url);
+        const socket =
+            new WebSocket(url);
+
         notificationsSocket = socket;
 
-        socket.onopen = function () {
-            notificationsReconnectAttempts = 0;
-        };
+        socket.onopen =
+            function () {
+                notificationsReconnectAttempts = 0;
+            };
 
-        socket.onmessage = function (event) {
-            if (notificationsSocket !== socket) {
-                return;
-            }
-
-            let data;
-
-            try {
-                data = JSON.parse(event.data);
-            } catch (error) {
-                return;
-            }
-
-            if (
-                data.type !== "new_message"
-                || !data.chat_id
-                || !data.message
-                || !data.message.id
-                || isCurrentChat(data.chat_id)
-            ) {
-                return;
-            }
-
-            const chat = chats.find(function (item) {
-                return sameId(item.id, data.chat_id);
-            });
-
-            if (chat) {
-                chat.unread_count =
-                    Number(chat.unread_count || 0) + 1;
-            }
-
-            updateLastMessage(
-                data.chat_id,
-                safeClone(data.message),
-                false
-            );
-
-            if (
-                "Notification" in window
-                && Notification.permission === "granted"
-            ) {
-                new Notification(
-                    "Новое сообщение",
-                    {
-                        body: getMessagePreview(data.message),
-                        tag: "chatwell-message"
-                    }
-                );
-            }
-        };
-
-        socket.onclose = async function (event) {
-            if (notificationsSocket !== socket) {
-                return;
-            }
-
-            notificationsSocket = null;
-
-            if (event.code === 4401 || event.code === 4001) {
-                const refreshed = await refreshAccessToken();
-
-                if (refreshed) {
-                    connectNotificationsSocket();
-                } else {
-                    logout();
+        socket.onmessage =
+            function (event) {
+                if (notificationsSocket !== socket) {
+                    return;
                 }
 
-                return;
-            }
+                let data;
 
-            if (notificationsReconnectTimer) {
-                return;
-            }
+                try {
+                    data = JSON.parse(event.data);
+                } catch (error) {
+                    return;
+                }
 
-            notificationsReconnectAttempts += 1;
+                if (
+                    data.type !== "new_message"
+                    || !data.chat_id
+                    || !data.message
+                    || !data.message.id
+                    || isCurrentChat(data.chat_id)
+                ) {
+                    return;
+                }
 
-            const delay = Math.min(
-                1000 * Math.pow(
-                    2,
-                    notificationsReconnectAttempts - 1
-                ),
-                30000
-            );
+                const chat =
+                    chats.find(function (item) {
+                        return sameId(
+                            item.id,
+                            data.chat_id
+                        );
+                    });
 
-            notificationsReconnectTimer = window.setTimeout(
-                function () {
-                    notificationsReconnectTimer = null;
-                    connectNotificationsSocket();
-                },
-                delay
-            );
-        };
+                if (chat) {
+                    chat.unread_count =
+                        Number(
+                            chat.unread_count || 0
+                        ) + 1;
+                }
+
+                const message =
+                    safeClone(data.message);
+
+                updateLastMessage(
+                    data.chat_id,
+                    message,
+                    false
+                );
+
+                if (
+                    "Notification" in window
+                    && Notification.permission === "granted"
+                ) {
+                    new Notification(
+                        "Новое сообщение",
+                        {
+                            body:
+                                getMessagePreview(
+                                    message
+                                ),
+                            tag:
+                                "chatwell-message"
+                        }
+                    );
+                }
+            };
+
+        socket.onclose =
+            async function (event) {
+                if (notificationsSocket !== socket) {
+                    return;
+                }
+
+                notificationsSocket = null;
+
+                if (
+                    event.code === 4401
+                    || event.code === 4001
+                ) {
+                    const refreshed =
+                        await refreshAccessToken();
+
+                    if (refreshed) {
+                        connectNotificationsSocket();
+                    } else {
+                        logout();
+                    }
+
+                    return;
+                }
+
+                if (notificationsReconnectTimer) {
+                    return;
+                }
+
+                notificationsReconnectAttempts += 1;
+
+                const delay =
+                    Math.min(
+                        1000
+                        * Math.pow(
+                            2,
+                            notificationsReconnectAttempts - 1
+                        ),
+                        30000
+                    );
+
+                notificationsReconnectTimer =
+                    window.setTimeout(
+                        function () {
+                            notificationsReconnectTimer =
+                                null;
+
+                            connectNotificationsSocket();
+                        },
+                        delay
+                    );
+            };
     }
 
     function setReplyMessage(message) {
-        if (!message || message.is_deleted) {
+        if (
+            !message
+            || message.is_deleted
+        ) {
             return;
         }
 
         editingMessage = null;
         replyMessage = message;
+
         replyPreview.hidden = false;
 
         replyPreviewText.textContent =
-            "Ответ: " + getMessagePreview(message);
+            "Ответ: "
+            + getMessagePreview(message);
 
         setSendingAvailability(true);
         messageInput.focus();
@@ -3047,7 +3657,8 @@
         replyPreview.hidden = true;
 
         if (!editingMessage) {
-            messageInput.placeholder = "Написать сообщение...";
+            messageInput.placeholder =
+                "Написать сообщение...";
         }
     }
 
@@ -3055,7 +3666,10 @@
         if (
             !message
             || message.is_deleted
-            || !sameId(getSenderId(message), currentUserId)
+            || !sameId(
+                getSenderId(message),
+                currentUserId
+            )
         ) {
             return;
         }
@@ -3063,8 +3677,12 @@
         replyMessage = null;
         replyPreview.hidden = true;
         editingMessage = message;
-        messageInput.value = message.text || "";
+
+        messageInput.value =
+            message.text || "";
+
         sendButton.textContent = "✓";
+
         setSendingAvailability(true);
         messageInput.focus();
     }
@@ -3077,48 +3695,58 @@
     }
 
     function openContextMenu(message, x, y) {
-        if (!message || message.is_deleted) {
+        if (
+            !message
+            || message.is_deleted
+        ) {
             return;
         }
 
         selectedMessage = message;
 
-        const ownMessage = sameId(
-            getSenderId(message),
-            currentUserId
-        );
+        const ownMessage =
+            sameId(
+                getSenderId(message),
+                currentUserId
+            );
 
-        const editButton = contextMenu.querySelector(
-            '[data-action="edit"]'
-        );
+        const editButton =
+            contextMenu.querySelector(
+                '[data-action="edit"]'
+            );
 
-        const deleteButton = contextMenu.querySelector(
-            '[data-action="delete"]'
-        );
+        const deleteButton =
+            contextMenu.querySelector(
+                '[data-action="delete"]'
+            );
 
         if (editButton) {
             editButton.hidden = !ownMessage;
         }
 
         if (deleteButton) {
-            /*
-             * Удаление чужих сообщений запрещено в интерфейсе.
-             * Серверная проверка в views.py также обязательна.
-             */
             deleteButton.hidden = !ownMessage;
         }
 
         contextMenu.hidden = false;
 
-        contextMenu.style.left = Math.max(
-            8,
-            Math.min(x, window.innerWidth - 205)
-        ) + "px";
+        contextMenu.style.left =
+            Math.max(
+                8,
+                Math.min(
+                    x,
+                    window.innerWidth - 205
+                )
+            ) + "px";
 
-        contextMenu.style.top = Math.max(
-            8,
-            Math.min(y, window.innerHeight - 150)
-        ) + "px";
+        contextMenu.style.top =
+            Math.max(
+                8,
+                Math.min(
+                    y,
+                    window.innerHeight - 150
+                )
+            ) + "px";
     }
 
     function closeContextMenu() {
@@ -3130,44 +3758,66 @@
         if (
             !selectedChat
             || !message
-            || !sameId(getSenderId(message), currentUserId)
+            || !sameId(
+                getSenderId(message),
+                currentUserId
+            )
         ) {
             return;
         }
 
-        const text = messageInput.value.trim();
+        const text =
+            messageInput.value.trim();
 
         if (!text) {
-            errorElement.textContent = "Введите текст сообщения.";
+            errorElement.textContent =
+                "Введите текст сообщения.";
+
             return;
         }
 
         try {
             sendButton.disabled = true;
 
-            const data = await apiRequest(
-                "/api/chats/"
-                + encodeURIComponent(selectedChat.id)
-                + "/messages/"
-                + encodeURIComponent(message.id)
-                + "/edit/",
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ text: text })
-                }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/"
+                    + encodeURIComponent(
+                        selectedChat.id
+                    )
+                    + "/messages/"
+                    + encodeURIComponent(
+                        message.id
+                    )
+                    + "/edit/",
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            text: text
+                        })
+                    }
+                );
 
             updateRenderedMessage(data);
-            updateLastMessage(selectedChat.id, data, false);
+
+            updateLastMessage(
+                selectedChat.id,
+                data,
+                false
+            );
+
             cancelEditing();
             errorElement.textContent = "";
         } catch (error) {
-            errorElement.textContent = error.message;
+            errorElement.textContent =
+                error.message;
         } finally {
-            sendButton.disabled = messageInput.disabled;
+            sendButton.disabled =
+                messageInput.disabled;
         }
     }
 
@@ -3175,10 +3825,14 @@
         if (
             !selectedChat
             || !message
-            || !sameId(getSenderId(message), currentUserId)
+            || !sameId(
+                getSenderId(message),
+                currentUserId
+            )
         ) {
             errorElement.textContent =
                 "Можно удалять только свои сообщения.";
+
             return;
         }
 
@@ -3187,19 +3841,32 @@
         }
 
         try {
-            const data = await apiRequest(
-                "/api/chats/"
-                + encodeURIComponent(selectedChat.id)
-                + "/messages/"
-                + encodeURIComponent(message.id)
-                + "/delete/",
-                { method: "DELETE" }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/"
+                    + encodeURIComponent(
+                        selectedChat.id
+                    )
+                    + "/messages/"
+                    + encodeURIComponent(
+                        message.id
+                    )
+                    + "/delete/",
+                    {
+                        method: "DELETE"
+                    }
+                );
 
             updateRenderedMessage(data);
-            updateLastMessage(selectedChat.id, data, false);
+
+            updateLastMessage(
+                selectedChat.id,
+                data,
+                false
+            );
         } catch (error) {
-            errorElement.textContent = error.message;
+            errorElement.textContent =
+                error.message;
         }
     }
 
@@ -3237,9 +3904,13 @@
             return false;
         }
 
-        const myRole = selectedChat.my_role;
+        const myRole =
+            selectedChat.my_role;
 
-        if (myRole !== "owner" && myRole !== "admin") {
+        if (
+            myRole !== "owner"
+            && myRole !== "admin"
+        ) {
             return false;
         }
 
@@ -3247,7 +3918,12 @@
             return false;
         }
 
-        if (sameId(member.user.id, currentUserId)) {
+        if (
+            sameId(
+                member.user.id,
+                currentUserId
+            )
+        ) {
             return false;
         }
 
@@ -3255,41 +3931,84 @@
             return false;
         }
 
-        return !(member.role === "admin" && myRole !== "owner");
+        return !(
+            member.role === "admin"
+            && myRole !== "owner"
+        );
     }
 
     function createChatMemberElement(member) {
         const user = member.user || {};
-        const row = document.createElement("div");
+
+        const row =
+            document.createElement("div");
+
         row.className = "chat-member";
 
-        const profile = document.createElement("a");
-        profile.className = "chat-info-profile-link";
-        profile.href = user.id
-            ? "/users/" + encodeURIComponent(user.id) + "/"
-            : "#";
+        const profile =
+            document.createElement("a");
 
-        const avatar = document.createElement("div");
+        profile.className =
+            "chat-info-profile-link";
 
-        setAvatar(avatar, user, null, false);
+        profile.href =
+            user.id
+                ? "/users/"
+                    + encodeURIComponent(
+                        user.id
+                    )
+                    + "/"
+                : "#";
 
-        const info = document.createElement("div");
-        info.className = "chat-member-info";
+        const avatar =
+            document.createElement("div");
 
-        const name = document.createElement("div");
-        name.className = "chat-member-name";
-        name.textContent = getUserName(user);
+        setAvatar(
+            avatar,
+            user,
+            null,
+            false
+        );
 
-        appendVerifiedBadge(name, user);
+        const info =
+            document.createElement("div");
 
-        const role = document.createElement("span");
-        role.className = "chat-member-role";
-        role.textContent = getRoleName(member.role);
+        info.className =
+            "chat-member-info";
+
+        const name =
+            document.createElement("div");
+
+        name.className =
+            "chat-member-name";
+
+        name.textContent =
+            getUserName(user);
+
+        appendVerifiedBadge(
+            name,
+            user
+        );
+
+        const role =
+            document.createElement("span");
+
+        role.className =
+            "chat-member-role";
+
+        role.textContent =
+            getRoleName(member.role);
+
         name.appendChild(role);
 
-        const username = document.createElement("div");
-        username.className = "chat-member-username";
-        username.textContent = getUserTag(user);
+        const username =
+            document.createElement("div");
+
+        username.className =
+            "chat-member-username";
+
+        username.textContent =
+            getUserTag(user);
 
         info.appendChild(name);
 
@@ -3299,20 +4018,30 @@
 
         profile.appendChild(avatar);
         profile.appendChild(info);
+
         row.appendChild(profile);
 
         if (canManageMember(member)) {
-            const remove = document.createElement("button");
-            remove.type = "button";
-            remove.className = "chat-member-remove";
-            remove.textContent = "×";
-            remove.title = "Удалить участника";
+            const remove =
+                document.createElement("button");
 
-            remove.addEventListener("click", function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                removeChatMember(member);
-            });
+            remove.type = "button";
+            remove.className =
+                "chat-member-remove";
+
+            remove.textContent = "×";
+            remove.title =
+                "Удалить участника";
+
+            remove.addEventListener(
+                "click",
+                function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    removeChatMember(member);
+                }
+            );
 
             row.appendChild(remove);
         }
@@ -3325,7 +4054,8 @@
             return;
         }
 
-        const requestId = ++chatInfoRequestId;
+        const requestId =
+            ++chatInfoRequestId;
 
         infoContent.innerHTML =
             '<div class="chat-info-loading">'
@@ -3333,21 +4063,34 @@
             + "</div>";
 
         try {
-            const data = await apiRequest(
-                "/api/chats/"
-                + encodeURIComponent(selectedChat.id)
-                + "/members/",
-                { method: "GET" }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/"
+                    + encodeURIComponent(
+                        selectedChat.id
+                    )
+                    + "/members/",
+                    {
+                        method: "GET"
+                    }
+                );
 
-            if (requestId !== chatInfoRequestId) {
+            if (
+                requestId !== chatInfoRequestId
+            ) {
                 return;
             }
 
-            chatMembers = Array.isArray(data) ? data : [];
+            chatMembers =
+                Array.isArray(data)
+                    ? data
+                    : [];
+
             renderChatInfo();
         } catch (error) {
-            if (requestId !== chatInfoRequestId) {
+            if (
+                requestId !== chatInfoRequestId
+            ) {
                 return;
             }
 
@@ -3365,11 +4108,17 @@
 
         infoContent.innerHTML = "";
 
-        const main = document.createElement("div");
-        main.className = "chat-info-main";
+        const main =
+            document.createElement("div");
 
-        const avatar = document.createElement("div");
-        avatar.className = "chat-info-main-avatar";
+        main.className =
+            "chat-info-main";
+
+        const avatar =
+            document.createElement("div");
+
+        avatar.className =
+            "chat-info-main-avatar";
 
         setAvatar(
             avatar,
@@ -3378,44 +4127,81 @@
             false
         );
 
-        const text = document.createElement("div");
-        text.className = "chat-info-main-text";
+        const text =
+            document.createElement("div");
 
-        const title = document.createElement("div");
-        title.className = "chat-info-main-title";
-        title.textContent = getChatName(selectedChat);
+        text.className =
+            "chat-info-main-text";
 
-        const subtitle = document.createElement("div");
-        subtitle.className = "chat-info-main-subtitle";
-        subtitle.textContent = getChatSubtitle(selectedChat);
+        const title =
+            document.createElement("div");
+
+        title.className =
+            "chat-info-main-title";
+
+        title.textContent =
+            getChatName(selectedChat);
+
+        const subtitle =
+            document.createElement("div");
+
+        subtitle.className =
+            "chat-info-main-subtitle";
+
+        subtitle.textContent =
+            getChatSubtitle(selectedChat);
 
         text.appendChild(title);
         text.appendChild(subtitle);
+
         main.appendChild(avatar);
         main.appendChild(text);
+
         infoContent.appendChild(main);
 
         if (selectedChat.description) {
-            const descriptionTitle = document.createElement("div");
-            descriptionTitle.className = "chat-info-section-title";
-            descriptionTitle.textContent = "Описание";
+            const descriptionTitle =
+                document.createElement("div");
 
-            const description = document.createElement("div");
-            description.className = "chat-info-description";
-            description.textContent = selectedChat.description;
+            descriptionTitle.className =
+                "chat-info-section-title";
 
-            infoContent.appendChild(descriptionTitle);
-            infoContent.appendChild(description);
+            descriptionTitle.textContent =
+                "Описание";
+
+            const description =
+                document.createElement("div");
+
+            description.className =
+                "chat-info-description";
+
+            description.textContent =
+                selectedChat.description;
+
+            infoContent.appendChild(
+                descriptionTitle
+            );
+
+            infoContent.appendChild(
+                description
+            );
         }
 
-        const membersTitle = document.createElement("div");
-        membersTitle.className = "chat-info-section-title";
+        const membersTitle =
+            document.createElement("div");
+
+        membersTitle.className =
+            "chat-info-section-title";
+
         membersTitle.textContent =
-            "Участники · " + chatMembers.length;
+            "Участники · "
+            + chatMembers.length;
 
         infoContent.appendChild(membersTitle);
 
-        const members = document.createElement("div");
+        const members =
+            document.createElement("div");
+
         members.className = "chat-members";
 
         if (!chatMembers.length) {
@@ -3424,11 +4210,15 @@
                 + "Участники не найдены."
                 + "</div>";
         } else {
-            chatMembers.forEach(function (member) {
-                members.appendChild(
-                    createChatMemberElement(member)
-                );
-            });
+            chatMembers.forEach(
+                function (member) {
+                    members.appendChild(
+                        createChatMemberElement(
+                            member
+                        )
+                    );
+                }
+            );
         }
 
         infoContent.appendChild(members);
@@ -3437,14 +4227,26 @@
             selectedChat.chat_type !== "private"
             && selectedChat.my_role !== "owner"
         ) {
-            const actions = document.createElement("div");
-            actions.className = "chat-info-actions";
+            const actions =
+                document.createElement("div");
 
-            const leave = document.createElement("button");
+            actions.className =
+                "chat-info-actions";
+
+            const leave =
+                document.createElement("button");
+
             leave.type = "button";
-            leave.className = "chat-info-action";
-            leave.textContent = "Выйти из чата";
-            leave.addEventListener("click", leaveSelectedChat);
+            leave.className =
+                "chat-info-action";
+
+            leave.textContent =
+                "Выйти из чата";
+
+            leave.addEventListener(
+                "click",
+                leaveSelectedChat
+            );
 
             actions.appendChild(leave);
             infoContent.appendChild(actions);
@@ -3461,28 +4263,37 @@
             return;
         }
 
-        if (!window.confirm(
-            "Удалить пользователя "
-            + getUserName(member.user)
-            + " из чата?"
-        )) {
+        if (
+            !window.confirm(
+                "Удалить пользователя "
+                + getUserName(member.user)
+                + " из чата?"
+            )
+        ) {
             return;
         }
 
         try {
             await apiRequest(
                 "/api/chats/"
-                + encodeURIComponent(selectedChat.id)
+                + encodeURIComponent(
+                    selectedChat.id
+                )
                 + "/members/"
-                + encodeURIComponent(member.user.id)
+                + encodeURIComponent(
+                    member.user.id
+                )
                 + "/remove/",
-                { method: "DELETE" }
+                {
+                    method: "DELETE"
+                }
             );
 
             await loadChatInfo();
             await loadChats(false);
         } catch (error) {
-            errorElement.textContent = error.message;
+            errorElement.textContent =
+                error.message;
         }
     }
 
@@ -3491,83 +4302,128 @@
             return;
         }
 
-        if (!window.confirm("Выйти из этого чата?")) {
+        if (
+            !window.confirm(
+                "Выйти из этого чата?"
+            )
+        ) {
             return;
         }
 
         try {
             await apiRequest(
                 "/api/chats/"
-                + encodeURIComponent(selectedChat.id)
+                + encodeURIComponent(
+                    selectedChat.id
+                )
                 + "/leave/",
-                { method: "POST" }
+                {
+                    method: "POST"
+                }
             );
 
             closeChat();
             await loadChats(false);
         } catch (error) {
-            errorElement.textContent = error.message;
+            errorElement.textContent =
+                error.message;
         }
     }
 
     function filterMessages(predicate) {
-        const rows = messagesList.querySelectorAll(
-            "[data-message-id]"
-        );
+        const rows =
+            messagesList.querySelectorAll(
+                "[data-message-id]"
+            );
 
         if (!rows.length) {
-            window.alert("Сообщений пока нет.");
+            window.alert(
+                "Сообщений пока нет."
+            );
+
             return;
         }
 
         rows.forEach(function (row) {
-            row.hidden = !predicate(row.messageData || {});
+            row.hidden =
+                !predicate(
+                    row.messageData || {}
+                );
         });
 
         actionsPanel.hidden = true;
     }
 
     function showAllMessages() {
-        messagesList.querySelectorAll(
-            "[data-message-id]"
-        ).forEach(function (row) {
-            row.hidden = false;
-        });
+        messagesList
+            .querySelectorAll(
+                "[data-message-id]"
+            )
+            .forEach(function (row) {
+                row.hidden = false;
+            });
 
         actionsPanel.hidden = true;
     }
 
     function searchCurrentChat() {
-        const query = window.prompt("Введите слово или фразу:");
+        const query =
+            window.prompt(
+                "Введите слово или фразу:"
+            );
 
-        if (query === null || !query.trim()) {
+        if (
+            query === null
+            || !query.trim()
+        ) {
             return;
         }
 
-        const normalized = query.trim().toLowerCase();
+        const normalized =
+            query.trim().toLowerCase();
+
         let first = null;
 
-        messagesList.querySelectorAll(
-            "[data-message-id]"
-        ).forEach(function (row) {
-            row.classList.remove("message-highlight");
+        messagesList
+            .querySelectorAll(
+                "[data-message-id]"
+            )
+            .forEach(function (row) {
+                row.classList.remove(
+                    "message-highlight"
+                );
 
-            const message = row.messageData || {};
-            const value = (
-                getUserName(message.sender)
-                + " "
-                + (message.text || "")
-                + " "
-                + (message.file_name || "")
-            ).toLowerCase();
+                const message =
+                    row.messageData || {};
 
-            if (value.includes(normalized) && !first) {
-                first = row;
-            }
-        });
+                const value =
+                    (
+                        getUserName(
+                            message.sender
+                        )
+                        + " "
+                        + (
+                            message.text || ""
+                        )
+                        + " "
+                        + (
+                            message.file_name || ""
+                        )
+                    ).toLowerCase();
+
+                if (
+                    value.includes(normalized)
+                    && !first
+                ) {
+                    first = row;
+                }
+            });
 
         if (!first) {
-            window.alert("Совпадений не найдено.");
+            window.alert(
+                "Совпадений не найдено."
+            );
+
             return;
         }
 
@@ -3576,7 +4432,10 @@
             block: "center"
         });
 
-        first.classList.add("message-highlight");
+        first.classList.add(
+            "message-highlight"
+        );
+
         actionsPanel.hidden = true;
     }
 
@@ -3593,9 +4452,12 @@
 
         if (action === "media") {
             filterMessages(function (message) {
-                return message.message_type === "image"
+                return (
+                    message.message_type === "image"
                     || message.message_type === "video"
-                    || Boolean(message.file);
+                    || message.message_type === "audio"
+                    || Boolean(message.file)
+                );
             });
 
             return;
@@ -3603,8 +4465,12 @@
 
         if (action === "links") {
             filterMessages(function (message) {
-                return typeof message.text === "string"
-                    && /https?:\/\/\S+/i.test(message.text);
+                return (
+                    typeof message.text === "string"
+                    && /https?:\/\/\S+/i.test(
+                        message.text
+                    )
+                );
             });
 
             return;
@@ -3616,7 +4482,10 @@
         }
 
         if (action === "pinned") {
-            window.alert("Закреплённых сообщений пока нет.");
+            window.alert(
+                "Закреплённых сообщений пока нет."
+            );
+
             actionsPanel.hidden = true;
         }
     }
@@ -3624,11 +4493,28 @@
     async function selectChat(chat) {
         window.clearTimeout(reconnectTimer);
 
+        if (mediaRecorder) {
+            try {
+                mediaRecorder.stop();
+            } catch (error) {
+                console.warn(
+                    "Не удалось остановить запись:",
+                    error
+                );
+            }
+
+            mediaRecorder = null;
+            stopRecordingTracks();
+            recordedAudioChunks = [];
+            resetVoiceButton();
+        }
+
         selectedChat = chat;
         selectedChat.unread_count = 0;
         messageFilter = null;
 
         layout.classList.add("chat-open");
+
         placeholder.hidden = true;
         activeChatElement.hidden = false;
         actionsPanel.hidden = true;
@@ -3637,6 +4523,7 @@
 
         cancelReply();
         cancelEditing();
+
         renderActiveChat(chat);
         renderChats();
         setSendingAvailability(true);
@@ -3656,7 +4543,25 @@
 
     function closeChat() {
         window.clearTimeout(reconnectTimer);
+
         chatInfoRequestId += 1;
+
+        if (mediaRecorder) {
+            try {
+                mediaRecorder.stop();
+            } catch (error) {
+                console.warn(
+                    "Не удалось остановить запись:",
+                    error
+                );
+            }
+
+            mediaRecorder = null;
+        }
+
+        stopRecordingTracks();
+        recordedAudioChunks = [];
+        resetVoiceButton();
 
         if (chatSocket) {
             chatSocket.close();
@@ -3666,16 +4571,20 @@
         selectedChat = null;
         chatMembers = [];
         messageFilter = null;
+
         actionsPanel.hidden = true;
         infoPanel.hidden = true;
         infoContent.innerHTML = "";
+
         layout.classList.remove("chat-open");
+
         activeChatElement.hidden = true;
         placeholder.hidden = false;
         typingStatus.textContent = "";
 
         cancelReply();
         cancelEditing();
+
         renderChats();
     }
 
@@ -3688,79 +4597,94 @@
         });
     }
 
-    messageInput.addEventListener("input", function () {
-        if (
-            editingMessage
-            || !chatSocket
-            || chatSocket.readyState !== WebSocket.OPEN
-        ) {
-            return;
+    messageInput.addEventListener(
+        "input",
+        function () {
+            if (
+                editingMessage
+                || !chatSocket
+                || chatSocket.readyState
+                    !== WebSocket.OPEN
+            ) {
+                return;
+            }
+
+            sendSocket({
+                type: "typing",
+                is_typing: true
+            });
+
+            window.clearTimeout(typingTimer);
+
+            typingTimer =
+                window.setTimeout(
+                    stopTyping,
+                    1200
+                );
         }
+    );
 
-        sendSocket({
-            type: "typing",
-            is_typing: true
-        });
+    messageForm.addEventListener(
+        "submit",
+        function (event) {
+            event.preventDefault();
 
-        window.clearTimeout(typingTimer);
+            if (!selectedChat) {
+                return;
+            }
 
-        typingTimer = window.setTimeout(
-            stopTyping,
-            1200
-        );
-    });
+            if (editingMessage) {
+                editMessage(editingMessage);
+                return;
+            }
 
-    messageForm.addEventListener("submit", function (event) {
-        event.preventDefault();
+            const text =
+                messageInput.value.trim();
 
-        if (!selectedChat) {
-            return;
+            if (!text) {
+                return;
+            }
+
+            const payload = {
+                type: "message",
+                text: text
+            };
+
+            if (
+                replyMessage
+                && replyMessage.id
+            ) {
+                payload.reply_to =
+                    replyMessage.id;
+            }
+
+            if (!sendSocket(payload)) {
+                errorElement.textContent =
+                    "Соединение с чатом не установлено.";
+
+                return;
+            }
+
+            messageInput.value = "";
+            cancelReply();
+            stopTyping();
         }
+    );
 
-        if (editingMessage) {
-            editMessage(editingMessage);
-            return;
+    attachButton.addEventListener(
+        "click",
+        function () {
+            if (
+                selectedChat
+                && !messageInput.disabled
+                && !uploadInProgress
+            ) {
+                fileInput.click();
+            }
         }
+    );
 
-        const text = messageInput.value.trim();
-
-        if (!text) {
-            return;
-        }
-
-        const payload = {
-            type: "message",
-            text: text
-        };
-
-        if (replyMessage && replyMessage.id) {
-            payload.reply_to = replyMessage.id;
-        }
-
-        if (!sendSocket(payload)) {
-            errorElement.textContent =
-                "Соединение с чатом не установлено.";
-            return;
-        }
-
-        messageInput.value = "";
-        cancelReply();
-        stopTyping();
-    });
-
-    attachButton.addEventListener("click", function () {
-        if (
-            selectedChat
-            && !messageInput.disabled
-            && !uploadInProgress
-        ) {
-            fileInput.click();
-        }
-    });
-
-    fileInput.addEventListener("change", async function () {
-        const file = fileInput.files && fileInput.files[0];
-
+    async function uploadFile(file) {
         if (
             !file
             || !selectedChat
@@ -3772,182 +4696,555 @@
         if (file.size > MAX_FILE_SIZE) {
             errorElement.textContent =
                 "Размер файла не может превышать 100 МБ.";
-            fileInput.value = "";
+
             return;
         }
 
         uploadInProgress = true;
+
         attachButton.disabled = true;
         sendButton.disabled = true;
 
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const text = messageInput.value.trim();
-
-        if (text) {
-            formData.append("text", text);
+        if (voiceButton) {
+            voiceButton.disabled = true;
         }
 
-        if (replyMessage && replyMessage.id) {
-            formData.append("reply_to", replyMessage.id);
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            file
+        );
+
+        const text =
+            messageInput.value.trim();
+
+        if (text) {
+            formData.append(
+                "text",
+                text
+            );
+        }
+
+        if (
+            replyMessage
+            && replyMessage.id
+        ) {
+            formData.append(
+                "reply_to",
+                replyMessage.id
+            );
         }
 
         try {
-            const data = await apiRequest(
-                "/api/chats/"
-                + encodeURIComponent(selectedChat.id)
-                + "/messages/upload/",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/"
+                    + encodeURIComponent(
+                        selectedChat.id
+                    )
+                    + "/messages/upload/",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
 
             appendMessage(data);
-            updateLastMessage(selectedChat.id, data, false);
+
+            updateLastMessage(
+                selectedChat.id,
+                data,
+                false
+            );
+
             messageInput.value = "";
             cancelReply();
             scrollToBottom();
+
             errorElement.textContent = "";
         } catch (error) {
-            errorElement.textContent = error.message;
+            errorElement.textContent =
+                error.message;
         } finally {
             uploadInProgress = false;
             fileInput.value = "";
-            attachButton.disabled = messageInput.disabled;
-            sendButton.disabled = messageInput.disabled;
+
+            attachButton.disabled =
+                messageInput.disabled;
+
+            sendButton.disabled =
+                messageInput.disabled;
+
+            if (voiceButton) {
+                voiceButton.disabled =
+                    messageInput.disabled;
+            }
         }
-    });
+    }
 
-    contextMenu.addEventListener("click", function (event) {
-        const button = event.target.closest("button");
+    fileInput.addEventListener(
+        "change",
+        async function () {
+            const file =
+                fileInput.files
+                && fileInput.files[0];
 
-        if (!button || !selectedMessage) {
+            await uploadFile(file);
+        }
+    );
+
+    async function uploadRecordedAudio(blob) {
+        if (
+            !selectedChat
+            || !blob
+            || !blob.size
+            || uploadInProgress
+        ) {
             return;
         }
 
-        const message = selectedMessage;
-        const action = button.dataset.action;
+        if (blob.size > MAX_FILE_SIZE) {
+            errorElement.textContent =
+                "Размер аудио не может превышать 100 МБ.";
 
-        closeContextMenu();
-
-        if (action === "reply") {
-            setReplyMessage(message);
-        }
-
-        if (action === "edit") {
-            startEditing(message);
-        }
-
-        if (action === "delete") {
-            deleteMessage(message);
-        }
-    });
-
-    cancelReplyButton.addEventListener("click", cancelReply);
-
-    infoButton.addEventListener("click", function (event) {
-        event.stopPropagation();
-
-        if (!selectedChat) {
             return;
         }
 
-        infoPanel.hidden = true;
-        actionsPanel.hidden = !actionsPanel.hidden;
-    });
+        uploadInProgress = true;
 
-    actionsPanel.addEventListener("click", function (event) {
-        const button = event.target.closest(
-            "[data-chat-action]"
+        attachButton.disabled = true;
+        sendButton.disabled = true;
+
+        if (voiceButton) {
+            voiceButton.disabled = true;
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            blob,
+            "voice-message.webm"
         );
 
-        if (button) {
-            handleChatAction(button.dataset.chatAction);
-        }
-    });
+        const text =
+            messageInput.value.trim();
 
-    document.addEventListener("click", function (event) {
-        if (
-            !contextMenu.hidden
-            && !contextMenu.contains(event.target)
-        ) {
-            closeContextMenu();
+        if (text) {
+            formData.append(
+                "text",
+                text
+            );
         }
 
         if (
-            !actionsPanel.hidden
-            && !actionsPanel.contains(event.target)
-            && event.target !== infoButton
+            replyMessage
+            && replyMessage.id
         ) {
-            actionsPanel.hidden = true;
+            formData.append(
+                "reply_to",
+                replyMessage.id
+            );
         }
-    });
-
-    backButton.addEventListener("click", closeChat);
-    searchInput.addEventListener("input", renderChats);
-
-    refreshButton.addEventListener("click", async function () {
-        refreshButton.disabled = true;
 
         try {
-            await loadChats();
-        } catch (error) {
-            errorElement.textContent = error.message;
-        } finally {
-            refreshButton.disabled = false;
-        }
-    });
-
-    document.querySelectorAll("[data-close-modal]")
-        .forEach(function (button) {
-            button.addEventListener("click", function () {
-                const modal = $(
-                    button.dataset.closeModal
+            const data =
+                await apiRequest(
+                    "/api/chats/"
+                    + encodeURIComponent(
+                        selectedChat.id
+                    )
+                    + "/messages/upload/",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
                 );
+
+            appendMessage(data);
+
+            updateLastMessage(
+                selectedChat.id,
+                data,
+                false
+            );
+
+            messageInput.value = "";
+            cancelReply();
+            scrollToBottom();
+
+            errorElement.textContent = "";
+        } catch (error) {
+            errorElement.textContent =
+                error.message
+                || "Не удалось отправить аудио.";
+        } finally {
+            uploadInProgress = false;
+
+            attachButton.disabled =
+                messageInput.disabled;
+
+            sendButton.disabled =
+                messageInput.disabled;
+
+            if (voiceButton) {
+                voiceButton.disabled =
+                    messageInput.disabled;
+            }
+        }
+    }
+
+    async function toggleVoiceRecording() {
+        if (
+            !selectedChat
+            || messageInput.disabled
+            || uploadInProgress
+        ) {
+            return;
+        }
+
+        if (mediaRecorder) {
+            mediaRecorder.stop();
+            return;
+        }
+
+        if (
+            !navigator.mediaDevices
+            || !navigator.mediaDevices.getUserMedia
+            || !window.MediaRecorder
+        ) {
+            errorElement.textContent =
+                "Ваш браузер не поддерживает запись аудио.";
+
+            return;
+        }
+
+        try {
+            recordingStream =
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+            recordedAudioChunks = [];
+
+            let mimeType = "";
+
+            if (
+                MediaRecorder.isTypeSupported(
+                    "audio/webm;codecs=opus"
+                )
+            ) {
+                mimeType =
+                    "audio/webm;codecs=opus";
+            } else if (
+                MediaRecorder.isTypeSupported(
+                    "audio/webm"
+                )
+            ) {
+                mimeType = "audio/webm";
+            } else if (
+                MediaRecorder.isTypeSupported(
+                    "audio/ogg;codecs=opus"
+                )
+            ) {
+                mimeType =
+                    "audio/ogg;codecs=opus";
+            }
+
+            mediaRecorder =
+                mimeType
+                    ? new MediaRecorder(
+                        recordingStream,
+                        {
+                            mimeType: mimeType
+                        }
+                    )
+                    : new MediaRecorder(
+                        recordingStream
+                    );
+
+            mediaRecorder.addEventListener(
+                "dataavailable",
+                function (event) {
+                    if (
+                        event.data
+                        && event.data.size > 0
+                    ) {
+                        recordedAudioChunks.push(
+                            event.data
+                        );
+                    }
+                }
+            );
+
+            mediaRecorder.addEventListener(
+                "stop",
+                async function () {
+                    const recorder =
+                        mediaRecorder;
+
+                    const actualType =
+                        recorder
+                        && recorder.mimeType
+                            ? recorder.mimeType
+                            : "audio/webm";
+
+                    const audioBlob =
+                        new Blob(
+                            recordedAudioChunks,
+                            {
+                                type: actualType
+                            }
+                        );
+
+                    stopRecordingTracks();
+
+                    mediaRecorder = null;
+                    recordedAudioChunks = [];
+
+                    resetVoiceButton();
+
+                    if (audioBlob.size > 0) {
+                        await uploadRecordedAudio(
+                            audioBlob
+                        );
+                    } else {
+                        errorElement.textContent =
+                            "Запись получилась пустой.";
+                    }
+                }
+            );
+
+            mediaRecorder.start();
+
+            voiceButton.classList.add(
+                "recording"
+            );
+
+            voiceButton.textContent = "⏹";
+            voiceButton.title =
+                "Остановить запись";
+
+            errorElement.textContent =
+                "Идёт запись. Нажмите ⏹ для отправки.";
+        } catch (error) {
+            stopRecordingTracks();
+
+            mediaRecorder = null;
+            recordedAudioChunks = [];
+
+            resetVoiceButton();
+
+            if (
+                error.name === "NotAllowedError"
+            ) {
+                errorElement.textContent =
+                    "Разрешите доступ к микрофону в браузере.";
+            } else {
+                errorElement.textContent =
+                    "Не удалось включить микрофон.";
+            }
+        }
+    }
+
+    if (voiceButton) {
+        voiceButton.addEventListener(
+            "click",
+            toggleVoiceRecording
+        );
+    }
+
+    contextMenu.addEventListener(
+        "click",
+        function (event) {
+            const button =
+                event.target.closest("button");
+
+            if (
+                !button
+                || !selectedMessage
+            ) {
+                return;
+            }
+
+            const message =
+                selectedMessage;
+
+            const action =
+                button.dataset.action;
+
+            closeContextMenu();
+
+            if (action === "reply") {
+                setReplyMessage(message);
+            }
+
+            if (action === "edit") {
+                startEditing(message);
+            }
+
+            if (action === "delete") {
+                deleteMessage(message);
+            }
+        }
+    );
+
+    cancelReplyButton.addEventListener(
+        "click",
+        cancelReply
+    );
+
+    infoButton.addEventListener(
+        "click",
+        function (event) {
+            event.stopPropagation();
+
+            if (!selectedChat) {
+                return;
+            }
+
+            infoPanel.hidden = true;
+            actionsPanel.hidden =
+                !actionsPanel.hidden;
+        }
+    );
+
+    actionsPanel.addEventListener(
+        "click",
+        function (event) {
+            const button =
+                event.target.closest(
+                    "[data-chat-action]"
+                );
+
+            if (button) {
+                handleChatAction(
+                    button.dataset.chatAction
+                );
+            }
+        }
+    );
+
+    document.addEventListener(
+        "click",
+        function (event) {
+            if (
+                !contextMenu.hidden
+                && !contextMenu.contains(
+                    event.target
+                )
+            ) {
+                closeContextMenu();
+            }
+
+            if (
+                !actionsPanel.hidden
+                && !actionsPanel.contains(
+                    event.target
+                )
+                && event.target !== infoButton
+            ) {
+                actionsPanel.hidden = true;
+            }
+        }
+    );
+
+    backButton.addEventListener(
+        "click",
+        closeChat
+    );
+
+    searchInput.addEventListener(
+        "input",
+        renderChats
+    );
+
+    refreshButton.addEventListener(
+        "click",
+        async function () {
+            refreshButton.disabled = true;
+
+            try {
+                await loadChats();
+            } catch (error) {
+                errorElement.textContent =
+                    error.message;
+            } finally {
+                refreshButton.disabled = false;
+            }
+        }
+    );
+
+    document.querySelectorAll(
+        "[data-close-modal]"
+    ).forEach(function (button) {
+        button.addEventListener(
+            "click",
+            function () {
+                const modal =
+                    $(
+                        button.dataset.closeModal
+                    );
 
                 if (modal) {
                     modal.hidden = true;
                 }
-            });
-        });
+            }
+        );
+    });
 
-    document.querySelectorAll(".modal-overlay")
-        .forEach(function (modal) {
-            modal.addEventListener("click", function (event) {
+    document.querySelectorAll(
+        ".modal-overlay"
+    ).forEach(function (modal) {
+        modal.addEventListener(
+            "click",
+            function (event) {
                 if (event.target === modal) {
                     modal.hidden = true;
                 }
-            });
-        });
+            }
+        );
+    });
 
-    $("new-private-chat-button").addEventListener(
-        "click",
-        function () {
-            $("private-chat-modal").hidden = false;
-            $("private-user-search").focus();
-        }
-    );
+    $("new-private-chat-button")
+        .addEventListener(
+            "click",
+            function () {
+                $("private-chat-modal").hidden =
+                    false;
 
-    $("new-group-button").addEventListener(
-        "click",
-        function () {
-            $("group-modal").hidden = false;
-        }
-    );
+                $("private-user-search").focus();
+            }
+        );
 
-    $("new-channel-button").addEventListener(
-        "click",
-        function () {
-            $("channel-modal").hidden = false;
-        }
-    );
+    $("new-group-button")
+        .addEventListener(
+            "click",
+            function () {
+                $("group-modal").hidden = false;
+            }
+        );
 
-    async function searchUsers(input, results, errorBox) {
-        const query = input.value
-            .trim()
-            .replace(/^@/, "");
+    $("new-channel-button")
+        .addEventListener(
+            "click",
+            function () {
+                $("channel-modal").hidden = false;
+            }
+        );
+
+    async function searchUsers(
+        input,
+        results,
+        errorBox
+    ) {
+        const query =
+            input.value
+                .trim()
+                .replace(/^@/, "");
 
         results.innerHTML = "";
         errorBox.textContent = "";
@@ -3957,161 +5254,246 @@
         }
 
         try {
-            const data = await apiRequest(
-                "/api/chats/users/search/?q="
-                + encodeURIComponent(query),
-                { method: "GET" }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/users/search/?q="
+                    + encodeURIComponent(query),
+                    {
+                        method: "GET"
+                    }
+                );
 
-            if (!Array.isArray(data) || !data.length) {
-                results.textContent = "Пользователи не найдены.";
+            if (
+                !Array.isArray(data)
+                || !data.length
+            ) {
+                results.textContent =
+                    "Пользователи не найдены.";
+
                 return;
             }
 
             data.forEach(function (user) {
-                const item = document.createElement("div");
+                const item =
+                    document.createElement("div");
+
                 item.className = "user-result";
 
-                const avatar = document.createElement("div");
-                setAvatar(avatar, user, null, false);
+                const avatar =
+                    document.createElement("div");
 
-                const info = document.createElement("div");
-                info.className = "user-result-info";
+                setAvatar(
+                    avatar,
+                    user,
+                    null,
+                    false
+                );
 
-                const name = document.createElement("div");
-                name.className = "user-result-name";
-                name.textContent = getUserName(user);
-                appendVerifiedBadge(name, user);
+                const info =
+                    document.createElement("div");
 
-                const tag = document.createElement("div");
-                tag.className = "user-result-tag";
-                tag.textContent = getUserTag(user);
+                info.className =
+                    "user-result-info";
+
+                const name =
+                    document.createElement("div");
+
+                name.className =
+                    "user-result-name";
+
+                name.textContent =
+                    getUserName(user);
+
+                appendVerifiedBadge(
+                    name,
+                    user
+                );
+
+                const tag =
+                    document.createElement("div");
+
+                tag.className =
+                    "user-result-tag";
+
+                tag.textContent =
+                    getUserTag(user);
 
                 info.appendChild(name);
                 info.appendChild(tag);
+
                 item.appendChild(avatar);
                 item.appendChild(info);
 
-                item.addEventListener("click", function () {
-                    if (
-                        results.id === "private-user-results"
-                    ) {
-                        createPrivateChat(user);
-                    } else {
-                        addGroupUser(user);
+                item.addEventListener(
+                    "click",
+                    function () {
+                        if (
+                            results.id
+                            === "private-user-results"
+                        ) {
+                            createPrivateChat(user);
+                        } else {
+                            addGroupUser(user);
+                        }
                     }
-                });
+                );
 
                 results.appendChild(item);
             });
         } catch (error) {
-            errorBox.textContent = error.message;
+            errorBox.textContent =
+                error.message;
         }
     }
 
-    $("private-user-search").addEventListener(
-        "input",
-        function () {
-            window.clearTimeout(searchTimer);
+    $("private-user-search")
+        .addEventListener(
+            "input",
+            function () {
+                window.clearTimeout(searchTimer);
 
-            searchTimer = window.setTimeout(function () {
-                searchUsers(
-                    $("private-user-search"),
-                    $("private-user-results"),
-                    $("private-chat-error")
+                searchTimer =
+                    window.setTimeout(
+                        function () {
+                            searchUsers(
+                                $("private-user-search"),
+                                $("private-user-results"),
+                                $("private-chat-error")
+                            );
+                        },
+                        300
+                    );
+            }
+        );
+
+    $("group-user-search")
+        .addEventListener(
+            "input",
+            function () {
+                window.clearTimeout(
+                    groupSearchTimer
                 );
-            }, 300);
-        }
-    );
 
-    $("group-user-search").addEventListener(
-        "input",
-        function () {
-            window.clearTimeout(groupSearchTimer);
-
-            groupSearchTimer = window.setTimeout(function () {
-                searchUsers(
-                    $("group-user-search"),
-                    $("group-user-results"),
-                    $("group-error")
-                );
-            }, 300);
-        }
-    );
+                groupSearchTimer =
+                    window.setTimeout(
+                        function () {
+                            searchUsers(
+                                $("group-user-search"),
+                                $("group-user-results"),
+                                $("group-error")
+                            );
+                        },
+                        300
+                    );
+            }
+        );
 
     async function createPrivateChat(user) {
-        const error = $("private-chat-error");
+        const error =
+            $("private-chat-error");
 
         try {
-            const data = await apiRequest(
-                "/api/chats/",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        username: user.username
-                    })
-                }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            username:
+                                user.username
+                        })
+                    }
+                );
 
-            $("private-chat-modal").hidden = true;
+            $("private-chat-modal").hidden =
+                true;
+
             await loadChats();
 
-            const chat = chats.find(function (item) {
-                return sameId(item.id, data.id);
-            });
+            const chat =
+                chats.find(function (item) {
+                    return sameId(
+                        item.id,
+                        data.id
+                    );
+                });
 
             if (chat) {
                 selectChat(chat);
             }
         } catch (requestError) {
-            error.textContent = requestError.message;
+            error.textContent =
+                requestError.message;
         }
     }
 
     function addGroupUser(user) {
-        const exists = selectedUsers.some(function (item) {
-            return sameId(item.id, user.id);
-        });
+        const exists =
+            selectedUsers.some(
+                function (item) {
+                    return sameId(
+                        item.id,
+                        user.id
+                    );
+                }
+            );
 
         if (!exists) {
             selectedUsers.push(user);
         }
 
         $("group-user-search").value = "";
-        $("group-user-results").innerHTML = "";
+        $("group-user-results").innerHTML =
+            "";
+
         renderSelectedUsers();
     }
 
     function renderSelectedUsers() {
-        const container = $("selected-group-users");
+        const container =
+            $("selected-group-users");
+
         container.innerHTML = "";
 
         selectedUsers.forEach(function (user) {
-            const item = document.createElement("span");
+            const item =
+                document.createElement("span");
+
             item.className = "selected-user";
 
             item.appendChild(
                 document.createTextNode(
-                    getUserTag(user) || getUserName(user)
+                    getUserTag(user)
+                    || getUserName(user)
                 )
             );
 
-            const remove = document.createElement("button");
+            const remove =
+                document.createElement("button");
+
             remove.type = "button";
             remove.textContent = "×";
 
-            remove.addEventListener("click", function () {
-                selectedUsers = selectedUsers.filter(
-                    function (selected) {
-                        return !sameId(selected.id, user.id);
-                    }
-                );
+            remove.addEventListener(
+                "click",
+                function () {
+                    selectedUsers =
+                        selectedUsers.filter(
+                            function (selected) {
+                                return !sameId(
+                                    selected.id,
+                                    user.id
+                                );
+                            }
+                        );
 
-                renderSelectedUsers();
-            });
+                    renderSelectedUsers();
+                }
+            );
 
             item.appendChild(remove);
             container.appendChild(item);
@@ -4119,164 +5501,240 @@
     }
 
     async function createGroup() {
-        const error = $("group-error");
-        const title = $("group-title-input").value.trim();
-        const description = $("group-description-input")
-            .value
-            .trim();
+        const error =
+            $("group-error");
+
+        const title =
+            $("group-title-input")
+                .value
+                .trim();
+
+        const description =
+            $("group-description-input")
+                .value
+                .trim();
 
         if (!title) {
-            error.textContent = "Введите название группы.";
+            error.textContent =
+                "Введите название группы.";
+
             return;
         }
 
-        const button = $("submit-group-button");
+        const button =
+            $("submit-group-button");
+
         button.disabled = true;
 
         try {
-            const data = await apiRequest(
-                "/api/chats/groups/create/",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        title: title,
-                        description: description,
-                        usernames: selectedUsers.map(
-                            function (user) {
-                                return user.username;
-                            }
-                        )
-                    })
-                }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/groups/create/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            title: title,
+                            description: description,
+                            usernames:
+                                selectedUsers.map(
+                                    function (user) {
+                                        return user.username;
+                                    }
+                                )
+                        })
+                    }
+                );
 
             $("group-modal").hidden = true;
             selectedUsers = [];
+
             renderSelectedUsers();
 
             $("group-title-input").value = "";
-            $("group-description-input").value = "";
+            $("group-description-input").value =
+                "";
 
             await loadChats();
 
-            const chat = chats.find(function (item) {
-                return sameId(item.id, data.id);
-            });
+            const chat =
+                chats.find(function (item) {
+                    return sameId(
+                        item.id,
+                        data.id
+                    );
+                });
 
             if (chat) {
                 selectChat(chat);
             }
         } catch (requestError) {
-            error.textContent = requestError.message;
+            error.textContent =
+                requestError.message;
         } finally {
             button.disabled = false;
         }
     }
 
     async function createChannel() {
-        const error = $("channel-error");
-        const title = $("channel-title-input").value.trim();
-        const description = $("channel-description-input")
-            .value
-            .trim();
+        const error =
+            $("channel-error");
+
+        const title =
+            $("channel-title-input")
+                .value
+                .trim();
+
+        const description =
+            $("channel-description-input")
+                .value
+                .trim();
 
         if (!title) {
-            error.textContent = "Введите название сообщества.";
+            error.textContent =
+                "Введите название сообщества.";
+
             return;
         }
 
-        const button = $("submit-channel-button");
+        const button =
+            $("submit-channel-button");
+
         button.disabled = true;
 
         try {
-            const data = await apiRequest(
-                "/api/chats/channels/create/",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        title: title,
-                        description: description,
-                        is_public: $("channel-public-input").checked
-                    })
-                }
-            );
+            const data =
+                await apiRequest(
+                    "/api/chats/channels/create/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            title: title,
+                            description: description,
+                            is_public:
+                                $("channel-public-input")
+                                    .checked
+                        })
+                    }
+                );
 
             $("channel-modal").hidden = true;
             $("channel-title-input").value = "";
-            $("channel-description-input").value = "";
+            $("channel-description-input").value =
+                "";
 
             await loadChats();
 
-            const chat = chats.find(function (item) {
-                return sameId(item.id, data.id);
-            });
+            const chat =
+                chats.find(function (item) {
+                    return sameId(
+                        item.id,
+                        data.id
+                    );
+                });
 
             if (chat) {
                 selectChat(chat);
             }
         } catch (requestError) {
-            error.textContent = requestError.message;
+            error.textContent =
+                requestError.message;
         } finally {
             button.disabled = false;
         }
     }
 
-    $("submit-group-button").addEventListener(
-        "click",
-        createGroup
-    );
+    $("submit-group-button")
+        .addEventListener(
+            "click",
+            createGroup
+        );
 
-    $("submit-channel-button").addEventListener(
-        "click",
-        createChannel
-    );
+    $("submit-channel-button")
+        .addEventListener(
+            "click",
+            createChannel
+        );
 
-    document.addEventListener("keydown", function (event) {
-        if (event.key !== "Escape") {
-            return;
-        }
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key !== "Escape") {
+                return;
+            }
 
-        closeContextMenu();
-        actionsPanel.hidden = true;
-        infoPanel.hidden = true;
+            closeContextMenu();
+            actionsPanel.hidden = true;
+            infoPanel.hidden = true;
 
-        document.querySelectorAll(".modal-overlay")
-            .forEach(function (modal) {
+            document.querySelectorAll(
+                ".modal-overlay"
+            ).forEach(function (modal) {
                 modal.hidden = true;
             });
 
-        if (editingMessage) {
-            cancelEditing();
-        } else {
-            cancelReply();
+            if (editingMessage) {
+                cancelEditing();
+            } else {
+                cancelReply();
+            }
         }
-    });
+    );
 
-    document.addEventListener("visibilitychange", function () {
-        if (!document.hidden && selectedChat) {
-            window.setTimeout(markMessagesAsRead, 200);
+    document.addEventListener(
+        "visibilitychange",
+        function () {
+            if (
+                !document.hidden
+                && selectedChat
+            ) {
+                window.setTimeout(
+                    markMessagesAsRead,
+                    200
+                );
+            }
         }
-    });
+    );
 
-    window.addEventListener("beforeunload", function () {
-        window.clearTimeout(refreshTimer);
-        window.clearTimeout(reconnectTimer);
-        window.clearTimeout(notificationsReconnectTimer);
+    window.addEventListener(
+        "beforeunload",
+        function () {
+            if (mediaRecorder) {
+                try {
+                    mediaRecorder.stop();
+                } catch (error) {
+                    console.warn(
+                        "Не удалось остановить запись:",
+                        error
+                    );
+                }
+            }
 
-        if (chatSocket) {
-            chatSocket.close();
+            stopRecordingTracks();
+
+            window.clearTimeout(refreshTimer);
+            window.clearTimeout(reconnectTimer);
+
+            window.clearTimeout(
+                notificationsReconnectTimer
+            );
+
+            if (chatSocket) {
+                chatSocket.close();
+            }
+
+            if (notificationsSocket) {
+                notificationsSocket.close();
+            }
         }
-
-        if (notificationsSocket) {
-            notificationsSocket.close();
-        }
-    });
+    );
 
     async function initialize() {
         try {
@@ -4287,33 +5745,34 @@
                 "Notification" in window
                 && Notification.permission === "default"
             ) {
-                Notification.requestPermission().catch(
-                    function () {}
-                );
+                Notification.requestPermission()
+                    .catch(function () {});
             }
 
             connectNotificationsSocket();
 
-            refreshTimer = window.setInterval(
-                async function () {
-                    if (document.hidden) {
-                        return;
-                    }
+            refreshTimer =
+                window.setInterval(
+                    async function () {
+                        if (document.hidden) {
+                            return;
+                        }
 
-                    try {
-                        await loadChats(false);
-                    } catch (error) {
-                        console.error(
-                            "Ошибка обновления чатов:",
-                            error
-                        );
-                    }
-                },
-                15000
-            );
+                        try {
+                            await loadChats(false);
+                        } catch (error) {
+                            console.error(
+                                "Ошибка обновления чатов:",
+                                error
+                            );
+                        }
+                    },
+                    15000
+                );
         } catch (error) {
             errorElement.textContent =
-                error.message || "Не удалось загрузить чаты.";
+                error.message
+                || "Не удалось загрузить чаты.";
         }
     }
 
