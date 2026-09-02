@@ -6299,23 +6299,25 @@
 
 
     infoButton.addEventListener(
-        "click",
-        function () {
-            if (
-                !selectedChat
-            ) {
-                return;
-            }
+    "click",
+    function (
+        event
+    ) {
+        event.stopPropagation();
 
-            infoPanel.hidden =
-                false;
-
-            actionsPanel.hidden =
-                true;
-
-            loadChatInfo();
+        if (
+            !selectedChat
+        ) {
+            return;
         }
-    );
+
+        infoPanel.hidden =
+            true;
+
+        actionsPanel.hidden =
+            !actionsPanel.hidden;
+    }
+);
 
 
     if (
