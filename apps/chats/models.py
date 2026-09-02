@@ -214,24 +214,30 @@ class Message(models.Model):
         validators=[
             FileExtensionValidator(
                 allowed_extensions=[
-                    "jpg",
-                    "jpeg",
-                    "png",
-                    "webp",
-                    "gif",
-                    "mp4",
-                    "webm",
-                    "mov",
-                    "avi",
-                    "pdf",
-                    "doc",
-                    "docx",
-                    "xls",
-                    "xlsx",
-                    "zip",
-                    "rar",
-                    "txt",
-                ],
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+    "mp4",
+    "webm",
+    "mov",
+    "avi",
+    "mp3",
+    "wav",
+    "ogg",
+    "m4a",
+    "aac",
+    "opus",
+    "pdf",
+    "doc",
+    "docx",
+    "xls",
+    "xlsx",
+    "zip",
+    "rar",
+    "txt",
+],
             ),
         ],
     )
@@ -349,10 +355,11 @@ class Message(models.Model):
         # Для изображения, видео и файла обязательно
         # наличие загруженного файла.
         if self.message_type in {
-            self.IMAGE,
-            self.VIDEO,
-            self.FILE,
-        }:
+    self.IMAGE,
+    self.VIDEO,
+    self.AUDIO,
+    self.FILE,
+}:
             if not self.file:
                 raise ValidationError(
                     "Для сообщения необходимо выбрать файл."
