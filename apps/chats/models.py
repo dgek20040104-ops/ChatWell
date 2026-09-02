@@ -321,39 +321,42 @@ class Message(models.Model):
         ]
 
     def clean(self):
-        super().clean()
+    super().clean()
 
-        if self.message_type == self.TEXT:
-            if self.file:
-                raise ValidationError(
-                    "Текстовое сообщение не должно содержать файл."
-                )
+    if self.is_deleted:
+        return
 
-            if not self.text.strip():
-                raise ValidationError(
-                    "Текст сообщения не может быть пустым."
-                )
-
-        if self.message_type in {
-            self.IMAGE,
-            self.VIDEO,
-            self.FILE,
-        }:
-            if not self.file:
-                raise ValidationError(
-                    "Для сообщения необходимо выбрать файл."
-                )
-
-        if self.message_type == self.SHARED_POST:
-            if not self.shared_post_id:
-                raise ValidationError(
-                    "Необходимо указать публикацию."
-                )
-
-        if self.file and self.file.size > 100 * 1024 * 1024:
+    if self.message_type == self.TEXT:
+        if self.file:
             raise ValidationError(
-                "Размер файла не может превышать 100 МБ."
+                "Текстовое сообщение не должно содержать файл."
             )
+
+        if not self.text.strip():
+            raise ValidationError(
+                "Текст сообщения не может быть пустым."
+            )
+
+    if self.message_type in {
+        self.IMAGE,
+        self.VIDEO,
+        self.FILE,
+    }:
+        if not self.file:
+            raise ValidationError(
+                "Для сообщения необходимо выбрать файл."
+            )
+
+    if self.message_type == self.SHARED_POST:
+        if not self.shared_post_id:
+            raise ValidationError(
+                "Необходимо указать публикацию."
+            )
+
+    if self.file and self.file.size > 100 * 1024 * 1024:
+        raise ValidationError(
+            "Размер файла не может превышать 100 МБ."
+        )
 
     def save(self, *args, **kwargs):
         if self.file:
