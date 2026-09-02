@@ -201,6 +201,48 @@
                 </div>
 
                 <div
+    id="chat-actions-panel"
+    class="chat-actions-panel"
+    hidden
+>
+    <button
+        type="button"
+        data-chat-action="search"
+    >
+        🔎 Найти в чате
+    </button>
+
+    <button
+        type="button"
+        data-chat-action="media"
+    >
+        🖼 Медиа и файлы
+    </button>
+
+    <button
+        type="button"
+        data-chat-action="links"
+    >
+        🔗 Ссылки
+    </button>
+
+    <button
+        type="button"
+        data-chat-action="pinned"
+    >
+        📌 Закреплённые сообщения
+    </button>
+
+    <button
+        type="button"
+        data-chat-action="notifications"
+    >
+        🔔 Уведомления
+    </button>
+</div>
+
+                
+                <div
                     id="messages-list"
                     class="messages-list"
                 ></div>
@@ -1462,6 +1504,176 @@
         color: var(--chat-primary);
     }
 }
+.chat-actions-panel {
+    position: absolute;
+    top: 64px;
+    right: 18px;
+    z-index: 100;
+    width: min(250px, calc(100% - 36px));
+    padding: 7px;
+    border: 1px solid var(--chat-border);
+    border-radius: 15px;
+    background: var(--chat-white);
+    box-shadow: 0 14px 35px rgba(30, 35, 60, .18);
+}
+
+.chat-actions-panel button {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--chat-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+}
+
+.chat-actions-panel button:hover {
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
+}
+
+.chat-actions-panel button.is-danger {
+    color: var(--chat-danger);
+}
+
+.active-chat {
+    position: relative;
+}
+
+.chat-info-panel {
+    max-height: 390px;
+    overflow-y: auto;
+}
+
+.chat-info-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 10px;
+    border-radius: 14px;
+    background: linear-gradient(
+        135deg,
+        #f1efff,
+        #fafbff
+    );
+}
+
+.chat-info-main-avatar {
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+    border-radius: 17px;
+}
+
+.chat-info-main-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.chat-info-main-title {
+    overflow: hidden;
+    color: var(--chat-text);
+    font-size: 17px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-info-main-subtitle {
+    margin-top: 3px;
+    color: var(--chat-muted);
+    font-size: 11px;
+}
+
+.chat-info-section-title {
+    margin: 15px 0 7px;
+    color: var(--chat-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.chat-search-box {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 10px;
+}
+
+.chat-search-box input {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    padding: 0 11px;
+    border: 1px solid var(--chat-border);
+    border-radius: 10px;
+    outline: 0;
+    background: #f8f9fc;
+    color: var(--chat-text);
+    font: inherit;
+    font-size: 12px;
+}
+
+.chat-search-box button {
+    width: 38px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
+    cursor: pointer;
+}
+
+.chat-search-result {
+    margin-bottom: 8px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    background: #fafbfe;
+    color: var(--chat-text);
+    font-size: 12px;
+}
+
+.chat-info-admin-label {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: var(--chat-primary-soft);
+    color: var(--chat-primary);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.message-highlight {
+    animation: messageHighlight 1.8s ease;
+}
+
+@keyframes messageHighlight {
+    0% {
+        box-shadow: 0 0 0 4px rgba(93, 80, 223, .55);
+    }
+
+    100% {
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 650px) {
+    .chat-actions-panel {
+        top: 59px;
+        right: 10px;
+        width: calc(100% - 20px);
+    }
+
+    .chat-info-panel {
+        max-height: 48vh;
+        padding: 12px;
+    }
+}
 </style>
 
 <script>
@@ -1480,9 +1692,15 @@
     const MAX_FILE_SIZE =
         100 * 1024 * 1024;
 
-    const $ = function (id) {
-        return document.getElementById(id);
+
+    const $ = function (
+        id
+    ) {
+        return document.getElementById(
+            id
+        );
     };
+
 
     let accessToken =
         localStorage.getItem(
@@ -1494,12 +1712,16 @@
             REFRESH_KEY
         );
 
-    if (!accessToken) {
+
+    if (
+        !accessToken
+    ) {
         window.location.href =
             "/register/";
 
         return;
     }
+
 
     const layout =
         document.querySelector(
@@ -1535,6 +1757,9 @@
 
     const infoContent =
         $("chat-info-content");
+
+    const actionsPanel =
+        $("chat-actions-panel");
 
     const messagesList =
         $("messages-list");
@@ -1578,56 +1803,85 @@
     const contextMenu =
         $("message-context-menu");
 
+
     let chats = [];
 
-    let selectedChat = null;
+    let selectedChat =
+        null;
 
-    let currentUserId = "";
+    let currentUser =
+        null;
 
-    let currentUser = null;
+    let currentUserId =
+        "";
 
-    let chatSocket = null;
+    let chatSocket =
+        null;
 
-    let notificationsSocket = null;
+    let notificationsSocket =
+        null;
 
-    let refreshPromise = null;
+    let refreshPromise =
+        null;
 
-    let reconnectTimer = null;
+    let reconnectTimer =
+        null;
 
-    let notificationsReconnectTimer = null;
+    let notificationsReconnectTimer =
+        null;
 
-    let notificationsReconnectAttempts = 0;
+    let notificationsReconnectAttempts =
+        0;
 
-    let refreshTimer = null;
+    let refreshTimer =
+        null;
 
-    let typingTimer = null;
+    let typingTimer =
+        null;
 
-    let typingClearTimer = null;
+    let typingClearTimer =
+        null;
 
-    let searchTimer = null;
+    let searchTimer =
+        null;
 
-    let groupSearchTimer = null;
+    let groupSearchTimer =
+        null;
 
-    let selectedMessage = null;
+    let selectedMessage =
+        null;
 
-    let replyMessage = null;
+    let replyMessage =
+        null;
 
-    let editingMessage = null;
+    let editingMessage =
+        null;
 
-    let uploadInProgress = false;
+    let uploadInProgress =
+        false;
 
-    let selectedUsers = [];
+    let selectedUsers =
+        [];
 
-    let chatMembers = [];
+    let chatMembers =
+        [];
 
-    let chatInfoRequestId = 0;
+    let chatInfoRequestId =
+        0;
+
+    let messageFilter =
+        null;
 
 
     function sameId(
         first,
         second
     ) {
-        return String(first) === String(second);
+        return String(
+            first
+        ) === String(
+            second
+        );
     }
 
 
@@ -1649,9 +1903,13 @@
     ) {
         try {
             return JSON.parse(
-                JSON.stringify(value)
+                JSON.stringify(
+                    value
+                )
             );
-        } catch (error) {
+        } catch (
+            error
+        ) {
             return value;
         }
     }
@@ -1661,7 +1919,9 @@
         data,
         fallback
     ) {
-        if (!data) {
+        if (
+            !data
+        ) {
             return fallback;
         }
 
@@ -1687,22 +1947,34 @@
             typeof data === "object"
         ) {
             const result =
-                Object.entries(data)
-                    .map(function (entry) {
-                        const value =
-                            Array.isArray(
-                                entry[1]
-                            )
-                                ? entry[1].join(", ")
-                                : String(entry[1]);
+                Object.entries(
+                    data
+                )
+                    .map(
+                        function (
+                            entry
+                        ) {
+                            const value =
+                                Array.isArray(
+                                    entry[1]
+                                )
+                                    ? entry[1].join(
+                                        ", "
+                                    )
+                                    : String(
+                                        entry[1]
+                                    );
 
-                        return (
-                            entry[0]
-                            + ": "
-                            + value
-                        );
-                    })
-                    .join(" ");
+                            return (
+                                entry[0]
+                                + ": "
+                                + value
+                            );
+                        }
+                    )
+                    .join(
+                        " "
+                    );
 
             return result || fallback;
         }
@@ -1729,18 +2001,24 @@
 
         try {
             return await response.json();
-        } catch (error) {
+        } catch (
+            error
+        ) {
             return {};
         }
     }
 
 
     async function refreshAccessToken() {
-        if (!refreshToken) {
+        if (
+            !refreshToken
+        ) {
             return false;
         }
 
-        if (refreshPromise) {
+        if (
+            refreshPromise
+        ) {
             return refreshPromise;
         }
 
@@ -1748,19 +2026,25 @@
             fetch(
                 REFRESH_URL,
                 {
-                    method: "POST",
+                    method:
+                        "POST",
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
-                    body: JSON.stringify({
-                        refresh:
-                            refreshToken
-                    })
+                    body:
+                        JSON.stringify(
+                            {
+                                refresh:
+                                    refreshToken
+                            }
+                        )
                 }
             )
                 .then(
-                    async function (response) {
+                    async function (
+                        response
+                    ) {
                         const data =
                             await parseResponse(
                                 response
@@ -1781,7 +2065,9 @@
                             accessToken
                         );
 
-                        if (data.refresh) {
+                        if (
+                            data.refresh
+                        ) {
                             refreshToken =
                                 data.refresh;
 
@@ -1819,14 +2105,20 @@
             REFRESH_KEY
         );
 
-        if (chatSocket) {
+        if (
+            chatSocket
+        ) {
             chatSocket.close();
-            chatSocket = null;
+            chatSocket =
+                null;
         }
 
-        if (notificationsSocket) {
+        if (
+            notificationsSocket
+        ) {
             notificationsSocket.close();
-            notificationsSocket = null;
+            notificationsSocket =
+                null;
         }
 
         window.location.href =
@@ -1850,7 +2142,8 @@
             headers: {
                 ...(options.headers || {}),
                 Authorization:
-                    "Bearer " + accessToken
+                    "Bearer "
+                    + accessToken
             }
         };
 
@@ -1862,7 +2155,9 @@
                     url,
                     requestOptions
                 );
-        } catch (error) {
+        } catch (
+            error
+        ) {
             throw new Error(
                 "Нет соединения с сервером."
             );
@@ -1875,7 +2170,9 @@
             const refreshed =
                 await refreshAccessToken();
 
-            if (refreshed) {
+            if (
+                refreshed
+            ) {
                 return apiRequest(
                     url,
                     options,
@@ -1895,7 +2192,9 @@
                 response
             );
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
             throw new Error(
                 errorText(
                     data,
@@ -1911,7 +2210,9 @@
     function getUserName(
         user
     ) {
-        if (!user) {
+        if (
+            !user
+        ) {
             return "Пользователь";
         }
 
@@ -1933,7 +2234,8 @@
             return "";
         }
 
-        return "@" + user.username;
+        return "@"
+            + user.username;
     }
 
 
@@ -1943,7 +2245,9 @@
         return getUserName(
             user
         )
-            .charAt(0)
+            .charAt(
+                0
+            )
             .toUpperCase();
     }
 
@@ -1999,601 +2303,6 @@
     }
 
 
-    function getRoleName(
-        role
-    ) {
-        if (role === "owner") {
-            return "Владелец";
-        }
-
-        if (role === "admin") {
-            return "Администратор";
-        }
-
-        return "Участник";
-    }
-
-
-    function canManageMember(
-        member
-    ) {
-        if (
-            !selectedChat
-            || !currentUser
-        ) {
-            return false;
-        }
-
-        if (
-            selectedChat.chat_type
-            === "private"
-        ) {
-            return false;
-        }
-
-        const myRole =
-            selectedChat.my_role;
-
-        if (
-            myRole !== "owner"
-            && myRole !== "admin"
-        ) {
-            return false;
-        }
-
-        if (
-            !member
-            || !member.user
-        ) {
-            return false;
-        }
-
-        if (
-            sameId(
-                member.user.id,
-                currentUserId
-            )
-        ) {
-            return false;
-        }
-
-        if (
-            member.role === "owner"
-        ) {
-            return false;
-        }
-
-        if (
-            member.role === "admin"
-            && myRole !== "owner"
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-
-
-    function createChatMemberElement(
-        member
-    ) {
-        const user =
-            member.user || {};
-
-        const row =
-            document.createElement(
-                "div"
-            );
-
-        row.className =
-            "chat-member";
-
-        const profileLink =
-            document.createElement(
-                "a"
-            );
-
-        profileLink.className =
-            "chat-info-profile-link";
-
-        if (user.id) {
-            profileLink.href =
-                "/users/"
-                + encodeURIComponent(
-                    user.id
-                )
-                + "/";
-        } else {
-            profileLink.href =
-                "#";
-
-            profileLink.addEventListener(
-                "click",
-                function (event) {
-                    event.preventDefault();
-                }
-            );
-        }
-
-        const avatar =
-            document.createElement(
-                "div"
-            );
-
-        setAvatar(
-            avatar,
-            user,
-            null,
-            false
-        );
-
-        const info =
-            document.createElement(
-                "div"
-            );
-
-        info.className =
-            "chat-member-info";
-
-        const name =
-            document.createElement(
-                "div"
-            );
-
-        name.className =
-            "chat-member-name";
-
-        name.textContent =
-            getUserName(
-                user
-            );
-
-        appendVerifiedBadge(
-            name,
-            user
-        );
-
-        const role =
-            document.createElement(
-                "span"
-            );
-
-        role.className =
-            "chat-member-role";
-
-        role.textContent =
-            getRoleName(
-                member.role
-            );
-
-        name.appendChild(
-            role
-        );
-
-        const username =
-            document.createElement(
-                "div"
-            );
-
-        username.className =
-            "chat-member-username";
-
-        username.textContent =
-            getUserTag(
-                user
-            );
-
-        info.appendChild(
-            name
-        );
-
-        if (
-            username.textContent
-        ) {
-            info.appendChild(
-                username
-            );
-        }
-
-        profileLink.appendChild(
-            avatar
-        );
-
-        profileLink.appendChild(
-            info
-        );
-
-        row.appendChild(
-            profileLink
-        );
-
-        if (
-            canManageMember(
-                member
-            )
-        ) {
-            const removeButton =
-                document.createElement(
-                    "button"
-                );
-
-            removeButton.type =
-                "button";
-
-            removeButton.className =
-                "chat-member-remove";
-
-            removeButton.textContent =
-                "×";
-
-            removeButton.title =
-                "Удалить участника";
-
-            removeButton.addEventListener(
-                "click",
-                function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    removeChatMember(
-                        member
-                    );
-                }
-            );
-
-            row.appendChild(
-                removeButton
-            );
-        }
-
-        return row;
-    }
-
-
-    async function loadChatInfo() {
-        if (
-            !selectedChat
-        ) {
-            return;
-        }
-
-        const requestId =
-            ++chatInfoRequestId;
-
-        infoContent.innerHTML =
-            "";
-
-        const loading =
-            document.createElement(
-                "div"
-            );
-
-        loading.className =
-            "chat-info-loading";
-
-        loading.textContent =
-            "Загружаем участников...";
-
-        infoContent.appendChild(
-            loading
-        );
-
-        try {
-            const data =
-                await apiRequest(
-                    "/api/chats/"
-                    + encodeURIComponent(
-                        selectedChat.id
-                    )
-                    + "/members/",
-                    {
-                        method: "GET"
-                    }
-                );
-
-            if (
-                requestId
-                !== chatInfoRequestId
-            ) {
-                return;
-            }
-
-            chatMembers =
-                Array.isArray(data)
-                    ? data
-                    : [];
-
-            renderChatInfo();
-        } catch (error) {
-            if (
-                requestId
-                !== chatInfoRequestId
-            ) {
-                return;
-            }
-
-            infoContent.innerHTML =
-                "";
-
-            const errorBox =
-                document.createElement(
-                    "div"
-                );
-
-            errorBox.className =
-                "chat-info-error";
-
-            errorBox.textContent =
-                error.message
-                || "Не удалось загрузить участников.";
-
-            infoContent.appendChild(
-                errorBox
-            );
-        }
-    }
-
-
-    function renderChatInfo() {
-        if (
-            !selectedChat
-        ) {
-            return;
-        }
-
-        infoContent.innerHTML =
-            "";
-
-        const header =
-            document.createElement(
-                "div"
-            );
-
-        header.className =
-            "chat-info-header";
-
-        const title =
-            document.createElement(
-                "h3"
-            );
-
-        title.className =
-            "chat-info-title";
-
-        title.textContent =
-            selectedChat.chat_type
-            === "private"
-                ? "Участники личного чата"
-                : "Участники чата";
-
-        header.appendChild(
-            title
-        );
-
-        infoContent.appendChild(
-            header
-        );
-
-        if (
-            selectedChat.description
-        ) {
-            const description =
-                document.createElement(
-                    "p"
-                );
-
-            description.className =
-                "chat-info-description";
-
-            description.textContent =
-                selectedChat.description;
-
-            infoContent.appendChild(
-                description
-            );
-        }
-
-        const count =
-            document.createElement(
-                "div"
-            );
-
-        count.className =
-            "chat-info-title";
-
-        count.textContent =
-            "Участников: "
-            + chatMembers.length;
-
-        infoContent.appendChild(
-            count
-        );
-
-        const membersContainer =
-            document.createElement(
-                "div"
-            );
-
-        membersContainer.className =
-            "chat-members";
-
-        if (
-            !chatMembers.length
-        ) {
-            const empty =
-                document.createElement(
-                    "div"
-                );
-
-            empty.className =
-                "chat-info-empty";
-
-            empty.textContent =
-                "Участники не найдены.";
-
-            membersContainer.appendChild(
-                empty
-            );
-        } else {
-            chatMembers.forEach(
-                function (member) {
-                    membersContainer.appendChild(
-                        createChatMemberElement(
-                            member
-                        )
-                    );
-                }
-            );
-        }
-
-        infoContent.appendChild(
-            membersContainer
-        );
-
-        if (
-            selectedChat.chat_type
-            !== "private"
-            && selectedChat.my_role
-            !== "owner"
-        ) {
-            const actions =
-                document.createElement(
-                    "div"
-                );
-
-            actions.className =
-                "chat-info-actions";
-
-            const leaveButton =
-                document.createElement(
-                    "button"
-                );
-
-            leaveButton.type =
-                "button";
-
-            leaveButton.className =
-                "chat-info-action chat-info-action-danger";
-
-            leaveButton.textContent =
-                "Выйти из чата";
-
-            leaveButton.addEventListener(
-                "click",
-                leaveSelectedChat
-            );
-
-            actions.appendChild(
-                leaveButton
-            );
-
-            infoContent.appendChild(
-                actions
-            );
-        }
-    }
-
-
-    async function removeChatMember(
-        member
-    ) {
-        if (
-            !selectedChat
-            || !member
-            || !member.user
-            || !member.user.id
-        ) {
-            return;
-        }
-
-        const username =
-            getUserName(
-                member.user
-            );
-
-        const confirmed =
-            window.confirm(
-                "Удалить пользователя "
-                + username
-                + " из чата?"
-            );
-
-        if (
-            !confirmed
-        ) {
-            return;
-        }
-
-        try {
-            await apiRequest(
-                "/api/chats/"
-                + encodeURIComponent(
-                    selectedChat.id
-                )
-                + "/members/"
-                + encodeURIComponent(
-                    member.user.id
-                )
-                + "/remove/",
-                {
-                    method: "DELETE"
-                }
-            );
-
-            await loadChatInfo();
-
-            await loadChats(
-                false
-            );
-        } catch (error) {
-            errorElement.textContent =
-                error.message;
-        }
-    }
-
-
-    async function leaveSelectedChat() {
-        if (
-            !selectedChat
-        ) {
-            return;
-        }
-
-        const confirmed =
-            window.confirm(
-                "Выйти из этого чата?"
-            );
-
-        if (
-            !confirmed
-        ) {
-            return;
-        }
-
-        try {
-            await apiRequest(
-                "/api/chats/"
-                + encodeURIComponent(
-                    selectedChat.id
-                )
-                + "/leave/",
-                {
-                    method: "POST"
-                }
-            );
-
-            closeChat();
-
-            await loadChats(
-                false
-            );
-        } catch (error) {
-            errorElement.textContent =
-                error.message;
-        }
-    }
-
-
     function getPrivateUser(
         chat
     ) {
@@ -2604,7 +2313,8 @@
             return null;
         }
 
-        return chat.other_user || null;
+        return chat.other_user
+            || null;
     }
 
 
@@ -2616,7 +2326,9 @@
                 chat
             );
 
-        if (user) {
+        if (
+            user
+        ) {
             return getUserName(
                 user
             );
@@ -2644,7 +2356,9 @@
                 chat
             );
 
-        if (user) {
+        if (
+            user
+        ) {
             return getUserTag(
                 user
             );
@@ -2658,23 +2372,31 @@
             );
 
         return chat.chat_type === "channel"
-            ? count + " подписчиков"
-            : count + " участников";
+            ? count
+                + " подписчиков"
+            : count
+                + " участников";
     }
 
 
     function getMessagePreview(
         message
     ) {
-        if (!message) {
+        if (
+            !message
+        ) {
             return "";
         }
 
-        if (message.is_deleted) {
+        if (
+            message.is_deleted
+        ) {
             return "Сообщение удалено";
         }
 
-        if (message.text) {
+        if (
+            message.text
+        ) {
             return message.text;
         }
 
@@ -2690,25 +2412,33 @@
             return "Видео";
         }
 
-        return (
-            "📎 "
+        if (
+            message.message_type === "voice"
+        ) {
+            return "Голосовое сообщение";
+        }
+
+        return "📎 "
             + (
                 message.file_name
                 || "Файл"
-            )
-        );
+            );
     }
 
 
     function formatDate(
         value
     ) {
-        if (!value) {
+        if (
+            !value
+        ) {
             return "";
         }
 
         const date =
-            new Date(value);
+            new Date(
+                value
+            );
 
         if (
             Number.isNaN(
@@ -2721,10 +2451,14 @@
         return date.toLocaleString(
             "ru-RU",
             {
-                day: "2-digit",
-                month: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit"
+                day:
+                    "2-digit",
+                month:
+                    "2-digit",
+                hour:
+                    "2-digit",
+                minute:
+                    "2-digit"
             }
         );
     }
@@ -2736,7 +2470,9 @@
         chat,
         large
     ) {
-        if (!element) {
+        if (
+            !element
+        ) {
             return;
         }
 
@@ -2759,7 +2495,9 @@
             )
             || "";
 
-        if (!url) {
+        if (
+            !url
+        ) {
             element.textContent =
                 getInitials(
                     user
@@ -2834,7 +2572,9 @@
                     + (
                         total > 99
                             ? "99+"
-                            : String(total)
+                            : String(
+                                total
+                            )
                     )
                     + ") Чаты — ChatWell"
                 : "Чаты — ChatWell";
@@ -2842,10 +2582,6 @@
 
 
     function renderChats() {
-        if (!chatsList) {
-            return;
-        }
-
         const query =
             searchInput.value
                 .trim()
@@ -2853,7 +2589,9 @@
 
         const filtered =
             chats.filter(
-                function (chat) {
+                function (
+                    chat
+                ) {
                     const name =
                         getChatName(
                             chat
@@ -2879,7 +2617,9 @@
         chatsList.innerHTML =
             "";
 
-        if (!filtered.length) {
+        if (
+            !filtered.length
+        ) {
             const empty =
                 document.createElement(
                     "div"
@@ -2903,7 +2643,9 @@
         }
 
         filtered.forEach(
-            function (chat) {
+            function (
+                chat
+            ) {
                 const item =
                     document.createElement(
                         "div"
@@ -2919,12 +2661,16 @@
                     "chat-item";
 
                 item.dataset.chatId =
-                    String(chat.id);
+                    String(
+                        chat.id
+                    );
 
                 item.tabIndex =
                     0;
 
-                if (unread > 0) {
+                if (
+                    unread > 0
+                ) {
                     item.classList.add(
                         "has-unread"
                     );
@@ -3045,7 +2791,9 @@
                     preview
                 );
 
-                if (unread > 0) {
+                if (
+                    unread > 0
+                ) {
                     const badge =
                         document.createElement(
                             "span"
@@ -3057,7 +2805,9 @@
                     badge.textContent =
                         unread > 99
                             ? "99+"
-                            : String(unread);
+                            : String(
+                                unread
+                            );
 
                     bottom.appendChild(
                         badge
@@ -3091,7 +2841,9 @@
 
                 item.addEventListener(
                     "keydown",
-                    function (event) {
+                    function (
+                        event
+                    ) {
                         if (
                             event.key === "Enter"
                             || event.key === " "
@@ -3120,7 +2872,8 @@
             await apiRequest(
                 "/api/auth/me/",
                 {
-                    method: "GET"
+                    method:
+                        "GET"
                 }
             );
 
@@ -3155,16 +2908,22 @@
             await apiRequest(
                 "/api/chats/",
                 {
-                    method: "GET"
+                    method:
+                        "GET"
                 }
             );
 
-        const oldUnread = {};
+        const oldUnread =
+            {};
 
         chats.forEach(
-            function (chat) {
+            function (
+                chat
+            ) {
                 oldUnread[
-                    String(chat.id)
+                    String(
+                        chat.id
+                    )
                 ] =
                     Number(
                         chat.unread_count
@@ -3174,14 +2933,20 @@
         );
 
         chats =
-            Array.isArray(data)
+            Array.isArray(
+                data
+            )
                 ? data
                 : [];
 
         chats.forEach(
-            function (chat) {
+            function (
+                chat
+            ) {
                 const id =
-                    String(chat.id);
+                    String(
+                        chat.id
+                    );
 
                 if (
                     isCurrentChat(
@@ -3202,10 +2967,14 @@
             }
         );
 
-        if (selectedChat) {
+        if (
+            selectedChat
+        ) {
             const refreshed =
                 chats.find(
-                    function (chat) {
+                    function (
+                        chat
+                    ) {
                         return sameId(
                             chat.id,
                             selectedChat.id
@@ -3213,19 +2982,15 @@
                     }
                 );
 
-            if (refreshed) {
+            if (
+                refreshed
+            ) {
                 selectedChat =
                     refreshed;
 
                 renderActiveChat(
                     refreshed
                 );
-
-                if (
-                    !infoPanel.hidden
-                ) {
-                    loadChatInfo();
-                }
             }
         }
 
@@ -3240,7 +3005,7 @@
             message
             && message.sender
             && message.sender.id
-            !== undefined
+                !== undefined
         ) {
             return String(
                 message.sender.id
@@ -3250,7 +3015,7 @@
         if (
             message
             && message.sender_id
-            !== undefined
+                !== undefined
         ) {
             return String(
                 message.sender_id
@@ -3267,7 +3032,7 @@
         if (
             !message
             || typeof message.file
-            !== "string"
+                !== "string"
         ) {
             return "";
         }
@@ -3288,13 +3053,14 @@
 
         if (
             typeof message.reply_to
-            === "object"
+                === "object"
         ) {
             return message.reply_to;
         }
 
         return {
-            id: message.reply_to
+            id:
+                message.reply_to
         };
     }
 
@@ -3311,9 +3077,12 @@
             "message-bubble";
 
         const mine =
-            getSenderId(
-                message
-            ) === currentUserId;
+            sameId(
+                getSenderId(
+                    message
+                ),
+                currentUserId
+            );
 
         if (
             !mine
@@ -3330,16 +3099,12 @@
             sender.className =
                 "message-sender";
 
-            if (
-                message.sender.id
-            ) {
-                sender.href =
-                    "/users/"
-                    + encodeURIComponent(
-                        message.sender.id
-                    )
-                    + "/";
-            }
+            sender.href =
+                "/users/"
+                + encodeURIComponent(
+                    message.sender.id
+                )
+                + "/";
 
             sender.textContent =
                 getUserName(
@@ -3356,7 +3121,9 @@
 
             sender.addEventListener(
                 "click",
-                function (event) {
+                function (
+                    event
+                ) {
                     event.stopPropagation();
                 }
             );
@@ -3371,7 +3138,9 @@
                 message
             );
 
-        if (reply) {
+        if (
+            reply
+        ) {
             const replyElement =
                 document.createElement(
                     "div"
@@ -3441,7 +3210,9 @@
 
                 image.addEventListener(
                     "click",
-                    function (event) {
+                    function (
+                        event
+                    ) {
                         event.stopPropagation();
 
                         window.open(
@@ -3482,7 +3253,9 @@
 
                 video.addEventListener(
                     "click",
-                    function (event) {
+                    function (
+                        event
+                    ) {
                         event.stopPropagation();
                     }
                 );
@@ -3490,7 +3263,43 @@
                 bubble.appendChild(
                     video
                 );
-            } else if (url) {
+            } else if (
+                url
+                && message.message_type
+                    === "voice"
+            ) {
+                const audio =
+                    document.createElement(
+                        "audio"
+                    );
+
+                audio.className =
+                    "message-audio";
+
+                audio.src =
+                    url;
+
+                audio.controls =
+                    true;
+
+                audio.preload =
+                    "metadata";
+
+                audio.addEventListener(
+                    "click",
+                    function (
+                        event
+                    ) {
+                        event.stopPropagation();
+                    }
+                );
+
+                bubble.appendChild(
+                    audio
+                );
+            } else if (
+                url
+            ) {
                 const link =
                     document.createElement(
                         "a"
@@ -3521,7 +3330,9 @@
 
                 link.addEventListener(
                     "click",
-                    function (event) {
+                    function (
+                        event
+                    ) {
                         event.stopPropagation();
                     }
                 );
@@ -3627,9 +3438,12 @@
             );
 
         const mine =
-            getSenderId(
-                message
-            ) === currentUserId;
+            sameId(
+                getSenderId(
+                    message
+                ),
+                currentUserId
+            );
 
         row.className =
             "message-row "
@@ -3655,7 +3469,9 @@
 
         row.addEventListener(
             "contextmenu",
-            function (event) {
+            function (
+                event
+            ) {
                 event.preventDefault();
 
                 openContextMenu(
@@ -3680,6 +3496,15 @@
             return;
         }
 
+        if (
+            messageFilter
+            && !messageFilter(
+                message
+            )
+        ) {
+            return;
+        }
+
         const selector =
             '[data-message-id="'
             + String(
@@ -3700,7 +3525,9 @@
                 ".empty"
             );
 
-        if (empty) {
+        if (
+            empty
+        ) {
             empty.remove();
         }
 
@@ -3722,16 +3549,21 @@
             return;
         }
 
+        const selector =
+            '[data-message-id="'
+            + String(
+                message.id
+            )
+            + '"]';
+
         const row =
             messagesList.querySelector(
-                '[data-message-id="'
-                + String(
-                    message.id
-                )
-                + '"]'
+                selector
             );
 
-        if (row) {
+        if (
+            row
+        ) {
             row.replaceWith(
                 createMessageRow(
                     message
@@ -3748,7 +3580,9 @@
             "";
 
         if (
-            !Array.isArray(messages)
+            !Array.isArray(
+                messages
+            )
             || !messages.length
         ) {
             messagesList.innerHTML =
@@ -3760,12 +3594,23 @@
         }
 
         messages.forEach(
-            function (message) {
+            function (
+                message
+            ) {
                 appendMessage(
                     message
                 );
             }
         );
+
+        if (
+            !messagesList.children.length
+        ) {
+            messagesList.innerHTML =
+                '<div class="empty">'
+                + "Подходящих сообщений нет."
+                + "</div>";
+        }
 
         scrollToBottom();
     }
@@ -3784,7 +3629,9 @@
     ) {
         const chat =
             chats.find(
-                function (item) {
+                function (
+                    item
+                ) {
                     return sameId(
                         item.id,
                         chatId
@@ -3800,10 +3647,13 @@
         }
 
         chat.last_message = {
-            id: message.id,
-            text: message.is_deleted
-                ? "Сообщение удалено"
-                : message.text || "",
+            id:
+                message.id,
+            text:
+                message.is_deleted
+                    ? "Сообщение удалено"
+                    : message.text
+                        || "",
             message_type:
                 message.message_type
                 || "",
@@ -3839,7 +3689,9 @@
         chats = [
             chat,
             ...chats.filter(
-                function (item) {
+                function (
+                    item
+                ) {
                     return !sameId(
                         item.id,
                         chatId
@@ -3855,6 +3707,9 @@
     async function loadMessages(
         chat
     ) {
+        messageFilter =
+            null;
+
         messagesList.innerHTML =
             '<div class="loading">'
             + "Загружаем сообщения..."
@@ -3868,7 +3723,8 @@
                 )
                 + "/messages/",
                 {
-                    method: "GET"
+                    method:
+                        "GET"
                 }
             );
 
@@ -3930,18 +3786,26 @@
             );
 
         rows.forEach(
-            function (row) {
-                sendSocket({
-                    type: "read",
-                    message_id:
-                        row.dataset.messageId
-                });
+            function (
+                row
+            ) {
+                sendSocket(
+                    {
+                        type:
+                            "read",
+                        message_id:
+                            row.dataset.messageId
+                    }
+                );
             }
         );
 
-        sendSocket({
-            type: "read"
-        });
+        sendSocket(
+            {
+                type:
+                    "read"
+            }
+        );
     }
 
 
@@ -3991,6 +3855,44 @@
     }
 
 
+    function closePanels() {
+        if (
+            infoPanel
+        ) {
+            infoPanel.hidden =
+                true;
+        }
+
+        if (
+            actionsPanel
+        ) {
+            actionsPanel.hidden =
+                true;
+        }
+    }
+
+
+    function openChatInformation() {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        if (
+            actionsPanel
+        ) {
+            actionsPanel.hidden =
+                true;
+        }
+
+        infoPanel.hidden =
+            false;
+
+        loadChatInfo();
+    }
+
+
     function renderActiveChat(
         chat
     ) {
@@ -4019,36 +3921,29 @@
             user
         );
 
-        activeName.onclick =
-            null;
-
-        activeAvatar.onclick =
-            null;
-
         activeName.disabled =
-            true;
+            false;
 
         activeAvatar.disabled =
-            true;
+            false;
+
+        activeName.onclick =
+            openChatInformation;
+
+        activeAvatar.onclick =
+            openChatInformation;
+
+        activeName.title =
+            "Открыть информацию о чате";
+
+        activeAvatar.title =
+            "Открыть информацию о чате";
 
         if (
-            chat.chat_type
-                === "private"
+            chat.chat_type === "private"
             && user
             && user.id
         ) {
-            activeName.disabled =
-                false;
-
-            activeAvatar.disabled =
-                false;
-
-            activeName.title =
-                "Открыть профиль";
-
-            activeAvatar.title =
-                "Открыть профиль";
-
             activeName.onclick =
                 function () {
                     openUserProfile(
@@ -4062,6 +3957,12 @@
                         user
                     );
                 };
+
+            activeName.title =
+                "Открыть профиль";
+
+            activeAvatar.title =
+                "Открыть профиль";
         }
 
         updateChatStatus(
@@ -4073,11 +3974,952 @@
 
         infoContent.innerHTML =
             "";
+    }
+
+
+    function getRoleName(
+        role
+    ) {
+        if (
+            role === "owner"
+        ) {
+            return "Владелец";
+        }
 
         if (
-            !infoPanel.hidden
+            role === "admin"
         ) {
-            loadChatInfo();
+            return "Администратор";
+        }
+
+        return "Участник";
+    }
+
+
+    function canManageMember(
+        member
+    ) {
+        if (
+            !selectedChat
+            || !currentUser
+            || selectedChat.chat_type
+                === "private"
+        ) {
+            return false;
+        }
+
+        const myRole =
+            selectedChat.my_role;
+
+        if (
+            myRole !== "owner"
+            && myRole !== "admin"
+        ) {
+            return false;
+        }
+
+        if (
+            !member
+            || !member.user
+        ) {
+            return false;
+        }
+
+        if (
+            sameId(
+                member.user.id,
+                currentUserId
+            )
+        ) {
+            return false;
+        }
+
+        if (
+            member.role === "owner"
+        ) {
+            return false;
+        }
+
+        if (
+            member.role === "admin"
+            && myRole !== "owner"
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    function createChatMemberElement(
+        member
+    ) {
+        const user =
+            member.user
+            || {};
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+        row.className =
+            "chat-member";
+
+        const profile =
+            document.createElement(
+                "a"
+            );
+
+        profile.className =
+            "chat-info-profile-link";
+
+        if (
+            user.id
+        ) {
+            profile.href =
+                "/users/"
+                + encodeURIComponent(
+                    user.id
+                )
+                + "/";
+        } else {
+            profile.href =
+                "#";
+
+            profile.addEventListener(
+                "click",
+                function (
+                    event
+                ) {
+                    event.preventDefault();
+                }
+            );
+        }
+
+        const avatar =
+            document.createElement(
+                "div"
+            );
+
+        setAvatar(
+            avatar,
+            user,
+            null,
+            false
+        );
+
+        const info =
+            document.createElement(
+                "div"
+            );
+
+        info.className =
+            "chat-member-info";
+
+        const name =
+            document.createElement(
+                "div"
+            );
+
+        name.className =
+            "chat-member-name";
+
+        name.textContent =
+            getUserName(
+                user
+            );
+
+        appendVerifiedBadge(
+            name,
+            user
+        );
+
+        const role =
+            document.createElement(
+                "span"
+            );
+
+        role.className =
+            "chat-member-role";
+
+        role.textContent =
+            getRoleName(
+                member.role
+            );
+
+        name.appendChild(
+            role
+        );
+
+        const username =
+            document.createElement(
+                "div"
+            );
+
+        username.className =
+            "chat-member-username";
+
+        username.textContent =
+            getUserTag(
+                user
+            );
+
+        info.appendChild(
+            name
+        );
+
+        if (
+            username.textContent
+        ) {
+            info.appendChild(
+                username
+            );
+        }
+
+        profile.appendChild(
+            avatar
+        );
+
+        profile.appendChild(
+            info
+        );
+
+        row.appendChild(
+            profile
+        );
+
+        if (
+            canManageMember(
+                member
+            )
+        ) {
+            const remove =
+                document.createElement(
+                    "button"
+                );
+
+            remove.type =
+                "button";
+
+            remove.className =
+                "chat-member-remove";
+
+            remove.textContent =
+                "×";
+
+            remove.title =
+                "Удалить участника";
+
+            remove.addEventListener(
+                "click",
+                function (
+                    event
+                ) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    removeChatMember(
+                        member
+                    );
+                }
+            );
+
+            row.appendChild(
+                remove
+            );
+        }
+
+        return row;
+    }
+
+
+    async function loadChatInfo() {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        const requestId =
+            ++chatInfoRequestId;
+
+        infoContent.innerHTML =
+            '<div class="chat-info-loading">'
+            + "Загружаем участников..."
+            + "</div>";
+
+        try {
+            const data =
+                await apiRequest(
+                    "/api/chats/"
+                    + encodeURIComponent(
+                        selectedChat.id
+                    )
+                    + "/members/",
+                    {
+                        method:
+                            "GET"
+                    }
+                );
+
+            if (
+                requestId
+                !== chatInfoRequestId
+            ) {
+                return;
+            }
+
+            chatMembers =
+                Array.isArray(
+                    data
+                )
+                    ? data
+                    : [];
+
+            renderChatInfo();
+        } catch (
+            error
+        ) {
+            if (
+                requestId
+                !== chatInfoRequestId
+            ) {
+                return;
+            }
+
+            infoContent.innerHTML =
+                "";
+
+            const errorBox =
+                document.createElement(
+                    "div"
+                );
+
+            errorBox.className =
+                "chat-info-error";
+
+            errorBox.textContent =
+                error.message
+                || "Не удалось загрузить участников.";
+
+            infoContent.appendChild(
+                errorBox
+            );
+        }
+    }
+
+
+    function renderChatInfo() {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        infoContent.innerHTML =
+            "";
+
+        const main =
+            document.createElement(
+                "div"
+            );
+
+        main.className =
+            "chat-info-main";
+
+        const avatar =
+            document.createElement(
+                "div"
+            );
+
+        avatar.className =
+            "chat-info-main-avatar";
+
+        setAvatar(
+            avatar,
+            getPrivateUser(
+                selectedChat
+            ),
+            selectedChat,
+            false
+        );
+
+        const text =
+            document.createElement(
+                "div"
+            );
+
+        text.className =
+            "chat-info-main-text";
+
+        const title =
+            document.createElement(
+                "div"
+            );
+
+        title.className =
+            "chat-info-main-title";
+
+        title.textContent =
+            getChatName(
+                selectedChat
+            );
+
+        const subtitle =
+            document.createElement(
+                "div"
+            );
+
+        subtitle.className =
+            "chat-info-main-subtitle";
+
+        subtitle.textContent =
+            getChatSubtitle(
+                selectedChat
+            );
+
+        text.appendChild(
+            title
+        );
+
+        text.appendChild(
+            subtitle
+        );
+
+        main.appendChild(
+            avatar
+        );
+
+        main.appendChild(
+            text
+        );
+
+        infoContent.appendChild(
+            main
+        );
+
+        if (
+            selectedChat.description
+        ) {
+            const descriptionTitle =
+                document.createElement(
+                    "div"
+                );
+
+            descriptionTitle.className =
+                "chat-info-section-title";
+
+            descriptionTitle.textContent =
+                "Описание";
+
+            const description =
+                document.createElement(
+                    "div"
+                );
+
+            description.className =
+                "chat-info-description";
+
+            description.textContent =
+                selectedChat.description;
+
+            infoContent.appendChild(
+                descriptionTitle
+            );
+
+            infoContent.appendChild(
+                description
+            );
+        }
+
+        const membersTitle =
+            document.createElement(
+                "div"
+            );
+
+        membersTitle.className =
+            "chat-info-section-title";
+
+        membersTitle.textContent =
+            "Участники · "
+            + chatMembers.length;
+
+        infoContent.appendChild(
+            membersTitle
+        );
+
+        const members =
+            document.createElement(
+                "div"
+            );
+
+        members.className =
+            "chat-members";
+
+        if (
+            !chatMembers.length
+        ) {
+            members.innerHTML =
+                '<div class="chat-info-empty">'
+                + "Участники не найдены."
+                + "</div>";
+        } else {
+            chatMembers.forEach(
+                function (
+                    member
+                ) {
+                    members.appendChild(
+                        createChatMemberElement(
+                            member
+                        )
+                    );
+                }
+            );
+        }
+
+        infoContent.appendChild(
+            members
+        );
+
+        if (
+            selectedChat.chat_type !== "private"
+            && selectedChat.my_role !== "owner"
+        ) {
+            const actions =
+                document.createElement(
+                    "div"
+                );
+
+            actions.className =
+                "chat-info-actions";
+
+            const leave =
+                document.createElement(
+                    "button"
+                );
+
+            leave.type =
+                "button";
+
+            leave.className =
+                "chat-info-action chat-info-action-danger";
+
+            leave.textContent =
+                "Выйти из чата";
+
+            leave.addEventListener(
+                "click",
+                leaveSelectedChat
+            );
+
+            actions.appendChild(
+                leave
+            );
+
+            infoContent.appendChild(
+                actions
+            );
+        }
+    }
+
+
+    async function removeChatMember(
+        member
+    ) {
+        if (
+            !selectedChat
+            || !member
+            || !member.user
+            || !member.user.id
+        ) {
+            return;
+        }
+
+        const confirmed =
+            window.confirm(
+                "Удалить пользователя "
+                + getUserName(
+                    member.user
+                )
+                + " из чата?"
+            );
+
+        if (
+            !confirmed
+        ) {
+            return;
+        }
+
+        try {
+            await apiRequest(
+                "/api/chats/"
+                + encodeURIComponent(
+                    selectedChat.id
+                )
+                + "/members/"
+                + encodeURIComponent(
+                    member.user.id
+                )
+                + "/remove/",
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+            await loadChatInfo();
+
+            await loadChats(
+                false
+            );
+        } catch (
+            error
+        ) {
+            errorElement.textContent =
+                error.message;
+        }
+    }
+
+
+    async function leaveSelectedChat() {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        const confirmed =
+            window.confirm(
+                "Выйти из этого чата?"
+            );
+
+        if (
+            !confirmed
+        ) {
+            return;
+        }
+
+        try {
+            await apiRequest(
+                "/api/chats/"
+                + encodeURIComponent(
+                    selectedChat.id
+                )
+                + "/leave/",
+                {
+                    method:
+                        "POST"
+                }
+            );
+
+            closeChat();
+
+            await loadChats(
+                false
+            );
+        } catch (
+            error
+        ) {
+            errorElement.textContent =
+                error.message;
+        }
+    }
+
+
+    function searchCurrentChat() {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        const query =
+            window.prompt(
+                "Введите слово или фразу:"
+            );
+
+        if (
+            query === null
+        ) {
+            return;
+        }
+
+        const normalized =
+            query.trim().toLowerCase();
+
+        if (
+            !normalized
+        ) {
+            return;
+        }
+
+        const rows =
+            Array.from(
+                messagesList.querySelectorAll(
+                    "[data-message-id]"
+                )
+            );
+
+        let first =
+            null;
+
+        rows.forEach(
+            function (
+                row
+            ) {
+                row.classList.remove(
+                    "message-highlight"
+                );
+
+                const message =
+                    row.messageData
+                    || {};
+
+                const sender =
+                    message.sender
+                        ? getUserName(
+                            message.sender
+                        )
+                        : "";
+
+                const value =
+                    (
+                        sender
+                        + " "
+                        + (
+                            message.text
+                            || ""
+                        )
+                        + " "
+                        + (
+                            message.file_name
+                            || ""
+                        )
+                    ).toLowerCase();
+
+                if (
+                    value.includes(
+                        normalized
+                    )
+                    && !first
+                ) {
+                    first =
+                        row;
+                }
+            }
+        );
+
+        if (
+            !first
+        ) {
+            window.alert(
+                "Совпадений не найдено."
+            );
+
+            return;
+        }
+
+        first.scrollIntoView(
+            {
+                behavior:
+                    "smooth",
+                block:
+                    "center"
+            }
+        );
+
+        first.classList.add(
+            "message-highlight"
+        );
+
+        closePanels();
+    }
+
+
+    function filterMessages(
+        predicate
+    ) {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        const rows =
+            Array.from(
+                messagesList.querySelectorAll(
+                    "[data-message-id]"
+                )
+            );
+
+        if (
+            !rows.length
+        ) {
+            window.alert(
+                "Сообщений пока нет."
+            );
+
+            return;
+        }
+
+        rows.forEach(
+            function (
+                row
+            ) {
+                row.hidden =
+                    !predicate(
+                        row.messageData
+                        || {}
+                    );
+            }
+        );
+
+        closePanels();
+    }
+
+
+    function showMediaMessages() {
+        filterMessages(
+            function (
+                message
+            ) {
+                return (
+                    message.message_type
+                        === "image"
+                    || message.message_type
+                        === "video"
+                    || message.message_type
+                        === "voice"
+                    || Boolean(
+                        message.file
+                    )
+                );
+            }
+        );
+    }
+
+
+    function showLinks() {
+        filterMessages(
+            function (
+                message
+            ) {
+                return (
+                    typeof message.text
+                        === "string"
+                    && /https?:\/\/\S+/i.test(
+                        message.text
+                    )
+                );
+            }
+        );
+    }
+
+
+    function showAllMessages() {
+        const rows =
+            messagesList.querySelectorAll(
+                "[data-message-id]"
+            );
+
+        rows.forEach(
+            function (
+                row
+            ) {
+                row.hidden =
+                    false;
+            }
+        );
+
+        closePanels();
+    }
+
+
+    function toggleNotifications() {
+        if (
+            !selectedChat
+        ) {
+            return;
+        }
+
+        const key =
+            "chatwell_notifications_"
+            + String(
+                selectedChat.id
+            );
+
+        const disabled =
+            localStorage.getItem(
+                key
+            ) === "disabled";
+
+        localStorage.setItem(
+            key,
+            disabled
+                ? "enabled"
+                : "disabled"
+        );
+
+        window.alert(
+            disabled
+                ? "Уведомления включены."
+                : "Уведомления отключены."
+        );
+
+        closePanels();
+    }
+
+
+    function handleChatAction(
+        action
+    ) {
+        if (
+            action === "search"
+        ) {
+            searchCurrentChat();
+
+            return;
+        }
+
+        if (
+            action === "media"
+        ) {
+            showMediaMessages();
+
+            return;
+        }
+
+        if (
+            action === "links"
+        ) {
+            showLinks();
+
+            return;
+        }
+
+        if (
+            action === "pinned"
+        ) {
+            window.alert(
+                "Закреплённых сообщений пока нет."
+            );
+
+            return;
+        }
+
+        if (
+            action === "notifications"
+        ) {
+            toggleNotifications();
+
+            return;
+        }
+
+        if (
+            action === "all"
+        ) {
+            showAllMessages();
         }
     }
 
@@ -4112,7 +4954,9 @@
             reconnectTimer
         );
 
-        if (chatSocket) {
+        if (
+            chatSocket
+        ) {
             chatSocket.close();
 
             chatSocket =
@@ -4164,7 +5008,9 @@
             };
 
         socket.onmessage =
-            function (event) {
+            function (
+                event
+            ) {
                 if (
                     chatSocket
                     !== socket
@@ -4179,13 +5025,14 @@
                         JSON.parse(
                             event.data
                         );
-                } catch (error) {
+                } catch (
+                    error
+                ) {
                     return;
                 }
 
                 if (
-                    data.type
-                    === "connection"
+                    data.type === "connection"
                 ) {
                     setSendingAvailability(
                         data.can_send_messages
@@ -4196,8 +5043,7 @@
                 }
 
                 if (
-                    data.type
-                    === "presence"
+                    data.type === "presence"
                 ) {
                     const user =
                         getPrivateUser(
@@ -4231,8 +5077,7 @@
                 }
 
                 if (
-                    data.type
-                    === "message"
+                    data.type === "message"
                     && data.message
                 ) {
                     const message =
@@ -4241,10 +5086,12 @@
                         );
 
                     const mine =
-                        getSenderId(
-                            message
-                        )
-                        === currentUserId;
+                        sameId(
+                            getSenderId(
+                                message
+                            ),
+                            currentUserId
+                        );
 
                     appendMessage(
                         message
@@ -4256,7 +5103,11 @@
                         !mine
                     );
 
-                    scrollToBottom();
+                    if (
+                        !messageFilter
+                    ) {
+                        scrollToBottom();
+                    }
 
                     chat.unread_count =
                         0;
@@ -4271,7 +5122,7 @@
 
                 if (
                     data.type
-                    === "message_updated"
+                        === "message_updated"
                     && data.message
                 ) {
                     const message =
@@ -4294,7 +5145,7 @@
 
                 if (
                     data.type
-                    === "message_deleted"
+                        === "message_deleted"
                     && data.message
                 ) {
                     const message =
@@ -4316,8 +5167,7 @@
                 }
 
                 if (
-                    data.type
-                    === "message_read"
+                    data.type === "message_read"
                 ) {
                     const row =
                         messagesList.querySelector(
@@ -4360,8 +5210,7 @@
                 }
 
                 if (
-                    data.type
-                    === "typing"
+                    data.type === "typing"
                 ) {
                     window.clearTimeout(
                         typingClearTimer
@@ -4396,8 +5245,7 @@
                 }
 
                 if (
-                    data.type
-                    === "error"
+                    data.type === "error"
                 ) {
                     errorElement.textContent =
                         data.detail
@@ -4406,7 +5254,9 @@
             };
 
         socket.onclose =
-            async function (event) {
+            async function (
+                event
+            ) {
                 if (
                     chatSocket
                     !== socket
@@ -4485,95 +5335,6 @@
     }
 
 
-    function increaseUnread(
-        chatId
-    ) {
-        const chat =
-            chats.find(
-                function (item) {
-                    return sameId(
-                        item.id,
-                        chatId
-                    );
-                }
-            );
-
-        if (!chat) {
-            loadChats(
-                false
-            );
-
-            return;
-        }
-
-        if (
-            isCurrentChat(
-                chatId
-            )
-        ) {
-            chat.unread_count =
-                0;
-        } else {
-            chat.unread_count =
-                Number(
-                    chat.unread_count
-                    || 0
-                ) + 1;
-        }
-
-        renderChats();
-    }
-
-
-    function playNotificationSound() {
-        if (
-            !window.chatwellNotificationAudio
-        ) {
-            window.chatwellNotificationAudio =
-                new Audio(
-                    "data:audio/wav;base64,"
-                    + "UklGRiQAAABXQVZFZm10IBAAAAABAAEA"
-                    + "QB8AAIA+AAACABAAZGF0YQAAAAA="
-                );
-
-            window.chatwellNotificationAudio
-                .volume =
-                .35;
-        }
-
-        window.chatwellNotificationAudio
-            .play()
-            .catch(
-                function () {}
-            );
-    }
-
-
-    function showBrowserNotification(
-        message
-    ) {
-        if (
-            !("Notification" in window)
-            || Notification.permission
-                !== "granted"
-        ) {
-            return;
-        }
-
-        new Notification(
-            "Новое сообщение",
-            {
-                body:
-                    getMessagePreview(
-                        message
-                    ),
-                tag:
-                    "chatwell-message"
-            }
-        );
-    }
-
-
     function connectNotificationsSocket() {
         if (
             notificationsSocket
@@ -4616,7 +5377,9 @@
             };
 
         socket.onmessage =
-            function (event) {
+            function (
+                event
+            ) {
                 if (
                     notificationsSocket
                     !== socket
@@ -4631,13 +5394,14 @@
                         JSON.parse(
                             event.data
                         );
-                } catch (error) {
+                } catch (
+                    error
+                ) {
                     return;
                 }
 
                 if (
-                    data.type
-                    !== "new_message"
+                    data.type !== "new_message"
                 ) {
                     return;
                 }
@@ -4654,21 +5418,34 @@
                 if (
                     !chatId
                     || !message.id
-                ) {
-                    return;
-                }
-
-                if (
-                    isCurrentChat(
+                    || isCurrentChat(
                         chatId
                     )
                 ) {
                     return;
                 }
 
-                increaseUnread(
-                    chatId
-                );
+                const chat =
+                    chats.find(
+                        function (
+                            item
+                        ) {
+                            return sameId(
+                                item.id,
+                                chatId
+                            );
+                        }
+                    );
+
+                if (
+                    chat
+                ) {
+                    chat.unread_count =
+                        Number(
+                            chat.unread_count
+                            || 0
+                        ) + 1;
+                }
 
                 updateLastMessage(
                     chatId,
@@ -4676,15 +5453,29 @@
                     false
                 );
 
-                showBrowserNotification(
-                    message
-                );
-
-                playNotificationSound();
+                if (
+                    "Notification" in window
+                    && Notification.permission
+                        === "granted"
+                ) {
+                    new Notification(
+                        "Новое сообщение",
+                        {
+                            body:
+                                getMessagePreview(
+                                    message
+                                ),
+                            tag:
+                                "chatwell-message"
+                        }
+                    );
+                }
             };
 
         socket.onclose =
-            async function (event) {
+            async function (
+                event
+            ) {
                 if (
                     notificationsSocket
                     !== socket
@@ -4702,7 +5493,9 @@
                     const refreshed =
                         await refreshAccessToken();
 
-                    if (refreshed) {
+                    if (
+                        refreshed
+                    ) {
                         connectNotificationsSocket();
                     } else {
                         logout();
@@ -4800,9 +5593,12 @@
         if (
             !message
             || message.is_deleted
-            || getSenderId(
-                message
-            ) !== currentUserId
+            || !sameId(
+                getSenderId(
+                    message
+                ),
+                currentUserId
+            )
         ) {
             return;
         }
@@ -4867,11 +5663,19 @@
                 '[data-action="edit"]'
             );
 
-        if (editButton) {
-            editButton.hidden =
+        const ownMessage =
+            sameId(
                 getSenderId(
                     message
-                ) !== currentUserId;
+                ),
+                currentUserId
+            );
+
+        if (
+            editButton
+        ) {
+            editButton.hidden =
+                !ownMessage;
         }
 
         contextMenu.hidden =
@@ -4911,6 +5715,13 @@
     ) {
         if (
             !selectedChat
+            || !message
+            || !sameId(
+                getSenderId(
+                    message
+                ),
+                currentUserId
+            )
         ) {
             return;
         }
@@ -4919,7 +5730,9 @@
             messageInput.value
                 .trim();
 
-        if (!text) {
+        if (
+            !text
+        ) {
             errorElement.textContent =
                 "Введите текст сообщения.";
 
@@ -4942,14 +5755,19 @@
                     )
                     + "/edit/",
                     {
-                        method: "PATCH",
+                        method:
+                            "PATCH",
                         headers: {
                             "Content-Type":
                                 "application/json"
                         },
-                        body: JSON.stringify({
-                            text: text
-                        })
+                        body:
+                            JSON.stringify(
+                                {
+                                    text:
+                                        text
+                                }
+                            )
                     }
                 );
 
@@ -4967,7 +5785,9 @@
 
             errorElement.textContent =
                 "";
-        } catch (error) {
+        } catch (
+            error
+        ) {
             errorElement.textContent =
                 error.message;
         } finally {
@@ -4982,6 +5802,7 @@
     ) {
         if (
             !selectedChat
+            || !message
         ) {
             return;
         }
@@ -5007,7 +5828,8 @@
                     )
                     + "/delete/",
                     {
-                        method: "DELETE"
+                        method:
+                            "DELETE"
                     }
                 );
 
@@ -5020,7 +5842,9 @@
                 data,
                 false
             );
-        } catch (error) {
+        } catch (
+            error
+        ) {
             errorElement.textContent =
                 error.message;
         }
@@ -5033,6 +5857,11 @@
         window.clearTimeout(
             reconnectTimer
         );
+
+        closePanels();
+
+        messageFilter =
+            null;
 
         selectedChat =
             chat;
@@ -5049,12 +5878,6 @@
 
         activeChatElement.hidden =
             false;
-
-        infoPanel.hidden =
-            true;
-
-        chatMembers =
-            [];
 
         typingStatus.textContent =
             "";
@@ -5081,7 +5904,9 @@
             await loadMessages(
                 chat
             );
-        } catch (error) {
+        } catch (
+            error
+        ) {
             messagesList.innerHTML =
                 '<div class="empty">'
                 + error.message
@@ -5100,7 +5925,11 @@
         chatInfoRequestId +=
             1;
 
-        if (chatSocket) {
+        closePanels();
+
+        if (
+            chatSocket
+        ) {
             chatSocket.close();
 
             chatSocket =
@@ -5113,8 +5942,8 @@
         chatMembers =
             [];
 
-        infoPanel.hidden =
-            true;
+        messageFilter =
+            null;
 
         infoContent.innerHTML =
             "";
@@ -5145,10 +5974,14 @@
             typingTimer
         );
 
-        sendSocket({
-            type: "typing",
-            is_typing: false
-        });
+        sendSocket(
+            {
+                type:
+                    "typing",
+                is_typing:
+                    false
+            }
+        );
     }
 
 
@@ -5164,10 +5997,14 @@
                 return;
             }
 
-            sendSocket({
-                type: "typing",
-                is_typing: true
-            });
+            sendSocket(
+                {
+                    type:
+                        "typing",
+                    is_typing:
+                        true
+                }
+            );
 
             window.clearTimeout(
                 typingTimer
@@ -5184,7 +6021,9 @@
 
     messageForm.addEventListener(
         "submit",
-        function (event) {
+        function (
+            event
+        ) {
             event.preventDefault();
 
             if (
@@ -5207,13 +6046,17 @@
                 messageInput.value
                     .trim();
 
-            if (!text) {
+            if (
+                !text
+            ) {
                 return;
             }
 
             const payload = {
-                type: "message",
-                text: text
+                type:
+                    "message",
+                text:
+                    text
             };
 
             if (
@@ -5276,8 +6119,7 @@
             }
 
             if (
-                file.size
-                > MAX_FILE_SIZE
+                file.size > MAX_FILE_SIZE
             ) {
                 errorElement.textContent =
                     "Размер файла не может превышать 100 МБ.";
@@ -5309,7 +6151,9 @@
                 messageInput.value
                     .trim();
 
-            if (text) {
+            if (
+                text
+            ) {
                 formData.append(
                     "text",
                     text
@@ -5335,8 +6179,10 @@
                         )
                         + "/messages/upload/",
                         {
-                            method: "POST",
-                            body: formData
+                            method:
+                                "POST",
+                            body:
+                                formData
                         }
                     );
 
@@ -5359,7 +6205,9 @@
 
                 errorElement.textContent =
                     "";
-            } catch (error) {
+            } catch (
+                error
+            ) {
                 errorElement.textContent =
                     error.message;
             } finally {
@@ -5381,7 +6229,9 @@
 
     contextMenu.addEventListener(
         "click",
-        function (event) {
+        function (
+            event
+        ) {
             const button =
                 event.target.closest(
                     "button"
@@ -5408,14 +6258,27 @@
                 setReplyMessage(
                     message
                 );
+
+                return;
             }
 
             if (
                 action === "edit"
             ) {
-                startEditing(
-                    message
-                );
+                if (
+                    sameId(
+                        getSenderId(
+                            message
+                        ),
+                        currentUserId
+                    )
+                ) {
+                    startEditing(
+                        message
+                    );
+                }
+
+                return;
             }
 
             if (
@@ -5435,9 +6298,58 @@
     );
 
 
+    infoButton.addEventListener(
+        "click",
+        function () {
+            if (
+                !selectedChat
+            ) {
+                return;
+            }
+
+            infoPanel.hidden =
+                false;
+
+            actionsPanel.hidden =
+                true;
+
+            loadChatInfo();
+        }
+    );
+
+
+    if (
+        actionsPanel
+    ) {
+        actionsPanel.addEventListener(
+            "click",
+            function (
+                event
+            ) {
+                const button =
+                    event.target.closest(
+                        "[data-chat-action]"
+                    );
+
+                if (
+                    !button
+                ) {
+                    return;
+                }
+
+                handleChatAction(
+                    button.dataset.chatAction
+                );
+            }
+        );
+    }
+
+
     document.addEventListener(
         "click",
-        function (event) {
+        function (
+            event
+        ) {
             if (
                 !contextMenu.hidden
                 && !contextMenu.contains(
@@ -5446,29 +6358,41 @@
             ) {
                 closeContextMenu();
             }
+
+            if (
+                actionsPanel
+                && !actionsPanel.hidden
+                && !actionsPanel.contains(
+                    event.target
+                )
+                && event.target !== infoButton
+            ) {
+                actionsPanel.hidden =
+                    true;
+            }
         }
     );
 
 
-    infoButton.addEventListener(
+    activeName.addEventListener(
         "click",
-        async function () {
+        function () {
             if (
-                !selectedChat
+                selectedChat
             ) {
-                return;
+                openChatInformation();
             }
+        }
+    );
 
-            const shouldOpen =
-                infoPanel.hidden;
 
-            infoPanel.hidden =
-                !infoPanel.hidden;
-
+    activeAvatar.addEventListener(
+        "click",
+        function () {
             if (
-                shouldOpen
+                selectedChat
             ) {
-                await loadChatInfo();
+                openChatInformation();
             }
         }
     );
@@ -5494,7 +6418,9 @@
 
             try {
                 await loadChats();
-            } catch (error) {
+            } catch (
+                error
+            ) {
                 errorElement.textContent =
                     error.message;
             } finally {
@@ -5508,7 +6434,9 @@
     document.querySelectorAll(
         "[data-close-modal]"
     ).forEach(
-        function (button) {
+        function (
+            button
+        ) {
             button.addEventListener(
                 "click",
                 function () {
@@ -5517,7 +6445,9 @@
                             button.dataset.closeModal
                         );
 
-                    if (modal) {
+                    if (
+                        modal
+                    ) {
                         modal.hidden =
                             true;
                     }
@@ -5530,10 +6460,14 @@
     document.querySelectorAll(
         ".modal-overlay"
     ).forEach(
-        function (modal) {
+        function (
+            modal
+        ) {
             modal.addEventListener(
                 "click",
-                function (event) {
+                function (
+                    event
+                ) {
                     if (
                         event.target === modal
                     ) {
@@ -5550,10 +6484,8 @@
         .addEventListener(
             "click",
             function () {
-                const modal =
-                    $("private-chat-modal");
-
-                modal.hidden =
+                $("private-chat-modal")
+                    .hidden =
                     false;
 
                 $("private-user-search")
@@ -5566,7 +6498,8 @@
         .addEventListener(
             "click",
             function () {
-                $("group-modal").hidden =
+                $("group-modal")
+                    .hidden =
                     false;
             }
         );
@@ -5576,7 +6509,8 @@
         .addEventListener(
             "click",
             function () {
-                $("channel-modal").hidden =
+                $("channel-modal")
+                    .hidden =
                     false;
             }
         );
@@ -5615,12 +6549,15 @@
                         query
                     ),
                     {
-                        method: "GET"
+                        method:
+                            "GET"
                     }
                 );
 
             if (
-                !Array.isArray(data)
+                !Array.isArray(
+                    data
+                )
                 || !data.length
             ) {
                 results.textContent =
@@ -5630,7 +6567,9 @@
             }
 
             data.forEach(
-                function (user) {
+                function (
+                    user
+                ) {
                     const item =
                         document.createElement(
                             "div"
@@ -5729,7 +6668,9 @@
                     );
                 }
             );
-        } catch (error) {
+        } catch (
+            error
+        ) {
             errorBox.textContent =
                 error.message;
         }
@@ -5793,15 +6734,19 @@
                 await apiRequest(
                     "/api/chats/",
                     {
-                        method: "POST",
+                        method:
+                            "POST",
                         headers: {
                             "Content-Type":
                                 "application/json"
                         },
-                        body: JSON.stringify({
-                            username:
-                                user.username
-                        })
+                        body:
+                            JSON.stringify(
+                                {
+                                    username:
+                                        user.username
+                                }
+                            )
                     }
                 );
 
@@ -5813,7 +6758,9 @@
 
             const chat =
                 chats.find(
-                    function (item) {
+                    function (
+                        item
+                    ) {
                         return sameId(
                             item.id,
                             data.id
@@ -5821,12 +6768,16 @@
                     }
                 );
 
-            if (chat) {
+            if (
+                chat
+            ) {
                 selectChat(
                     chat
                 );
             }
-        } catch (requestError) {
+        } catch (
+            requestError
+        ) {
             error.textContent =
                 requestError.message;
         }
@@ -5838,7 +6789,9 @@
     ) {
         const exists =
             selectedUsers.some(
-                function (item) {
+                function (
+                    item
+                ) {
                     return sameId(
                         item.id,
                         user.id
@@ -5846,7 +6799,9 @@
                 }
             );
 
-        if (!exists) {
+        if (
+            !exists
+        ) {
             selectedUsers.push(
                 user
             );
@@ -5872,7 +6827,9 @@
             "";
 
         selectedUsers.forEach(
-            function (user) {
+            function (
+                user
+            ) {
                 const item =
                     document.createElement(
                         "span"
@@ -5883,8 +6840,12 @@
 
                 item.appendChild(
                     document.createTextNode(
-                        getUserTag(user)
-                        || getUserName(user)
+                        getUserTag(
+                            user
+                        )
+                        || getUserName(
+                            user
+                        )
                     )
                 );
 
@@ -5944,7 +6905,9 @@
                 .value
                 .trim();
 
-        if (!title) {
+        if (
+            !title
+        ) {
             error.textContent =
                 "Введите название группы.";
 
@@ -5962,24 +6925,29 @@
                 await apiRequest(
                     "/api/chats/groups/create/",
                     {
-                        method: "POST",
+                        method:
+                            "POST",
                         headers: {
                             "Content-Type":
                                 "application/json"
                         },
-                        body: JSON.stringify({
-                            title: title,
-                            description:
-                                description,
-                            usernames:
-                                selectedUsers.map(
-                                    function (
-                                        user
-                                    ) {
-                                        return user.username;
-                                    }
-                                )
-                        })
+                        body:
+                            JSON.stringify(
+                                {
+                                    title:
+                                        title,
+                                    description:
+                                        description,
+                                    usernames:
+                                        selectedUsers.map(
+                                            function (
+                                                user
+                                            ) {
+                                                return user.username;
+                                            }
+                                        )
+                                }
+                            )
                     }
                 );
 
@@ -6004,7 +6972,9 @@
 
             const chat =
                 chats.find(
-                    function (item) {
+                    function (
+                        item
+                    ) {
                         return sameId(
                             item.id,
                             data.id
@@ -6012,12 +6982,16 @@
                     }
                 );
 
-            if (chat) {
+            if (
+                chat
+            ) {
                 selectChat(
                     chat
                 );
             }
-        } catch (requestError) {
+        } catch (
+            requestError
+        ) {
             error.textContent =
                 requestError.message;
         } finally {
@@ -6041,7 +7015,9 @@
                 .value
                 .trim();
 
-        if (!title) {
+        if (
+            !title
+        ) {
             error.textContent =
                 "Введите название сообщества.";
 
@@ -6059,19 +7035,24 @@
                 await apiRequest(
                     "/api/chats/channels/create/",
                     {
-                        method: "POST",
+                        method:
+                            "POST",
                         headers: {
                             "Content-Type":
                                 "application/json"
                         },
-                        body: JSON.stringify({
-                            title: title,
-                            description:
-                                description,
-                            is_public:
-                                $("channel-public-input")
-                                    .checked
-                        })
+                        body:
+                            JSON.stringify(
+                                {
+                                    title:
+                                        title,
+                                    description:
+                                        description,
+                                    is_public:
+                                        $("channel-public-input")
+                                            .checked
+                                }
+                            )
                     }
                 );
 
@@ -6091,7 +7072,9 @@
 
             const chat =
                 chats.find(
-                    function (item) {
+                    function (
+                        item
+                    ) {
                         return sameId(
                             item.id,
                             data.id
@@ -6099,12 +7082,16 @@
                     }
                 );
 
-            if (chat) {
+            if (
+                chat
+            ) {
                 selectChat(
                     chat
                 );
             }
-        } catch (requestError) {
+        } catch (
+            requestError
+        ) {
             error.textContent =
                 requestError.message;
         } finally {
@@ -6130,7 +7117,9 @@
 
     document.addEventListener(
         "keydown",
-        function (event) {
+        function (
+            event
+        ) {
             if (
                 event.key !== "Escape"
             ) {
@@ -6139,22 +7128,18 @@
 
             closeContextMenu();
 
+            closePanels();
+
             document.querySelectorAll(
                 ".modal-overlay"
             ).forEach(
-                function (modal) {
+                function (
+                    modal
+                ) {
                     modal.hidden =
                         true;
                 }
             );
-
-            if (
-                infoPanel
-                && !infoPanel.hidden
-            ) {
-                infoPanel.hidden =
-                    true;
-            }
 
             if (
                 editingMessage
@@ -6198,11 +7183,15 @@
                 notificationsReconnectTimer
             );
 
-            if (chatSocket) {
+            if (
+                chatSocket
+            ) {
                 chatSocket.close();
             }
 
-            if (notificationsSocket) {
+            if (
+                notificationsSocket
+            ) {
                 notificationsSocket.close();
             }
         }
@@ -6241,7 +7230,9 @@
                             await loadChats(
                                 false
                             );
-                        } catch (error) {
+                        } catch (
+                            error
+                        ) {
                             console.error(
                                 "Ошибка обновления чатов:",
                                 error
@@ -6250,7 +7241,9 @@
                     },
                     15000
                 );
-        } catch (error) {
+        } catch (
+            error
+        ) {
             errorElement.textContent =
                 error.message
                 || "Не удалось загрузить чаты.";
@@ -6261,4 +7254,5 @@
     initialize();
 })();
 </script>
+
 {% endblock %}
