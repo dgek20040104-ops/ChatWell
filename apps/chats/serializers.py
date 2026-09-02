@@ -331,24 +331,19 @@ class CreateFileMessageSerializer(
         "text/plain",
     }
 
-    def validate_file(
-        self,
-        value,
-    ):
+    def validate_file(self, value):
         if value.size > self.MAX_FILE_SIZE:
             raise serializers.ValidationError(
-                "Размер файла не может превышать 100 МБ.",
+                "Размер файла не может превышать 100 МБ."
             )
 
-        file_name = (
-            str(value.name or "")
-            .lower()
-            .strip()
-        )
+        file_name = str(
+            value.name or ""
+        ).lower().strip()
 
         if "." not in file_name:
             raise serializers.ValidationError(
-                "У файла отсутствует расширение.",
+                "У файла отсутствует расширение."
             )
 
         extension = (
@@ -368,24 +363,20 @@ class CreateFileMessageSerializer(
 
         if extension not in allowed_extensions:
             raise serializers.ValidationError(
-                "Этот тип файла не поддерживается.",
+                "Этот тип файла не поддерживается."
             )
 
-        content_type = (
-            str(
-                getattr(
-                    value,
-                    "content_type",
-                    "",
-                )
-                or ""
+        content_type = str(
+            getattr(
+                value,
+                "content_type",
+                "",
             )
-            .lower()
-            .strip()
-        )
+            or ""
+        ).lower().strip()
 
-        # Некоторые браузеры и прокси передают
-        # application/octet-stream вместо реального MIME.
+        # Иногда браузер или прокси передаёт
+        # application/octet-stream вместо audio/webm.
         generic_mime_types = {
             "",
             "application/octet-stream",
@@ -404,7 +395,7 @@ class CreateFileMessageSerializer(
 
         if content_type not in allowed_mime_types:
             raise serializers.ValidationError(
-                "Недопустимый MIME-тип файла.",
+                "Недопустимый MIME-тип файла."
             )
 
         is_image = (
@@ -431,19 +422,6 @@ class CreateFileMessageSerializer(
             in self.FILE_MIME_TYPES
         )
 
-        # Расширение .webm может быть:
-        # video/webm или audio/webm.
-        if extension == ".webm":
-            is_video = (
-                content_type
-                in self.VIDEO_MIME_TYPES
-            )
-
-            is_audio = (
-                content_type
-                in self.AUDIO_MIME_TYPES
-            )
-
         if not (
             is_image
             or is_video
@@ -452,19 +430,13 @@ class CreateFileMessageSerializer(
         ):
             raise serializers.ValidationError(
                 "Расширение файла не соответствует "
-                "его MIME-типу.",
+                "его MIME-типу."
             )
 
         return value
 
-    def validate_text(
-        self,
-        value,
-    ):
-        return (
-            value
-            or ""
-        ).strip()
+    def validate_text(self, value):
+        return (value or "").strip()
 
 
 class CreateMessageSerializer(
