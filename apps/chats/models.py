@@ -213,25 +213,25 @@ class Message(models.Model):
         blank=True,
         validators=[
             FileExtensionValidator(
-               allowed_extensions=[
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "gif",
-    "mp4",
-    "webm",
-    "mov",
-    "avi",
-    "pdf",
-    "doc",
-    "docx",
-    "xls",
-    "xlsx",
-    "zip",
-    "rar",
-    "txt",
-],
+                allowed_extensions=[
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp",
+                    "gif",
+                    "mp4",
+                    "webm",
+                    "mov",
+                    "avi",
+                    "pdf",
+                    "doc",
+                    "docx",
+                    "xls",
+                    "xlsx",
+                    "zip",
+                    "rar",
+                    "txt",
+                ],
             ),
         ],
     )
@@ -299,11 +299,16 @@ class Message(models.Model):
     )
 
     class Meta:
-        ordering = ["created_at"]
+        ordering = [
+            "created_at",
+        ]
 
         indexes = [
             models.Index(
-                fields=["chat", "created_at"],
+                fields=[
+                    "chat",
+                    "created_at",
+                ],
             ),
             models.Index(
                 fields=[
@@ -321,42 +326,59 @@ class Message(models.Model):
         ]
 
     def clean(self):
-    super().clean()
+        super().clean()
 
-    if self.is_deleted:
-        return
+        # Удалённое сообщение может не иметь текста и файла.
+        if self.is_deleted:
+            return
 
-    if self.message_type == self.TEXT:
+        # Текстовое сообщение не должно содержать файл
+        # и не может быть пустым.
+        if self.message_type == self.TEXT:
+            if self.file:
+                raise ValidationError(
+                    "Текстовое сообщение не должно "
+                    "содержать файл."
+                )
+
+            if not self.text.strip():
+                raise ValidationError(
+                    "Текст сообщения не может быть пустым."
+                )
+
+        # Для изображения, видео и файла обязательно
+        # наличие загруженного файла.
+        if self.message_type in {
+            self.IMAGE,
+            self.VIDEO,
+            self.FILE,
+        }:
+            if not self.file:
+                raise ValidationError(
+                    "Для сообщения необходимо выбрать файл."
+                )
+
+        # Для публикации обязательно наличие публикации.
+        if self.message_type == self.SHARED_POST:
+            if not self.shared_post_id:
+                raise ValidationError(
+                    "Необходимо указать публикацию."
+                )
+
+        # Ограничение размера файла — 100 МБ.
         if self.file:
-            raise ValidationError(
-                "Текстовое сообщение не должно содержать файл."
-            )
+            try:
+                file_size = self.file.size
+            except (AttributeError, ValueError):
+                file_size = None
 
-        if not self.text.strip():
-            raise ValidationError(
-                "Текст сообщения не может быть пустым."
-            )
-
-    if self.message_type in {
-        self.IMAGE,
-        self.VIDEO,
-        self.FILE,
-    }:
-        if not self.file:
-            raise ValidationError(
-                "Для сообщения необходимо выбрать файл."
-            )
-
-    if self.message_type == self.SHARED_POST:
-        if not self.shared_post_id:
-            raise ValidationError(
-                "Необходимо указать публикацию."
-            )
-
-    if self.file and self.file.size > 100 * 1024 * 1024:
-        raise ValidationError(
-            "Размер файла не может превышать 100 МБ."
-        )
+            if (
+                file_size is not None
+                and file_size > 100 * 1024 * 1024
+            ):
+                raise ValidationError(
+                    "Размер файла не может превышать 100 МБ."
+                )
 
     def save(self, *args, **kwargs):
         if self.file:
