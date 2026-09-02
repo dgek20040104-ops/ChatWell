@@ -45,9 +45,6 @@ AUDIO_EXTENSIONS = {
 
 
 def get_file_extension(filename):
-    """
-    Возвращает расширение файла без точки.
-    """
     filename = str(filename or "").lower().strip()
 
     if "." not in filename:
@@ -57,20 +54,21 @@ def get_file_extension(filename):
 
 
 def detect_message_type(uploaded_file):
-    """
-    Определяет тип загруженного файла.
-
-    Сначала используется MIME-тип.
-    Если MIME-тип отсутствует или некорректен,
-    используется расширение файла.
-    """
     content_type = (
-        getattr(uploaded_file, "content_type", "")
+        getattr(
+            uploaded_file,
+            "content_type",
+            "",
+        )
         or ""
     ).lower().strip()
 
     filename = (
-        getattr(uploaded_file, "name", "")
+        getattr(
+            uploaded_file,
+            "name",
+            "",
+        )
         or ""
     )
 
@@ -155,8 +153,49 @@ def reload_message(message_id):
     )
 
 
+def get_reply_for_chat(reply_to_id, chat):
+    if reply_to_id is None:
+        return None, None
+
+    reply = (
+        Message.objects
+        .filter(
+            id=reply_to_id,
+            chat=chat,
+        )
+        .first()
+    )
+
+    if reply is None:
+        return None, Response(
+            {
+                "detail": (
+                    "Сообщение для ответа "
+                    "не найдено."
+                ),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if reply.is_deleted:
+        return None, Response(
+            {
+                "detail": (
+                    "Нельзя ответить на "
+                    "удалённое сообщение."
+                ),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return reply, None
+
+
 def broadcast_message(chat, message_data):
     channel_layer = get_channel_layer()
+
+    if channel_layer is None:
+        return
 
     async_to_sync(
         channel_layer.group_send
@@ -175,6 +214,9 @@ def broadcast_new_message_notifications(
     sender_id,
 ):
     channel_layer = get_channel_layer()
+
+    if channel_layer is None:
+        return
 
     member_ids = (
         ChatMember.objects
@@ -206,6 +248,9 @@ def broadcast_new_message_notifications(
 def broadcast_message_updated(chat, message_data):
     channel_layer = get_channel_layer()
 
+    if channel_layer is None:
+        return
+
     async_to_sync(
         channel_layer.group_send
     )(
@@ -220,6 +265,9 @@ def broadcast_message_updated(chat, message_data):
 def broadcast_message_deleted(chat, message_data):
     channel_layer = get_channel_layer()
 
+    if channel_layer is None:
+        return
+
     async_to_sync(
         channel_layer.group_send
     )(
@@ -229,44 +277,6 @@ def broadcast_message_deleted(chat, message_data):
             "message": message_data,
         },
     )
-
-
-def get_reply_for_chat(reply_to_id, chat):
-    if reply_to_id is None:
-        return None, None
-
-    reply_to = (
-        Message.objects
-        .filter(
-            id=reply_to_id,
-            chat=chat,
-        )
-        .first()
-    )
-
-    if reply_to is None:
-        return None, Response(
-            {
-                "detail": (
-                    "Сообщение для ответа "
-                    "не найдено."
-                ),
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    if reply_to.is_deleted:
-        return None, Response(
-            {
-                "detail": (
-                    "Нельзя ответить на "
-                    "удалённое сообщение."
-                ),
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    return reply_to, None
 
 
 class UserSearchView(APIView):
@@ -568,16 +578,10 @@ class ChatMessagesView(APIView):
         IsAuthenticated,
     ]
 
-    def get_chat(self, request, chat_id):
-        return get_chat_for_user(
+    def get(self, request, chat_id):
+        chat = get_chat_for_user(
             chat_id,
             request.user,
-        )
-
-    def get(self, request, chat_id):
-        chat = self.get_chat(
-            request,
-            chat_id,
         )
 
         if chat is None:
@@ -597,6 +601,9 @@ class ChatMessagesView(APIView):
                 "chat",
                 "sender",
                 "reply_to",
+            )
+            .prefetch_related(
+                "read_by",
             )
             .order_by(
                 "created_at",
@@ -624,9 +631,9 @@ class ChatMessagesView(APIView):
         )
 
     def post(self, request, chat_id):
-        chat = self.get_chat(
-            request,
+        chat = get_chat_for_user(
             chat_id,
+            request.user,
         )
 
         if chat is None:
@@ -691,7 +698,9 @@ class ChatMessagesView(APIView):
                 updated_at=timezone.now(),
             )
 
-        message = reload_message(message.id)
+        message = reload_message(
+            message.id,
+        )
 
         serialized_message = serialize_message(
             message,
@@ -794,17 +803,51 @@ class UploadMessageView(APIView):
             return reply_error
 
         content_type = (
-            getattr(uploaded_file, "content_type", "")
+            getattr(
+                uploaded_file,
+                "content_type",
+                "",
+            )
             or ""
         ).lower().strip()
 
-        message_type = detect_message_type(
-            uploaded_file
+        file_name = (
+            getattr(
+                uploaded_file,
+                "name",
+                "",
+            )
+            or ""
+        ).lower().strip()
+
+        extension = get_file_extension(
+            file_name,
         )
 
+        if content_type.startswith("image/"):
+            message_type = Message.IMAGE
+
+        elif content_type.startswith("video/"):
+            message_type = Message.VIDEO
+
+        elif (
+            content_type.startswith("audio/")
+            or extension in AUDIO_EXTENSIONS
+        ):
+            message_type = Message.AUDIO
+
+        else:
+            message_type = Message.FILE
+
+        # Если браузер передал audio-файл
+        # с пустым или общим MIME-типом.
         if (
             message_type == Message.AUDIO
-            and not content_type.startswith("audio/")
+            and content_type in {
+                "",
+                "application/octet-stream",
+                "binary/octet-stream",
+            }
         ):
             content_type = "audio/webm"
 
@@ -827,7 +870,9 @@ class UploadMessageView(APIView):
                 updated_at=timezone.now(),
             )
 
-        message = reload_message(message.id)
+        message = reload_message(
+            message.id,
+        )
 
         serialized_message = serialize_message(
             message,
