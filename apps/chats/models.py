@@ -171,7 +171,7 @@ class Message(models.Model):
     FILE = "file"
     SHARED_POST = "shared_post"
 
-        MESSAGE_TYPES = (
+    MESSAGE_TYPES = (
         (TEXT, "Текст"),
         (IMAGE, "Изображение"),
         (VIDEO, "Видео"),
@@ -180,14 +180,8 @@ class Message(models.Model):
         (SHARED_POST, "Публикация"),
     )
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-
     chat = models.ForeignKey(
-        "Chat",
+        Chat,
         on_delete=models.CASCADE,
         related_name="messages",
     )
@@ -195,7 +189,12 @@ class Message(models.Model):
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="messages",
+        related_name="sent_messages",
+    )
+
+    text = models.TextField(
+        blank=True,
+        default="",
     )
 
     message_type = models.CharField(
